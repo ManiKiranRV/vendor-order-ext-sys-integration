@@ -1,0 +1,20 @@
+{
+    "apps": [
+      {
+        "name": "vendor",
+        "script": "./dist/app.js",
+        "exec_mode": "cluster",
+        "instances": 1,
+        "env": {
+          "DB_HOST": "localhost",
+          "DB_USER": "root",
+          "DB_PASS": "root",
+          "DB_NAME": "vendor",
+          "PORT": 4200,
+          "POST_URL": "https://express.api.dhl.com/mydhlapi/"
+        }
+      }
+    ]
+  }
+  
+  

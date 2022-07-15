@@ -1,0 +1,6 @@
+#Build Files
+dist
+node_modules
+**.log
+package-lock.json
+.scannerwork
