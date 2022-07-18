@@ -50,6 +50,7 @@ for generating entities:
 =========================
 sequelize-auto -d <dbname> -h <host> -u <username> -x <password> -z -f -o ./src/data/entity -l ts --cm p -v -e mysql --cf p
 
+
 installing sequelize auto
 =========================
 npm install -g sequelize-auto

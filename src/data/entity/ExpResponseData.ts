@@ -29,7 +29,7 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
 
 
   static initModel(sequelize: Sequelize.Sequelize): typeof ExpResponseData {
-    ExpResponseData.init({
+    return ExpResponseData.init({
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
@@ -38,19 +38,19 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
     },
     message: {
       type: DataTypes.JSON,
-      allowNull: true
+      allowNull: false
     },
     shipmentTrackingNumber: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: false
     },
     statusCode: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: false
     },
     status: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: false
     }
   }, {
     sequelize,
@@ -68,6 +68,5 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
       },
     ]
   });
-  return ExpResponseData;
   }
 }
