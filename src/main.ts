@@ -3,13 +3,13 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { Logger } from './logger/Logger';
 import { DBConnection } from './config/DBConnection';
-
-//import { BaseController } from './controller/BaseController';
 import {ShipmentController} from './controller/ShipmentController'
 import { initModels } from './data/entity/init-models';
 import { DI } from './di/DIContainer';
 import { ErrorHandler } from './error/ErrorHandler';
 import session, { MemoryStore } from 'express-session';
+import { DownStreamController } from './controller/DownStreamController';
+import { AuthController } from './controller/AuthController';
 
 
 const expressApp: express.Application = express(); 
@@ -55,16 +55,14 @@ class Main {
             expressApp.use(cors());
             expressApp.use(bodyParser.urlencoded({extended: true}));
             expressApp.use(bodyParser.json());
-            //expressApp.use(keycloak.middleware());
             expressApp.use((req, res, next) => {
                 DI.destroy();
                 next();
             })
-
-            expressApp.use(DI.get<ErrorHandler>(ErrorHandler).errorHandler);
-
+            expressApp.use('/auth',DI.get<AuthController>(AuthController).getRouter());
             expressApp.use(`/vendor`,DI.get<ShipmentController>(ShipmentController).getRouter());
-
+            expressApp.use(`/out/bless-downstream`,DI.get<DownStreamController>(DownStreamController).getRouter());
+            expressApp.use(DI.get<ErrorHandler>(ErrorHandler).errorHandler);
     }
     
 

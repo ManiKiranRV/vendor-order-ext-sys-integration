@@ -39,6 +39,8 @@ export class BaseRepository implements Repository {
         }
     }
 
+   
+
     async getCount(whereObj: any, attributes?: any[], transaction?: Transaction): Promise<any[]> {
         return await new Promise((resolve, reject) => {
             this.getModel().count({ where: whereObj, transaction }).then((get: any[]) => {

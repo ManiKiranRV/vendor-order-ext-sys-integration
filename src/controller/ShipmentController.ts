@@ -6,6 +6,7 @@ import { DI } from "../di/DIContainer";
 import { ExpTmsService } from "../service/ExpTmsService";
 import { ExpResponseDataService } from "../service/ExpResponseDataService";
 import { LobsterService } from "../service/LobsterService";
+import { AuthService } from "../service/AuthService";
 
 
 var request = require('request');
@@ -14,9 +15,16 @@ export class ShipmentController implements Controller {
     private logger: Logger = DI.get(Logger)
     private ExpTmsService: ExpTmsService = DI.get(ExpTmsService)
     private ExpResponseDataService: ExpResponseDataService = DI.get(ExpResponseDataService)
-    private LobsterService: LobsterService = DI.get(LobsterService)
+    private LobsterService: LobsterService = DI.get(LobsterService);
+    private authService: AuthService;
+
+    constructor(){
+        this.authService = DI.get(AuthService);
+    }
+
     getRouter(): Router {
         const router = Router();
+
 
         router.post('/expResponse',async (req, res) => {
             try {
