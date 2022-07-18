@@ -34,8 +34,10 @@ export class DownStreamController implements Controller {
         });
 
 
-        router.post('/klmr-bkng-rsp',async (req, res) => {
+        router.post('/consume-tms-response',async (req, res) => {
             try {
+                let token  = await this.downStreamService.consumeTMSResponse(req.body.message);  
+                res.json({"token":token});
                 
             } catch (error) {
                 let response: any = { status: { code: 'FAILURE', message: error } }

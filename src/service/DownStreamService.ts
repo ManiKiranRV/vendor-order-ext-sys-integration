@@ -16,7 +16,7 @@ var fs = require('fs');
 export class DownStreamService {
     private logger: Logger;
     private expTmsDataRepository: ExpTmsDataRepository;
-    private expResponseDataRepository:ExpResponseDataRepository;
+    private expResponseDataRepository: ExpResponseDataRepository;
 
 
     constructor() {
@@ -31,6 +31,7 @@ export class DownStreamService {
         //Remove extraneous fields i.e plannedShipmentDate and plannedShipmentOffset fields
         delete message["plannedShippingDate"];
         delete message["plannedShippingOffset"];
+        delete message[""]
         //Insert Exp-Booking Request Data in exp_tms_data Table
         await this.expTmsDataRepository.create({
             "message": message,
@@ -86,7 +87,7 @@ export class DownStreamService {
                 });
 
                 //Insert EXP_TMS-Response into `exp_response_data` table
-                await this.expResponseDataRepository.create({"message": ""})
+                await this.expResponseDataRepository.create({ "message": "" })
 
 
             }
@@ -99,6 +100,11 @@ export class DownStreamService {
 
     }
 
+
+    async consumeTMSResponse(message: any): Promise<any> {
+        let expRespCreateObj = { "message": message, "shipmentTrackingNumber": message["shipmentTrackingNumber"], status: "UNPROCESSED" }
+        return await this.expResponseDataRepository.create(expRespCreateObj);
+    }
 
 
 }
