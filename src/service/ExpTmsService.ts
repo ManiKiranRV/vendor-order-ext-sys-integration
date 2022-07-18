@@ -79,11 +79,6 @@ export class ExpTmsService {
                             status:"UNPROCESSED"
                         }
 
-                        //console.log("Response after constructing", expres)
-                        // resultList.push(expres)
-                        // console.log("resultList",resultList)
-                        //resolve ({response});
-
                         //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
                         var expResponse = await this.ExpResponseDataRepository.create(expres)
                         var whereObj = {"id":tmsDataList.res[i].dataValues.id}
@@ -93,33 +88,9 @@ export class ExpTmsService {
                         
                     });
 
-                    // var expResponse = result
-                    //console.log("Response from EXP TMS", resultList)
-
-
                 }
 
-                // var options = {
-                //     'method': 'POST',
-                //     'url': process.env.POST_URL,
-                //     'headers': {
-                //     'Authorization': req.rawHeaders[1],
-                //     'Content-Type': 'application/json',
-                //     'Cookie': 'BIGipServer~WSB~pl_wsb-express-cbj.dhl.com_443=293349575.64288.0000'
-                //     },
-                //     body: JSON.stringify(req.body)
-                
-                // };
-                // res = await request(options, function (error:any, response:any) {
-                //     if (error) throw new Error(error);
-                //     response = {
-                //         statusCode:response.statusCode,
-                //         data:response.body
-                //     }
-                //     console.log("Response after constructing", response)
-                //     resolve({ res: response })
-                // });
-            
+                resolve({ status: { code: 'Success'}})
 
             } catch (e) {
                 resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: e } })
