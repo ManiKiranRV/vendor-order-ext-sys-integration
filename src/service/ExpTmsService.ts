@@ -61,26 +61,29 @@ export class ExpTmsService {
                 for (let i = 0; i <= tmsDataList.res.length; i++) {
                     //Loop through tmsDataList variable and get individual message i.e tmsDataItem["message"]
                     var message = tmsDataList.res[i].dataValues.message
-                    console.log("Message", message)
+                    //console.log("Message", message)
                     var options = {
                         'method': 'POST',
                         'url': process.env.POST_URL,
                         'headers': {
-                            'Authorization': req.rawHeaders[1],
+                            'Authorization': 'Basic ZGhsYmxlc3NibG9DSDpDJDJhTyExbkMhMmVWQDhr',
                             'Content-Type': 'application/json',
                             'Cookie': 'BIGipServer~WSB~pl_wsb-express-cbj.dhl.com_443=293349575.64288.0000'
                         },
                         body: JSON.stringify(message)
                     };
                     let resultList: any = []
+                    console.log("OPTIONS---->",options)
                     var result = await request(options, async (error: any, response: any) => {
                         if (error) throw new Error(error);
+                        console.log("response--->",response.body)
                         console.log("response.body.shipmentTrackingNumber", JSON.parse(response.body).shipmentTrackingNumber)
                         var expres = {
                             statusCode: response.statusCode,
                             message: response.body,
                             shipmentTrackingNumber: JSON.parse(response.body).shipmentTrackingNumber,
-                            status: "UNPROCESSED"
+                            status: "UNPROCESSED",
+                            parent_uuid:tmsDataList.res[i].dataValues.uuid
                         }
 
                         //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
@@ -200,12 +203,12 @@ export class ExpTmsService {
         return new Promise(async (resolve, reject) => {
             let whereObj: any = {};
             try {
-                console.log('Request Body inside ExpTmsService', req)
+                //console.log('Request Body inside ExpTmsService', req)
                 //whereObj['shipment_Tracking_Number'] = req;
                 whereObj['status'] = "UNPROCESSED";
                 let responseData: any = await this.ExpTmsDataRepository.get(whereObj);
 
-                console.log("Result", responseData)
+                //console.log("Result", responseData)
                 resolve({ res: responseData })
 
             } catch (e) {
