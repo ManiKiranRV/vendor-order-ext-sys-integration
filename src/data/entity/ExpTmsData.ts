@@ -6,6 +6,7 @@ export interface ExpTmsDataAttributes {
   message: object;
   shipment_Tracking_Number: string;
   status: string;
+  token?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -13,7 +14,7 @@ export interface ExpTmsDataAttributes {
 
 export type ExpTmsDataPk = "id";
 export type ExpTmsDataId = ExpTmsData[ExpTmsDataPk];
-export type ExpTmsDataOptionalAttributes = "id" | "createdAt" | "updatedAt" | "deletedAt";
+export type ExpTmsDataOptionalAttributes = "id" | "token" | "createdAt" | "updatedAt" | "deletedAt";
 export type ExpTmsDataCreationAttributes = Optional<ExpTmsDataAttributes, ExpTmsDataOptionalAttributes>;
 
 export class ExpTmsData extends Model<ExpTmsDataAttributes, ExpTmsDataCreationAttributes> implements ExpTmsDataAttributes {
@@ -21,13 +22,14 @@ export class ExpTmsData extends Model<ExpTmsDataAttributes, ExpTmsDataCreationAt
   message!: object;
   shipment_Tracking_Number!: string;
   status!: string;
+  token?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
 
 
   static initModel(sequelize: Sequelize.Sequelize): typeof ExpTmsData {
-    ExpTmsData.init({
+    return ExpTmsData.init({
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
@@ -45,6 +47,10 @@ export class ExpTmsData extends Model<ExpTmsDataAttributes, ExpTmsDataCreationAt
     status: {
       type: DataTypes.STRING(100),
       allowNull: false
+    },
+    token: {
+      type: DataTypes.STRING(255),
+      allowNull: true
     }
   }, {
     sequelize,
@@ -62,6 +68,5 @@ export class ExpTmsData extends Model<ExpTmsDataAttributes, ExpTmsDataCreationAt
       },
     ]
   });
-  return ExpTmsData;
   }
 }

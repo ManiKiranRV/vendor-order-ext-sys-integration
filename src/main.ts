@@ -59,10 +59,10 @@ class Main {
                 DI.destroy();
                 next();
             })
-            expressApp.use('/auth',DI.get<AuthController>(AuthController).getRouter());
-            expressApp.use(`/vendor`,DI.get<ShipmentController>(ShipmentController).getRouter());
-            expressApp.use(`/out/bless-downstream`,DI.get<DownStreamController>(DownStreamController).getRouter());
-            expressApp.use(`/vendor`,DI.get<ShipmentController>(ShipmentController).getRouter());
+            expressApp.use(`${baseUrl}/auth`,DI.get<AuthController>(AuthController).getRouter());
+            expressApp.use(`${baseUrl}/vendor`,DI.get<ShipmentController>(ShipmentController).getRouter());
+            expressApp.use(`${baseUrl}/out/bless-downstream`,DI.get<DownStreamController>(DownStreamController).getRouter());
+            expressApp.use(`${baseUrl}/vendor`,DI.get<ShipmentController>(ShipmentController).getRouter());
             expressApp.use(DI.get<ErrorHandler>(ErrorHandler).errorHandler);
     }
     
