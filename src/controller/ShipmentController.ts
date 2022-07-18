@@ -36,7 +36,7 @@ export class ShipmentController implements Controller {
                 // console.log("Response in ShipmentController",responseData)
 
                 // response = await this.ExpResponseDataService.expResData(responseData, res)
-                res.json({ status: { code: 'SUCCESS', message: "Created Successfully" }, data: responseData });
+                res.json({ status: { code: 'SUCCESS', message: "Created Successfully" }});
                 
             } catch (error) {
                 let response: any = { status: { code: 'FAILURE', message: error } }

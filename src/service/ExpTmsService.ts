@@ -79,11 +79,6 @@ export class ExpTmsService {
                             status: "UNPROCESSED"
                         }
 
-                        //console.log("Response after constructing", expres)
-                        // resultList.push(expres)
-                        // console.log("resultList",resultList)
-                        //resolve ({response});
-
                         //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
                         var expResponse = await this.ExpResponseDataRepository.create(expres)
                         var whereObj = { "id": tmsDataList.res[i].dataValues.id }
@@ -95,11 +90,9 @@ export class ExpTmsService {
 
                     });
 
-                    // var expResponse = result
-                    //console.log("Response from EXP TMS", resultList)
-
-
                 }
+
+                resolve({ status: { code: 'Success'}})
 
             } catch (e) {
                 resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: e } })
