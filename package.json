@@ -1,7 +1,7 @@
 {
     "name": "vnd-ord-downstream",
     "version": "1.0.0",
-    "description": "APIs and Conusme Service for Shipment Module",
+    "description": "",
     "main": "index.js",
     "scripts": {
         "tsc": "tsc",

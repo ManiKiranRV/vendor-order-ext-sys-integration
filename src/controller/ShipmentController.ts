@@ -86,7 +86,8 @@ export class ShipmentController implements Controller {
                     }
                 };
 
-                lobMessage = await this.LobsterService.lobData(message, res)
+                lobMessage = await this.LobsterService.lobData(message, res);
+                
                 console.log("LobMessage", lobMessage)
                 res.json({lobdata: lobMessage });
                 
