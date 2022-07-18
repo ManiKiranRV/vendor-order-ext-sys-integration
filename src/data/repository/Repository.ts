@@ -7,3 +7,6 @@ export interface Repository {
     updateOrCreate(obj : any,allowWithSameId?:any, transaction?:any):Promise<any>;
 
 }
+
+
+//export class Repository { }

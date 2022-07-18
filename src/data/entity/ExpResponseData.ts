@@ -38,19 +38,19 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
     },
     message: {
       type: DataTypes.JSON,
-      allowNull: false
+      allowNull: true
     },
     shipmentTrackingNumber: {
       type: DataTypes.STRING(100),
-      allowNull: false
+      allowNull: true
     },
     statusCode: {
       type: DataTypes.STRING(100),
-      allowNull: false
+      allowNull: true
     },
     status: {
       type: DataTypes.STRING(100),
-      allowNull: false
+      allowNull: true
     }
   }, {
     sequelize,
