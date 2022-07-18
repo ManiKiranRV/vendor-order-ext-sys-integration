@@ -7,6 +7,7 @@ export interface ExpResponseDataAttributes {
   shipmentTrackingNumber: string;
   statusCode: string;
   status: string;
+  parent_uuid?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -14,7 +15,7 @@ export interface ExpResponseDataAttributes {
 
 export type ExpResponseDataPk = "id";
 export type ExpResponseDataId = ExpResponseData[ExpResponseDataPk];
-export type ExpResponseDataOptionalAttributes = "id" | "createdAt" | "updatedAt" | "deletedAt";
+export type ExpResponseDataOptionalAttributes = "id" | "parent_uuid" | "createdAt" | "updatedAt" | "deletedAt";
 export type ExpResponseDataCreationAttributes = Optional<ExpResponseDataAttributes, ExpResponseDataOptionalAttributes>;
 
 export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpResponseDataCreationAttributes> implements ExpResponseDataAttributes {
@@ -23,6 +24,7 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
   shipmentTrackingNumber!: string;
   statusCode!: string;
   status!: string;
+  parent_uuid?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -51,6 +53,10 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
     status: {
       type: DataTypes.STRING(100),
       allowNull: false
+    },
+    parent_uuid: {
+      type: DataTypes.STRING(1000),
+      allowNull: true
     }
   }, {
     sequelize,
