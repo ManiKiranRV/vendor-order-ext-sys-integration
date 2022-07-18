@@ -64,31 +64,13 @@ export class ShipmentController implements Controller {
             }
         });
 
-        router.post('/lobsterData/:arg1',async (req, res) => {
+        router.post('/lobsterData',async (req, res) => {
             try {
 
-                var expData, expResData, lobMessage;
-                console.log("Request Body inside ShipmentController",req.params.arg1)
+                var lobMessage;
 
-                let shipmentTrackingNumber = req.params.arg1
-                expData = await this.ExpTmsService.getexpTmsData(shipmentTrackingNumber, res)
-                var trsd = expData.res.dataValues.message
-                expResData = await this.ExpResponseDataService.getexpResData(shipmentTrackingNumber, res)
+                lobMessage = await this.ExpTmsService.postToLobsterSystem(req, res);
 
-                var resp = JSON.parse(expResData.res.dataValues.message)
-
-                var message = {
-                    "content":{
-                        "accountNumber": trsd.accounts[0].number,
-                        "HWAB": resp.shipmentTrackingNumber,
-                        "PrincipalreferenceNumber": trsd.content.packages[0].customerReferences[0].value,
-                        "documents": resp.documents
-                    }
-                };
-
-                lobMessage = await this.LobsterService.lobData(message, res);
-                
-                console.log("LobMessage", lobMessage)
                 res.json({lobdata: lobMessage });
                 
             } catch (error) {
@@ -98,6 +80,23 @@ export class ShipmentController implements Controller {
             }
         });
 
+        router.post('/tmsResponse',async (req, res) => {
+            try {
+
+                var response;
+
+                console.log("Inside tmsResponse--->")
+
+                response = await this.ExpTmsService.clientTmsResponse(req, res);
+
+                res.json({lobdata: response });
+                
+            } catch (error) {
+                let response: any = { status: { code: 'FAILURE', message: error } }
+                res.json(response);
+
+            }
+        });
 
         return router;
     }

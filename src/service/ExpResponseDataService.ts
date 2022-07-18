@@ -58,8 +58,8 @@ export class ExpResponseDataService {
                 whereObj['status'] = "UNPROCESSED";
                 let responseData: any = await this.ExpResponseDataRepository.get(whereObj);
                 
-                console.log("Result",responseData)                           
-                resolve({ res: responseData })
+                //console.log("Result",responseData)                           
+                resolve(responseData)
 
             } catch (e) {
                 resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: e } })
