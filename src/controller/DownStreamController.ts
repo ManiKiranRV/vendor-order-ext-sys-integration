@@ -39,8 +39,6 @@ export class DownStreamController implements Controller {
 
         router.post('/consume-tms-response', async (req, res) => {
             try {
-//                var message = {"tmsResponse":tmsReponseItem,"tmsRequest":(await this.ExpTmsDataRepository.get({"uuid":tmsReponseItem["parent_uuid"]}))[0]}
-
                 let expResponseList;
                 if (Array.isArray(req.body)) {
                     expResponseList = req.body;
@@ -48,13 +46,12 @@ export class DownStreamController implements Controller {
                     expResponseList = [req.body];
                 }
                 this.logger.log(`req.body is ${JSON.stringify(req.body)}`)
-                await this.downStreamService.consumeTMSResponse(req.body["tmsResponse"],req.body["tmsRequest"]);
+                await this.downStreamService.consumeTMSResponse(req.body["tmsResponse"]);
                 res.json({ "token": "" });
 
             } catch (error) {
                 let response: any = { status: { code: 'FAILURE', message: error } }
                 res.json(response);
-
             }
         });
 

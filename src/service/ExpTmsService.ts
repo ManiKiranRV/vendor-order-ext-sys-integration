@@ -2,6 +2,9 @@ import { Logger } from "../logger/Logger";
 import { DI } from '../di/DIContainer';
 import { ExpTmsDataRepository } from "../data/repository/ExpTmsDataRepository";
 import { ExpResponseDataRepository } from "../data/repository/ExpResponseDataRepository";
+import { VendorBookingRepository } from "../data/repository/VendorBookingRepository";
+import { AddressRepository } from "../data/repository/AddressRepository";
+
 import { LobsterService } from "../service/LobsterService";
 import { ExpResponseDataService } from "../service/ExpResponseDataService";
 
@@ -15,6 +18,8 @@ export class ExpTmsService {
     private ExpResponseDataRepository: ExpResponseDataRepository;
     private LobsterService: LobsterService;
     private ExpResponseDataService: ExpResponseDataService;
+    private vendorBoookingRepository:VendorBookingRepository;
+    private addressRepository:AddressRepository;
 
     constructor() {
         this.logger = DI.get(Logger);
@@ -22,6 +27,8 @@ export class ExpTmsService {
         this.ExpResponseDataRepository = DI.get(ExpResponseDataRepository);
         this.LobsterService = DI.get(LobsterService);
         this.ExpResponseDataService = DI.get(ExpResponseDataService);
+        this.addressRepository = DI.get(AddressRepository);
+        this.vendorBoookingRepository = DI.get(VendorBookingRepository);
     }
 
 
@@ -61,7 +68,7 @@ export class ExpTmsService {
                 for (let i = 0; i <= tmsDataList.res.length; i++) {
                     //Loop through tmsDataList variable and get individual message i.e tmsDataItem["message"]
                     var message = tmsDataList.res[i].dataValues.message
-                    var customerOrderNumber = tmsDataList.res[i].dataValues.message.content.packages[0].customerReferences[0].value
+                    let customerOrderNumber = tmsDataList.res[i].dataValues.message.principalRef+"";
                     console.log("customerOrderNumber",customerOrderNumber)
                     //Remove the extraneous fields from message
                     delete message["plannedShippingOffset"];
@@ -98,7 +105,7 @@ export class ExpTmsService {
                             shipmentTrackingNumber: JSON.parse(response.body).shipmentTrackingNumber,
                             status: "UNPROCESSED",
                             parent_uuid:tmsDataList.res[i].dataValues.uuid,
-                            customer_order_number:tmsDataList.res[i].dataValues.message.content.packages[0].customerReferences[0].value
+                            customer_order_number:customerOrderNumber
                         }
 
                         console.log("expres----->",expres)
@@ -141,11 +148,24 @@ export class ExpTmsService {
                     var expResData = await this.getexpTmsData(uuid, res)
                     var trsd = expResData.res[0].dataValues.message
                     var conMessage
+                    var resp = JSON.parse(tmsReponseItem.dataValues.message);
+                    //Derive accountNumber to be sent to LOSTER system
+                    let vendorOrderItem = (await this.vendorBoookingRepository.get({"customer_order_number":tmsReponseItem["customer_order_number"]}))[0];
+                    let addressList = await this.addressRepository.get({"address_type":"consignor","parent_id":vendorOrderItem["id"]});
+                    let accountNumber;
+                    
+                    if(addressList.length > 0){
+                        accountNumber = addressList[0]["address_id"];
+                    }else{
+                        accountNumber = "";
+                    }
+                    console.log(`Account Number is ${accountNumber}`)
+                    
                     var message = {
                         "content":{
-                            "accountNumber": trsd.accounts[0].number,
+                            "accountNumber": accountNumber,
                             "HWAB": resp.shipmentTrackingNumber,
-                            "PrincipalreferenceNumber": tmsReponseItem.dataValues.customer_order_number,
+                            "PrincipalreferenceNumber": tmsReponseItem["customer_order_number"],
                             "documents": resp.documents
                         }
                     };
@@ -154,7 +174,7 @@ export class ExpTmsService {
                         "content":{
                             "accountNumber": trsd.accounts[0].number,
                             "HWAB": resp.shipmentTrackingNumber,
-                            "PrincipalreferenceNumber": tmsReponseItem.dataValues.customer_order_number,
+                            "PrincipalreferenceNumber": tmsReponseItem["customer_order_number"],
                             "documents": resp.documents
                         },
                         "error": tmsReponseItem.dataValues.message
@@ -168,6 +188,7 @@ export class ExpTmsService {
                     }
                     
                     console.log("conMessage",conMessage)
+                
                     var options = {
                         'method': 'POST',
                         'url': process.env.LOBSTER_POST_URL,
@@ -177,6 +198,8 @@ export class ExpTmsService {
                         },
                        body: JSON.stringify(conMessage)
                     };
+
+                    this.logger.log(`Lobster Options is ${JSON.stringify(options)}`);
                     var result = await request(options, async (error: any, response: any) => {
                         if (error) throw new Error(error);
                         //Save response from Lobster system to exp_response table
@@ -205,7 +228,7 @@ export class ExpTmsService {
                 console.log("tmsResponseList--->",tmsResponseList)
                 for (let tmsReponseItem of tmsResponseList) {
                     //Loop through tmsDataList variable and get individual message i.e tmsDataItem["message"]
-                    var message = {"tmsResponse":tmsReponseItem,"tmsRequest":(await this.ExpTmsDataRepository.get({"uuid":tmsReponseItem["parent_uuid"]}))[0]}
+                    var message = {"tmsResponse":tmsReponseItem}
                     console.log("Message", message)
                     var options = {
                         'method': 'POST',
