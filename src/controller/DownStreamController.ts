@@ -47,8 +47,8 @@ export class DownStreamController implements Controller {
                 } else {
                     expResponseList = [req.body];
                 }
-                this.logger.log(`req.body is ${req.body}`)
-                //await this.downStreamService.consumeTMSResponse(req.body["tmsResponse"],req.body["tmsRequest"]);
+                this.logger.log(`req.body is ${JSON.stringify(req.body)}`)
+                await this.downStreamService.consumeTMSResponse(req.body["tmsResponse"],req.body["tmsRequest"]);
                 res.json({ "token": "" });
 
             } catch (error) {

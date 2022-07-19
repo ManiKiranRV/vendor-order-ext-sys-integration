@@ -5,6 +5,7 @@ export interface ExpResponseDataAttributes {
   id: number;
   message: object;
   shipmentTrackingNumber?: string;
+  customer_order_number?: string;
   statusCode: string;
   status: string;
   parent_uuid: string;
@@ -15,13 +16,14 @@ export interface ExpResponseDataAttributes {
 
 export type ExpResponseDataPk = "id";
 export type ExpResponseDataId = ExpResponseData[ExpResponseDataPk];
-export type ExpResponseDataOptionalAttributes = "id" | "shipmentTrackingNumber" | "createdAt" | "updatedAt" | "deletedAt";
+export type ExpResponseDataOptionalAttributes = "id" | "shipmentTrackingNumber" | "customer_order_number" | "createdAt" | "updatedAt" | "deletedAt";
 export type ExpResponseDataCreationAttributes = Optional<ExpResponseDataAttributes, ExpResponseDataOptionalAttributes>;
 
 export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpResponseDataCreationAttributes> implements ExpResponseDataAttributes {
   id!: number;
   message!: object;
   shipmentTrackingNumber?: string;
+  customer_order_number?: string;
   statusCode!: string;
   status!: string;
   parent_uuid!: string;
@@ -44,6 +46,10 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
     },
     shipmentTrackingNumber: {
       type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    customer_order_number: {
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     statusCode: {
