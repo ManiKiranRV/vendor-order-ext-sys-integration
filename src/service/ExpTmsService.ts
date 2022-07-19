@@ -145,8 +145,6 @@ export class ExpTmsService {
                     let uuid = tmsReponseItem.dataValues.parent_uuid
                     console.log("uuid",uuid)
                     var resp = JSON.parse(tmsReponseItem.dataValues.message)
-                    var expResData = await this.getexpTmsData(uuid, res)
-                    var trsd = expResData.res[0].dataValues.message
                     var conMessage
                     var resp = JSON.parse(tmsReponseItem.dataValues.message);
                     //Derive accountNumber to be sent to LOSTER system
@@ -172,7 +170,7 @@ export class ExpTmsService {
                     
                     var errorMessage = {
                         "content":{
-                            "accountNumber": trsd.accounts[0].number,
+                            "accountNumber": accountNumber,
                             "HWAB": resp.shipmentTrackingNumber,
                             "PrincipalreferenceNumber": tmsReponseItem["customer_order_number"],
                             "documents": resp.documents
