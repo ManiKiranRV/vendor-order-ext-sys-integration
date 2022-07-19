@@ -61,7 +61,18 @@ export class ExpTmsService {
                 for (let i = 0; i <= tmsDataList.res.length; i++) {
                     //Loop through tmsDataList variable and get individual message i.e tmsDataItem["message"]
                     var message = tmsDataList.res[i].dataValues.message
-                    console.log("Message", message)
+
+                    //Remove the extraneous fields from message
+                    delete message["plannedShippingOffset"];
+                    delete message["plannedShippingDate"];
+                    delete message["sequence_timestamp"];
+                    delete message["vcid"];
+                    delete message["principalRef"];
+                    delete message["shipper_account_number"];
+                    delete message["trailToken"];
+
+
+                    console.log("Message", JSON.stringify(message));
                     var options = {
                         'method': 'POST',
                         'url': process.env.POST_URL,
@@ -76,6 +87,7 @@ export class ExpTmsService {
                     var result = await request(options, async (error: any, response: any) => {
                         if (error) throw new Error(error);
                         console.log("response.body.shipmentTrackingNumber", JSON.parse(response.body).shipmentTrackingNumber)
+                        console.log(`Reponse from TMS system is ${response.body}`);
                         var expres = {
                             statusCode: response.statusCode,
                             message: response.body,

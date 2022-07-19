@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "tsc": "tsc",
-        "build": "npx webpack --config webpack.app.config.js --progress && npx webpack --config webpack.consume.config.js --progress",
+        "build": "npx webpack --config webpack.app.config.js --progress",
         "build-app": "npx webpack --config webpack.app.config.js --progress",
         "build-consume-app": "npx webpack --config webpack.consume.config.js --progress",
         "compile": "webpack --progress --watch",
