@@ -61,7 +61,8 @@ export class ExpTmsService {
                 for (let i = 0; i <= tmsDataList.res.length; i++) {
                     //Loop through tmsDataList variable and get individual message i.e tmsDataItem["message"]
                     var message = tmsDataList.res[i].dataValues.message
-
+                    var customerOrderNumber = tmsDataList.res[i].dataValues.message.content.packages[0].customerReferences[0].value
+                    console.log("customerOrderNumber",customerOrderNumber)
                     //Remove the extraneous fields from message
                     delete message["plannedShippingOffset"];
                     delete message["plannedShippingDate"];
@@ -96,7 +97,8 @@ export class ExpTmsService {
                             message: response.body,
                             shipmentTrackingNumber: JSON.parse(response.body).shipmentTrackingNumber,
                             status: "UNPROCESSED",
-                            parent_uuid:tmsDataList.res[i].dataValues.uuid
+                            parent_uuid:tmsDataList.res[i].dataValues.uuid,
+                            customer_order_number:customerOrderNumber
                         }
 
                         //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
