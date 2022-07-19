@@ -73,7 +73,7 @@ export class ExpTmsService {
                     delete message["trailToken"];
 
 
-                    console.log("Message", JSON.stringify(message));
+                   // console.log("Message", JSON.stringify(message));
                     //console.log("Message", message)
                     var options = {
                         'method': 'POST',
@@ -86,20 +86,22 @@ export class ExpTmsService {
                         body: JSON.stringify(message)
                     };
                     let resultList: any = []
-                    console.log("OPTIONS---->",options)
+                    //console.log("OPTIONS---->",options)
                     var result = await request(options, async (error: any, response: any) => {
                         if (error) throw new Error(error);
-                        console.log("response--->",response.body)
-                        console.log("response.body.shipmentTrackingNumber", JSON.parse(response.body).shipmentTrackingNumber)
-                        console.log(`Reponse from TMS system is ${response.body}`);
+                        // console.log("response--->",response.body)
+                        // console.log("response.body.shipmentTrackingNumber", JSON.parse(response.body).shipmentTrackingNumber)
+                        // console.log(`Reponse from TMS system is ${response.body}`);
                         var expres = {
                             statusCode: response.statusCode,
                             message: response.body,
                             shipmentTrackingNumber: JSON.parse(response.body).shipmentTrackingNumber,
                             status: "UNPROCESSED",
                             parent_uuid:tmsDataList.res[i].dataValues.uuid,
-                            customer_order_number:customerOrderNumber
+                            customer_order_number:tmsDataList.res[i].dataValues.message.content.packages[0].customerReferences[0].value
                         }
+
+                        console.log("expres----->",expres)
 
                         //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
                         var expResponse = await this.ExpResponseDataRepository.create(expres)
