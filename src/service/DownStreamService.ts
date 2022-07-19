@@ -103,12 +103,10 @@ export class DownStreamService {
 
     async consumeTMSResponse(expResponseItem: any,expRequestItem:any): Promise<any> {
 
-        let expRespCreateObj = { "message": expResponseItem["message"], "shipmentTrackingNumber": expResponseItem["shipmentTrackingNumber"], status: "UNPROCESSED","statusCode":expResponseItem["statusCode"],"parent_uuid":expResponseItem["parent_uuid"] };
+        let expRespCreateObj = { "customer_order_number":expResponseItem["customer_order_number"],"message": expResponseItem["message"], "shipmentTrackingNumber": expResponseItem["shipmentTrackingNumber"], status: "UNPROCESSED","statusCode":expResponseItem["statusCode"],"parent_uuid":expResponseItem["parent_uuid"] };
         let expRequestCreateObj = { "message": expRequestItem["message"], "shipmentTrackingNumber": expRequestItem["shipmentTrackingNumber"], status: "PROCESSED","uuid":expRequestItem["uuid"] };
         await this.expResponseDataRepository.create(expRespCreateObj);
         return await this.expTmsDataRepository.create(expRequestCreateObj);
-        
-
     }
 
 
