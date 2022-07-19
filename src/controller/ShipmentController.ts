@@ -30,7 +30,7 @@ export class ShipmentController implements Controller {
             try {
 
                 var responseData, response;
-                console.log("Request Body inside ShipmentController",req.body)
+                //console.log("Request Body inside ShipmentController",req.body)
                 
                 responseData = await this.ExpTmsService.ExpDhl(req, res)
                 // console.log("Response in ShipmentController",responseData)
@@ -50,10 +50,10 @@ export class ShipmentController implements Controller {
             try {
 
                 var result;
-                console.log("Request Body inside ShipmentController",req.body)
+                //console.log("Request Body inside ShipmentController",req.body)
 
                 result = await this.ExpTmsService.expTmsData(req.body,res)
-                console.log("Response in ShipmentController",result)
+               // console.log("Response in ShipmentController",result)
                 
                 res.json({ status: { code: 'SUCCESS', message: "Created Successfully" }, data: result });
 

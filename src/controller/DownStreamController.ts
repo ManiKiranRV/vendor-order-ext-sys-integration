@@ -39,16 +39,16 @@ export class DownStreamController implements Controller {
 
         router.post('/consume-tms-response', async (req, res) => {
             try {
+//                var message = {"tmsResponse":tmsReponseItem,"tmsRequest":(await this.ExpTmsDataRepository.get({"uuid":tmsReponseItem["parent_uuid"]}))[0]}
+
                 let expResponseList;
                 if (Array.isArray(req.body)) {
                     expResponseList = req.body;
                 } else {
                     expResponseList = [req.body];
                 }
-                for (let expResponseItem of expResponseList) {
-                    await this.downStreamService.consumeTMSResponse(expResponseItem);
-                }
-                // let token  = await this.downStreamService.consumeTMSResponse(req.body);  
+                this.logger.log(`req.body is ${req.body}`)
+                //await this.downStreamService.consumeTMSResponse(req.body["tmsResponse"],req.body["tmsRequest"]);
                 res.json({ "token": "" });
 
             } catch (error) {
