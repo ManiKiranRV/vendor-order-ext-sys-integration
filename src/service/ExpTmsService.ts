@@ -61,7 +61,8 @@ export class ExpTmsService {
                 for (let i = 0; i <= tmsDataList.res.length; i++) {
                     //Loop through tmsDataList variable and get individual message i.e tmsDataItem["message"]
                     var message = tmsDataList.res[i].dataValues.message
-
+                    var customerOrderNumber = tmsDataList.res[i].dataValues.message.content.packages[0].customerReferences[0].value
+                    console.log("customerOrderNumber",customerOrderNumber)
                     //Remove the extraneous fields from message
                     delete message["plannedShippingOffset"];
                     delete message["plannedShippingDate"];
@@ -72,7 +73,7 @@ export class ExpTmsService {
                     delete message["trailToken"];
 
 
-                    console.log("Message", JSON.stringify(message));
+                   // console.log("Message", JSON.stringify(message));
                     //console.log("Message", message)
                     var options = {
                         'method': 'POST',
@@ -85,19 +86,22 @@ export class ExpTmsService {
                         body: JSON.stringify(message)
                     };
                     let resultList: any = []
-                    console.log("OPTIONS---->",options)
+                    //console.log("OPTIONS---->",options)
                     var result = await request(options, async (error: any, response: any) => {
                         if (error) throw new Error(error);
-                        console.log("response--->",response.body)
-                        console.log("response.body.shipmentTrackingNumber", JSON.parse(response.body).shipmentTrackingNumber)
-                        console.log(`Reponse from TMS system is ${response.body}`);
+                        // console.log("response--->",response.body)
+                        // console.log("response.body.shipmentTrackingNumber", JSON.parse(response.body).shipmentTrackingNumber)
+                        // console.log(`Reponse from TMS system is ${response.body}`);
                         var expres = {
                             statusCode: response.statusCode,
                             message: response.body,
                             shipmentTrackingNumber: JSON.parse(response.body).shipmentTrackingNumber,
                             status: "UNPROCESSED",
-                            parent_uuid:tmsDataList.res[i].dataValues.uuid
+                            parent_uuid:tmsDataList.res[i].dataValues.uuid,
+                            customer_order_number:tmsDataList.res[i].dataValues.message.content.packages[0].customerReferences[0].value
                         }
+
+                        console.log("expres----->",expres)
 
                         //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
                         var expResponse = await this.ExpResponseDataRepository.create(expres)
