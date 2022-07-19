@@ -140,17 +140,33 @@ export class ExpTmsService {
                     var resp = JSON.parse(tmsReponseItem.dataValues.message)
                     var expResData = await this.getexpTmsData(uuid, res)
                     var trsd = expResData.res[0].dataValues.message
+                    var conMessage
                     var message = {
                         "content":{
                             "accountNumber": trsd.accounts[0].number,
                             "HWAB": resp.shipmentTrackingNumber,
-                            "PrincipalreferenceNumber": trsd.content.packages[0].customerReferences[0].value,
+                            "PrincipalreferenceNumber": tmsReponseItem.dataValues.customer_order_number,
                             "documents": resp.documents
                         }
                     };
+                    
+                    var errorMessage = {
+                        "content":{
+                            "accountNumber": trsd.accounts[0].number,
+                            "HWAB": resp.shipmentTrackingNumber,
+                            "PrincipalreferenceNumber": tmsReponseItem.dataValues.customer_order_number,
+                            "documents": resp.documents
+                        },
+                        "error": tmsReponseItem.dataValues.message
+                    };
 
                     //Construct final Loster POST message
-                    var conMessage = await this.LobsterService.lobData(message, res);
+                    if(tmsReponseItem.dataValues.statusCode == 201){
+                        conMessage = await this.LobsterService.lobData(message, res);
+                    }else{
+                        conMessage = await this.LobsterService.lobData(errorMessage, res, true);
+                    }
+                    
                     console.log("conMessage",conMessage)
                     var options = {
                         'method': 'POST',
@@ -159,7 +175,7 @@ export class ExpTmsService {
                             'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
                             'Content-Type': 'text/plain'
                         },
-                       body: JSON.stringify(message)
+                       body: JSON.stringify(conMessage)
                     };
                     var result = await request(options, async (error: any, response: any) => {
                         if (error) throw new Error(error);

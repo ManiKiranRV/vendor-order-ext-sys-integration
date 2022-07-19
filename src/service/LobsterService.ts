@@ -13,7 +13,7 @@ export class LobsterService {
     }
 
 
-    async lobData(req: any, res?: any): Promise<any> {
+    async lobData(req: any, res?: any, isError?:boolean): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
                 //console.log('Request Body inside LobsterService', req)    
@@ -46,12 +46,21 @@ export class LobsterService {
                         },
                         {
                             run: function(val: any) { 
-    
-                                var _body = {
-                                    "documents": message.content.documents
+                                var body
+                                if(isError){
+                                    
+                                    body = {
+                                        "Error": [message.error]
+                                            
+                                    }
+                                }else{
+                                    body = {
+                                        "documents": message.content.documents
+                                    }
                                 }
+                                
     
-                                return _body; 
+                                return body; 
                             },
                             on: "body"
                         }
