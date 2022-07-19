@@ -46,7 +46,7 @@ export class LobsterService {
                         },
                         {
                             run: function(val: any) { 
-    
+                                
                                 var _body = {
                                     "documents": message.content.documents
                                 }
