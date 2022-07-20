@@ -32,7 +32,7 @@ export class ShipmentController implements Controller {
                 var responseData, response;
                 //console.log("Request Body inside ShipmentController",req.body)
                 
-                responseData = await this.ExpTmsService.ExpDhl(req, res)
+                responseData = await this.ExpTmsService.ExpDhl()
                 // console.log("Response in ShipmentController",responseData)
 
                 // response = await this.ExpResponseDataService.expResData(responseData, res)
@@ -69,7 +69,7 @@ export class ShipmentController implements Controller {
 
                 var lobMessage;
 
-                lobMessage = await this.ExpTmsService.postToLobsterSystem(req, res);
+                lobMessage = await this.ExpTmsService.postToLobsterSystem(res);
 
                 res.json({lobdata: lobMessage });
                 
@@ -87,7 +87,7 @@ export class ShipmentController implements Controller {
 
                 console.log("Inside tmsResponse--->")
 
-                response = await this.ExpTmsService.clientTmsResponse(req, res);
+                response = await this.ExpTmsService.clientTmsResponse();
 
                 res.json({lobdata: response });
                 

@@ -57,13 +57,13 @@ export class ExpTmsService {
 
     }
 
-    async ExpDhl(req: any, res: any): Promise<any> {
+    async ExpDhl(): Promise<any> {
 
         return new Promise(async (resolve, reject) => {
             try {
 
                 //Take data from exp_tms_data table and assign to tmsDataList variable
-                var tmsDataList = await this.getAllExpTmsData(req, res)
+                var tmsDataList = await this.getAllExpTmsData()
                 //console.log("tmsDataList",tmsDataList.res, tmsDataList.res.length)
                 for (let i = 0; i <= tmsDataList.res.length; i++) {
                     //Loop through tmsDataList variable and get individual message i.e tmsDataItem["message"]
@@ -133,7 +133,7 @@ export class ExpTmsService {
     }
 
 
-    async postToLobsterSystem(req: any, res: any): Promise<any> {
+    async postToLobsterSystem( res?: any): Promise<any> {
 
         return new Promise(async (resolve, reject) => {
             try {
@@ -214,7 +214,7 @@ export class ExpTmsService {
         })
     }
 
-    async clientTmsResponse(req: any, res: any): Promise<any> {
+    async clientTmsResponse(): Promise<any> {
 
         console.log("Inside ClientTMS")
         return new Promise(async (resolve, reject) => {
@@ -255,7 +255,7 @@ export class ExpTmsService {
 
     }
 
-    async getAllExpTmsData(req: any, res?: any): Promise<any> {
+    async getAllExpTmsData(): Promise<any> {
         return new Promise(async (resolve, reject) => {
             let whereObj: any = {};
             try {

@@ -10,6 +10,7 @@ import { ErrorHandler } from './error/ErrorHandler';
 import session, { MemoryStore } from 'express-session';
 import { DownStreamController } from './controller/DownStreamController';
 import { AuthController } from './controller/AuthController';
+import { ExpTmsService } from "../src/service/ExpTmsService";
 
 
 const expressApp: express.Application = express(); 
@@ -60,7 +61,6 @@ class Main {
                 next();
             })
             expressApp.use(`${baseUrl}/auth`,DI.get<AuthController>(AuthController).getRouter());
-            expressApp.use(`${baseUrl}/vendor`,DI.get<ShipmentController>(ShipmentController).getRouter());
             expressApp.use(`${baseUrl}/out/bless-downstream`,DI.get<DownStreamController>(DownStreamController).getRouter());
             expressApp.use(`${baseUrl}/vendor`,DI.get<ShipmentController>(ShipmentController).getRouter());
             expressApp.use(DI.get<ErrorHandler>(ErrorHandler).errorHandler);
@@ -70,7 +70,38 @@ class Main {
     private startServer() {
         expressApp.listen(process.env.PORT, () => {
             this.logger.log('Application Server Started',process.env.PORT);
+
+  
+                let expTmsService: ExpTmsService = DI.get(ExpTmsService)
+
+                var llpToTms = cron.job(process.env.CRON1, async () => {              
+                    await expTmsService.ExpDhl()
+                    this.logger.log('cron Execution Success for LLP to TMS');
+    
+    
+                });
+                var llpToClient2 = cron.job(process.env.CRON2, async () => {
+                    await expTmsService.clientTmsResponse();
+                    this.logger.log('cron Execution Success for LLP to CLIENT2');
+                });
+                var client2ToLob = cron.job(process.env.CRON3, async () => {
+                    await expTmsService.postToLobsterSystem();
+                    this.logger.log('cron Execution Success for CLIENT2 to Lobster');
+                });
+                if(process.env.CRON=="ON"){
+                    llpToTms.start();  
+                    llpToClient2.start(); 
+                    client2ToLob.start();             
+                }else if(process.env.CRON=="OFF"){
+                    llpToTms.stop();
+                    llpToClient2.stop();
+                    client2ToLob.stop();
+                }
+                
+                //nodeApis.start();
+                //cronApis.start();
         });
+        
     }
 }
 
