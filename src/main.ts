@@ -88,13 +88,19 @@ class Main {
                     await expTmsService.postToLobsterSystem();
                     this.logger.log('cron Execution Success for CLIENT2 to Lobster');
                 });
-                if(process.env.CRON=="ON"){
-                    llpToTms.start();  
-                    llpToClient2.start(); 
-                    client2ToLob.start();             
-                }else if(process.env.CRON=="OFF"){
+                if(process.env.LLP_TMS_CRON=="ON"){
+                    llpToTms.start(); 
+                }else if(process.env.LLP_TMS_CRON=="OFF"){
                     llpToTms.stop();
+                }  
+                if(process.env.LLP_CLIENT2_CRON=="ON"){   
+                    llpToClient2.start();
+                }else if(process.env.LLP_CLIENT2_CRON=="OFF"){
                     llpToClient2.stop();
+                }
+                if(process.env.CLIENT2_LOBSTER_CRON=="ON"){  
+                    client2ToLob.start();             
+                }else if(process.env.CLIENT2_LOBSTER_CRON=="OFF"){                  
                     client2ToLob.stop();
                 }
                 
