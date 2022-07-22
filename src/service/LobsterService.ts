@@ -73,7 +73,7 @@ export class LobsterService {
 
                 //console.log("tdata",tdata)
                          
-                resolve({ "status": "Ok", "message": tdata  })
+                resolve({ tdata })
 
             } catch (e) {
                 resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: e } })

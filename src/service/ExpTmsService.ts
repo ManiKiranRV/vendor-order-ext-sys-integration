@@ -219,7 +219,7 @@ export class ExpTmsService {
                             'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
                             'Content-Type': 'text/plain'
                         },
-                       body: JSON.stringify(conMessage)
+                       body: JSON.stringify(conMessage.tdata)
                     };
 
                     this.logger.log(`Lobster Options is ${JSON.stringify(options)}`);
