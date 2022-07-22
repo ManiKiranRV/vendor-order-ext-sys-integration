@@ -25,6 +25,7 @@ export class ShipmentController implements Controller {
     getRouter(): Router {
         const router = Router();
 
+        //LLP-TMS//
 
         router.post('/expResponse',async (req, res) => {
             try {
@@ -46,39 +47,7 @@ export class ShipmentController implements Controller {
         });
 
     
-        router.post('/expTmsData',async (req, res) => {
-            try {
-
-                var result;
-                //console.log("Request Body inside ShipmentController",req.body)
-
-                result = await this.ExpTmsService.expTmsData(req.body,res)
-               // console.log("Response in ShipmentController",result)
-                
-                res.json({ status: { code: 'SUCCESS', message: "Created Successfully" }, data: result });
-
-            } catch (error) {
-                let response: any = { status: { code: 'FAILURE', message: "Error While Uploading The File" } }
-                res.json(response);
-
-            }
-        });
-
-        router.post('/lobsterData',async (req, res) => {
-            try {
-
-                var lobMessage;
-
-                lobMessage = await this.ExpTmsService.postToLobsterSystem(res);
-
-                res.json({lobdata: lobMessage });
-                
-            } catch (error) {
-                let response: any = { status: { code: 'FAILURE', message: error } }
-                res.json(response);
-
-            }
-        });
+        //LLP-CLIENT2//  
 
         router.post('/tmsResponse',async (req, res) => {
             try {
@@ -97,6 +66,43 @@ export class ShipmentController implements Controller {
 
             }
         });
+
+        //CLIENT2-LOBSTER//    
+
+        router.post('/lobsterData',async (req, res) => {
+            try {
+
+                var lobMessage;
+
+                lobMessage = await this.ExpTmsService.postToLobsterSystem(res);
+
+                res.json({lobdata: lobMessage });
+                
+            } catch (error) {
+                let response: any = { status: { code: 'FAILURE', message: error } }
+                res.json(response);
+
+            }
+        });        
+
+
+        router.post('/expTmsData',async (req, res) => {
+            try {
+
+                var result;
+                //console.log("Request Body inside ShipmentController",req.body)
+
+                result = await this.ExpTmsService.expTmsData(req.body,res)
+               // console.log("Response in ShipmentController",result)
+                
+                res.json({ status: { code: 'SUCCESS', message: "Created Successfully" }, data: result });
+
+            } catch (error) {
+                let response: any = { status: { code: 'FAILURE', message: "Error While Uploading The File" } }
+                res.json(response);
+
+            }
+        });        
 
         return router;
     }

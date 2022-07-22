@@ -32,31 +32,7 @@ export class ExpTmsService {
     }
 
 
-    async expTmsData(req: any, res?: any): Promise<any> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                console.log('Request Body inside ExpTmsService', req)
-
-                var status = req.statusCode
-                var data = req
-                var obj = {
-                    status: "UNPROCESSED",
-                    shipment_Tracking_Number: "3732179850",
-                    message: data
-                }
-                console.log("Object", obj)
-                var result = await this.ExpTmsDataRepository.create(obj);
-                console.log("Result", result)
-                resolve({ status: { code: 'SUCCESS' }, res: result })
-
-            } catch (e) {
-                resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: e } })
-            }
-        })
-
-
-    }
-
+    //LLP-TMS//
     async ExpDhl(): Promise<any> {
 
         return new Promise(async (resolve, reject) => {
@@ -132,87 +108,7 @@ export class ExpTmsService {
 
     }
 
-
-    async postToLobsterSystem( res?: any): Promise<any> {
-
-        return new Promise(async (resolve, reject) => {
-            try {
-                //Get Response all UNPROCESSED Messages from exp_response_data table 
-                let tmsResponseList: any = await this.ExpResponseDataRepository.get({ "status": "UNPROCESSED" })
-                //Loop the UNPROCESSED rows and submit to LOBSTER SYSTEM
-                for (let tmsReponseItem of tmsResponseList) {
-                    console.log("tmsReponseItem.dataValues.parent_uuid",tmsReponseItem.dataValues.parent_uuid)
-                    let uuid = tmsReponseItem.dataValues.parent_uuid
-                    console.log("uuid",uuid)
-                    var resp = JSON.parse(tmsReponseItem.dataValues.message)
-                    var conMessage
-                    var resp = JSON.parse(tmsReponseItem.dataValues.message);
-                    //Derive accountNumber to be sent to LOSTER system
-                    let vendorOrderItem = (await this.vendorBoookingRepository.get({"customer_order_number":tmsReponseItem["customer_order_number"]}))[0];
-                    let addressList = await this.addressRepository.get({"address_type":"consignor","parent_id":vendorOrderItem["id"]});
-                    let accountNumber;
-                    
-                    if(addressList.length > 0){
-                        accountNumber = addressList[0]["address_id"];
-                    }else{
-                        accountNumber = "";
-                    }
-                    console.log(`Account Number is ${accountNumber}`)
-                    
-                    var message = {
-                        "content":{
-                            "accountNumber": accountNumber,
-                            "HWAB": resp.shipmentTrackingNumber,
-                            "PrincipalreferenceNumber": tmsReponseItem["customer_order_number"],
-                            "documents": resp.documents
-                        }
-                    };
-                    
-                    var errorMessage = {
-                        "content":{
-                            "accountNumber": accountNumber,
-                            "HWAB": resp.shipmentTrackingNumber,
-                            "PrincipalreferenceNumber": tmsReponseItem["customer_order_number"],
-                            "documents": resp.documents
-                        },
-                        "error": tmsReponseItem.dataValues.message
-                    };
-
-                    //Construct final Loster POST message
-                    if(tmsReponseItem.dataValues.statusCode == 201){
-                        conMessage = await this.LobsterService.lobData(message, res);
-                    }else{
-                        conMessage = await this.LobsterService.lobData(errorMessage, res, true);
-                    }
-                    
-                    console.log("conMessage",conMessage)
-                
-                    var options = {
-                        'method': 'POST',
-                        'url': process.env.LOBSTER_POST_URL,
-                        'headers': {
-                            'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
-                            'Content-Type': 'text/plain'
-                        },
-                       body: JSON.stringify(conMessage)
-                    };
-
-                    this.logger.log(`Lobster Options is ${JSON.stringify(options)}`);
-                    var result = await request(options, async (error: any, response: any) => {
-                        if (error) throw new Error(error);
-                        //Save response from Lobster system to exp_response table
-                        console.log("response----->",response.body)
-                        var expResponse = await this.ExpResponseDataRepository.update({ "parent_uuid": tmsReponseItem.parent_uuid }, { "status": response.body });
-                        //console.log("Response---->", expResponse)
-                        
-                    });
-                    resolve ({ 'status': "Success" })
-                }
-            } catch (e) {
-                resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: e } })
-            }
-        })
-    }
+    //LLP-CLIENT2//
 
     async clientTmsResponse(): Promise<any> {
 
@@ -255,6 +151,95 @@ export class ExpTmsService {
 
     }
 
+    //CLIENT2-LOBSTER//
+
+    async postToLobsterSystem( res?: any): Promise<any> {
+
+        return new Promise(async (resolve, reject) => {
+            try {
+                //Get Response all UNPROCESSED Messages from exp_response_data table 
+                let tmsResponseList: any = await this.ExpResponseDataRepository.get({ "status": "UNPROCESSED" })
+                //Loop the UNPROCESSED rows and submit to LOBSTER SYSTEM
+                for (let tmsReponseItem of tmsResponseList) {
+                    console.log("tmsReponseItem.dataValues.parent_uuid",tmsReponseItem.dataValues.parent_uuid)
+                    let uuid = tmsReponseItem.dataValues.parent_uuid
+                    console.log("uuid",uuid)
+                    var resp = JSON.parse(tmsReponseItem.dataValues.message)
+                    var conMessage
+                    var resp = JSON.parse(tmsReponseItem.dataValues.message);
+                    //Derive accountNumber to be sent to LOSTER system
+                    let vendorOrderItem = (await this.vendorBoookingRepository.get({"customer_order_number":tmsReponseItem["customer_order_number"]}))[0];
+                    let addressList = await this.addressRepository.get({"address_type":"consignor","parent_id":vendorOrderItem["id"]});
+                    let accountNumber;
+                    
+                    if(addressList.length > 0){
+                        accountNumber = addressList[0]["address_id"];
+                    }else{
+                        accountNumber = "";
+                    }
+                    console.log(`Account Number is ${accountNumber}`)
+                    
+                    var message = {
+                        "content":{
+                            "accountNumber": accountNumber,
+                            "HWAB": resp.shipmentTrackingNumber,
+                            "PrincipalreferenceNumber": tmsReponseItem["customer_order_number"],
+                            "documents": resp.documents
+                        }
+                    };
+                    
+                    //Removing few fields in the error message
+                    var errorBody = JSON.parse(tmsReponseItem.dataValues.message)
+                    delete errorBody["instance"];
+                    delete errorBody["message"];
+                    console.log("errorBody--------->",errorBody)
+                    var errorMessage = {
+                        "content":{
+                            "accountNumber": accountNumber,
+                            "HWAB": resp.shipmentTrackingNumber,
+                            "PrincipalreferenceNumber": tmsReponseItem["customer_order_number"],
+                            "documents": resp.documents
+                        },
+                        "error": errorBody
+                    };
+
+                    //Construct final Loster POST message
+                    if(tmsReponseItem.dataValues.statusCode == 201){
+                        conMessage = await this.LobsterService.lobData(message, res);
+                    }else{
+                        conMessage = await this.LobsterService.lobData(errorMessage, res, true);
+                    }
+                    
+                    console.log("conMessage",conMessage)
+                
+                    var options = {
+                        'method': 'POST',
+                        'url': process.env.LOBSTER_POST_URL,
+                        'headers': {
+                            'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
+                            'Content-Type': 'text/plain'
+                        },
+                       body: JSON.stringify(conMessage)
+                    };
+
+                    this.logger.log(`Lobster Options is ${JSON.stringify(options)}`);
+                    var result = await request(options, async (error: any, response: any) => {
+                        if (error) throw new Error(error);
+                        //Save response from Lobster system to exp_response table
+                        console.log("response----->",response.body)
+                        var expResponse = await this.ExpResponseDataRepository.update({ "parent_uuid": tmsReponseItem.parent_uuid }, { "status": response.body });
+                        //console.log("Response---->", expResponse)
+                        
+                    });
+                    resolve ({ 'status': "Success" })
+                }
+            } catch (e) {
+                resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: e } })
+            }
+        })
+    }
+
+    //INNER FUNCTION FOR LLP-TMS//
     async getAllExpTmsData(): Promise<any> {
         return new Promise(async (resolve, reject) => {
             let whereObj: any = {};
@@ -273,6 +258,32 @@ export class ExpTmsService {
         })
     }
 
+    async expTmsData(req: any, res?: any): Promise<any> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                console.log('Request Body inside ExpTmsService', req)
+
+                var status = req.statusCode
+                var data = req
+                var obj = {
+                    status: "UNPROCESSED",
+                    shipment_Tracking_Number: "3732179850",
+                    message: data
+                }
+                console.log("Object", obj)
+                var result = await this.ExpTmsDataRepository.create(obj);
+                console.log("Result", result)
+                resolve({ status: { code: 'SUCCESS' }, res: result })
+
+            } catch (e) {
+                resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: e } })
+            }
+        })
+
+
+    }
+
+    //NOT USED//
     async getexpTmsData(req: any, res?: any): Promise<any> {
         return new Promise(async (resolve, reject) => {
             let whereObj: any = {};

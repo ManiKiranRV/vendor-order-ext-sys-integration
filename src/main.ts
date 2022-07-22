@@ -10,7 +10,7 @@ import { ErrorHandler } from './error/ErrorHandler';
 import session, { MemoryStore } from 'express-session';
 import { DownStreamController } from './controller/DownStreamController';
 import { AuthController } from './controller/AuthController';
-import { ExpTmsService } from "../src/service/ExpTmsService";
+import { ExpTmsService } from "./service/ExpTmsService";
 
 
 const expressApp: express.Application = express(); 
