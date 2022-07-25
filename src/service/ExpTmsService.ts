@@ -196,7 +196,7 @@ export class ExpTmsService {
                     var errorMessage = {
                         "content":{
                             "accountNumber": accountNumber,
-                            "HWAB": resp.shipmentTrackingNumber,
+                            "HAWB": resp.shipmentTrackingNumber,
                             "PrincipalreferenceNumber": tmsReponseItem["customer_order_number"],
                             "documents": resp.documents
                         },

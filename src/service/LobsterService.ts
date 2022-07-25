@@ -36,7 +36,7 @@ export class LobsterService {
                                     },
                                     "businessKeys": {
                                         "accountNumber": message.content.accountNumber,
-                                        "HWAB": message.content.HWAB,
+                                        "HAWB": message.content.HAWB,
                                         "PrincipalreferenceNumber": message.content.PrincipalreferenceNumber,
                                     }
                                 }
