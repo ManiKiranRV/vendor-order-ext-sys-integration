@@ -11,7 +11,8 @@ import session, { MemoryStore } from 'express-session';
 import { DownStreamController } from './controller/DownStreamController';
 import { AuthController } from './controller/AuthController';
 import { ExpTmsService } from "./service/ExpTmsService";
-
+import { LlpClien2Service } from "./service/LlpClien2Service";
+import { LobsterService } from "./service/LobsterService";
 
 const expressApp: express.Application = express(); 
 var bodyParser = require('body-parser');            
@@ -73,6 +74,8 @@ class Main {
 
   
                 let expTmsService: ExpTmsService = DI.get(ExpTmsService)
+                let llpToClient2Service: LlpClien2Service = DI.get(LlpClien2Service)
+                let lobsterService: LobsterService = DI.get(LobsterService)
 
                 var llpToTms = cron.job(process.env.CRON1, async () => {              
                     await expTmsService.ExpDhl()
@@ -81,11 +84,11 @@ class Main {
     
                 });
                 var llpToClient2 = cron.job(process.env.CRON2, async () => {
-                    await expTmsService.clientTmsResponse();
+                    await llpToClient2Service.clientTmsResponse();
                     this.logger.log('cron Execution Success for LLP to CLIENT2');
                 });
                 var client2ToLob = cron.job(process.env.CRON3, async () => {
-                    await expTmsService.postToLobsterSystem();
+                    await lobsterService.postToLobsterSystem();
                     this.logger.log('cron Execution Success for CLIENT2 to Lobster');
                 });
                 if(process.env.LLP_TMS_CRON=="ON"){

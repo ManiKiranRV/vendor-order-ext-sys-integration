@@ -16,7 +16,7 @@ export interface VendorBookingAttributes {
   content_id?: string;
   uncode?: string;
   consignor_ref?: string;
-  hwab?: string;
+  hawb?: string;
   response_error_code?: string;
   response_error_title?: string;
   response_error_detail?: string;
@@ -28,7 +28,7 @@ export interface VendorBookingAttributes {
 
 export type VendorBookingPk = "id";
 export type VendorBookingId = VendorBooking[VendorBookingPk];
-export type VendorBookingOptionalAttributes = "id" | "customer_order_number" | "sequence_timestamp" | "planned_shipping_date_and_time" | "shipment_creation_date_time" | "order_status" | "shipment_inco_terms" | "commodity_code" | "commodity_text" | "shipment_service_code" | "dangerous_goods" | "content_id" | "uncode" | "consignor_ref" | "hwab" | "response_error_code" | "response_error_title" | "response_error_detail" | "response_time_stamp" | "createdAt" | "updatedAt" | "deletedAt";
+export type VendorBookingOptionalAttributes = "id" | "customer_order_number" | "sequence_timestamp" | "planned_shipping_date_and_time" | "shipment_creation_date_time" | "order_status" | "shipment_inco_terms" | "commodity_code" | "commodity_text" | "shipment_service_code" | "dangerous_goods" | "content_id" | "uncode" | "consignor_ref" | "hawb" | "response_error_code" | "response_error_title" | "response_error_detail" | "response_time_stamp" | "createdAt" | "updatedAt" | "deletedAt";
 export type VendorBookingCreationAttributes = Optional<VendorBookingAttributes, VendorBookingOptionalAttributes>;
 
 export class VendorBooking extends Model<VendorBookingAttributes, VendorBookingCreationAttributes> implements VendorBookingAttributes {
@@ -46,7 +46,7 @@ export class VendorBooking extends Model<VendorBookingAttributes, VendorBookingC
   content_id?: string;
   uncode?: string;
   consignor_ref?: string;
-  hwab?: string;
+  hawb?: string;
   response_error_code?: string;
   response_error_title?: string;
   response_error_detail?: string;
@@ -116,7 +116,7 @@ export class VendorBooking extends Model<VendorBookingAttributes, VendorBookingC
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    hwab: {
+    hawb: {
       type: DataTypes.STRING(255),
       allowNull: true
     },

@@ -5,7 +5,8 @@ import { Logger } from "../logger/Logger";
 import { DI } from "../di/DIContainer";
 import { ExpTmsService } from "../service/ExpTmsService";
 import { ExpResponseDataService } from "../service/ExpResponseDataService";
-import { LobsterTransformationService } from "../service/LobsterTransformationService";
+import { LlpClien2Service } from "../service/LlpClien2Service";
+import { LobsterService } from "../service/LobsterService";
 import { AuthService } from "../service/AuthService";
 
 import { DataGenTransformationService } from "../service/DataGenTransformationService";
@@ -16,7 +17,8 @@ export class ShipmentController implements Controller {
     private logger: Logger = DI.get(Logger)
     private ExpTmsService: ExpTmsService = DI.get(ExpTmsService)
     private ExpResponseDataService: ExpResponseDataService = DI.get(ExpResponseDataService)
-    private LobsterTransformationService: LobsterTransformationService = DI.get(LobsterTransformationService);
+    private LlpClien2Service: LlpClien2Service = DI.get(LlpClien2Service);
+    private LobsterService: LobsterService = DI.get(LobsterService);
     private DataGenTransformationService: DataGenTransformationService = DI.get(DataGenTransformationService);
     private authService: AuthService;
 
@@ -58,7 +60,7 @@ export class ShipmentController implements Controller {
 
                 console.log("Inside tmsResponse--->")
 
-                response = await this.ExpTmsService.clientTmsResponse();
+                response = await this.LlpClien2Service.clientTmsResponse();
 
                 res.json({lobdata: response });
                 
@@ -76,7 +78,7 @@ export class ShipmentController implements Controller {
 
                 var lobMessage;
 
-                lobMessage = await this.ExpTmsService.postToLobsterSystem(res);
+                lobMessage = await this.LobsterService.postToLobsterSystem(res);
 
                 res.json({lobdata: lobMessage });
                 
@@ -85,29 +87,9 @@ export class ShipmentController implements Controller {
                 res.json(response);
 
             }
-        });        
-
-
-        router.post('/expTmsData',async (req, res) => {
-            try {
-
-                var result;
-                //console.log("Request Body inside ShipmentController",req.body)
-
-                result = await this.ExpTmsService.expTmsData(req.body,res)
-               // console.log("Response in ShipmentController",result)
-                
-                res.json({ status: { code: 'SUCCESS', message: "Created Successfully" }, data: result });
-
-            } catch (error) {
-                let response: any = { status: { code: 'FAILURE', message: "Error While Uploading The File" } }
-                res.json(response);
-
-            }
-        });  
+        });             
         
-        
-        //DataGen
+        //DATAGEN
 
         router.post('/datagen',async (req, res) => {
             try {
@@ -124,6 +106,25 @@ export class ShipmentController implements Controller {
 
             }
         }); 
+
+        // To get TMS DATA
+        router.post('/expTmsData',async (req, res) => {
+            try {
+
+                var result;
+                //console.log("Request Body inside ShipmentController",req.body)
+
+                result = await this.ExpTmsService.expTmsData(req.body,res)
+               // console.log("Response in ShipmentController",result)
+                
+                res.json({ status: { code: 'SUCCESS', message: "Created Successfully" }, data: result });
+
+            } catch (error) {
+                let response: any = { status: { code: 'FAILURE', message: "Error While Uploading The File" } }
+                res.json(response);
+
+            }
+        });         
 
         return router;
     }

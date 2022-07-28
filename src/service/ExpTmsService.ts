@@ -4,10 +4,11 @@ import { ExpTmsDataRepository } from "../data/repository/ExpTmsDataRepository";
 import { ExpResponseDataRepository } from "../data/repository/ExpResponseDataRepository";
 import { VendorBookingRepository } from "../data/repository/VendorBookingRepository";
 import { AddressRepository } from "../data/repository/AddressRepository";
-
 import { LobsterTransformationService } from "./LobsterTransformationService";
 import { ExpResponseDataService } from "../service/ExpResponseDataService";
+import { DocumentRepository } from "../data/repository/DocumentRepository";
 
+import * as moment from 'moment';
 var fs = require('fs');
 
 var request = require('request');
@@ -20,6 +21,7 @@ export class ExpTmsService {
     private ExpResponseDataService: ExpResponseDataService;
     private vendorBoookingRepository:VendorBookingRepository;
     private addressRepository:AddressRepository;
+    private documentRepository:DocumentRepository;
 
     constructor() {
         this.logger = DI.get(Logger);
@@ -29,10 +31,11 @@ export class ExpTmsService {
         this.ExpResponseDataService = DI.get(ExpResponseDataService);
         this.addressRepository = DI.get(AddressRepository);
         this.vendorBoookingRepository = DI.get(VendorBookingRepository);
+        this.documentRepository = DI.get(DocumentRepository);
     }
 
 
-    //LLP-TMS//
+    //LLP-TMS & Persisting the TMS Response//
     async ExpDhl(): Promise<any> {
 
         return new Promise(async (resolve, reject) => {
@@ -58,7 +61,7 @@ export class ExpTmsService {
 
 
                    // console.log("Message", JSON.stringify(message));
-                    //console.log("Message", message)
+                    
                     var options = {
                         'method': 'POST',
                         'url': process.env.POST_URL,
@@ -89,8 +92,13 @@ export class ExpTmsService {
 
                         //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
                         var expResponse = await this.ExpResponseDataRepository.create(expres)
-                        var whereObj = { "id": tmsDataList.res[i].dataValues.id }
+
+                        //Update Core Tables
+
+                        var updateDocument = await this.updateTmsResCoreTables(expres)
+
                         //Update exp_tms_data with shipment_Tracking_Number
+                        var whereObj = { "id": tmsDataList.res[i].dataValues.id }
                         var updateRes = await this.ExpTmsDataRepository.update(whereObj, {
                             shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
                             status: "PROCESSED"
@@ -107,145 +115,6 @@ export class ExpTmsService {
             }
         })
 
-    }
-
-    //LLP-CLIENT2//
-
-    async clientTmsResponse(): Promise<any> {
-
-        console.log("Inside ClientTMS")
-        return new Promise(async (resolve, reject) => {
-            try {
-
-                console.log("Test")
-
-                var tmsResponseList = await this.ExpResponseDataRepository.get({'status':"UNPROCESSED"})
-                console.log("tmsResponseList--->",tmsResponseList)
-                for (let tmsReponseItem of tmsResponseList) {
-                    //Loop through tmsDataList variable and get individual message i.e tmsDataItem["message"]
-                    var message = {"tmsResponse":tmsReponseItem}
-                    console.log("Message", message)
-                    var options = {
-                        'method': 'POST',
-                        'url': process.env.CLIENT2_URL,
-                        'headers': {
-                            //'Authorization': req.rawHeaders[1],
-                            'Content-Type': 'application/JSON'
-                        },
-                        body: JSON.stringify(message)
-                    };
-                    //let resultList: any = []
-                    var result = await request(options, async (error: any, response: any) => {
-                        if (error) throw new Error(error);
-                        console.log("response---->>>>>", response)
-                        var expResponse = await this.ExpResponseDataRepository.update({ "parent_uuid": tmsReponseItem.parent_uuid }, { "status": "PROCESSED" });
-                    });
-
-                }
-
-                resolve({ status: { code: 'Success'}})
-
-            } catch (e) {
-                resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: e } })
-            }
-        })
-
-    }
-
-    //CLIENT2-LOBSTER//
-
-    async postToLobsterSystem( res?: any): Promise<any> {
-
-        return new Promise(async (resolve, reject) => {
-            try {
-                //Get Response all UNPROCESSED Messages from exp_response_data table 
-                let tmsResponseList: any = await this.ExpResponseDataRepository.get({ "status": "UNPROCESSED" })
-                //Loop the UNPROCESSED rows and submit to LOBSTER SYSTEM
-                for (let tmsReponseItem of tmsResponseList) {
-                    console.log("tmsReponseItem.dataValues.parent_uuid",tmsReponseItem.dataValues.parent_uuid)
-                    let uuid = tmsReponseItem.dataValues.parent_uuid
-                    console.log("uuid",uuid)
-                    var resp = JSON.parse(tmsReponseItem.dataValues.message)
-                    var conMessage
-                    var resp = JSON.parse(tmsReponseItem.dataValues.message);
-                    //Derive accountNumber to be sent to LOSTER system
-                    let vendorOrderItem = (await this.vendorBoookingRepository.get({"customer_order_number":tmsReponseItem["customer_order_number"]}))[0];
-                    if (vendorOrderItem.length > 0){
-                        var id = vendorOrderItem["id"]
-                    }else{
-                        //Save Error Message to exp_response_data table --> Need to Impliment
-                        break
-                    }
-                    
-                    let addressList = await this.addressRepository.get({"address_type":"consignor","parent_id":id});
-                    let accountNumber;
-                    
-                    if(addressList.length > 0){
-                        accountNumber = addressList[0]["address_id"];
-                    }else{
-                        accountNumber = "";
-                    }
-                    console.log(`Account Number is ${accountNumber}`)
-                    
-                    var message = {
-                        "content":{
-                            "accountNumber": accountNumber,
-                            "HAWB": resp.shipmentTrackingNumber,
-                            "PrincipalreferenceNumber": tmsReponseItem["customer_order_number"],
-                            "documents": resp.documents
-                        }
-                    };
-                    
-                    //Removing few fields in the error message
-                    var errorBody = JSON.parse(tmsReponseItem.dataValues.message)
-                    delete errorBody["instance"];
-                    delete errorBody["message"];
-                    console.log("errorBody--------->",errorBody)
-                    var errorMessage = {
-                        "content":{
-                            "accountNumber": accountNumber,
-                            "HAWB": resp.shipmentTrackingNumber,
-                            "PrincipalreferenceNumber": tmsReponseItem["customer_order_number"],
-                            "documents": resp.documents
-                        },
-                        "error": errorBody
-                    };
-
-                    //Construct final Loster POST message
-                    if(tmsReponseItem.dataValues.statusCode == 201){
-                        conMessage = await this.LobsterTransformationService.lobData(message, res);
-                    }else{
-                        conMessage = await this.LobsterTransformationService.lobData(errorMessage, res, true);
-                    }
-                    
-                    console.log("conMessage",conMessage)
-                
-                    var options = {
-                        'method': 'POST',
-                        'url': process.env.LOBSTER_POST_URL,
-                        'headers': {
-                            'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
-                            'Content-Type': 'text/plain'
-                        },
-                       body: JSON.stringify(conMessage.tdata)
-                    };
-
-                    this.logger.log(`Lobster Options is ${JSON.stringify(options)}`);
-                    var result = await request(options, async (error: any, response: any) => {
-                        if (error) throw new Error(error);
-                        //Save response from Lobster system to exp_response table
-                        
-                        console.log("response----->",response.body)
-                        var expResponse = await this.ExpResponseDataRepository.update({ "parent_uuid": tmsReponseItem.parent_uuid }, { "status": response.body ,"request": JSON.stringify(options)});
-                        //console.log("Response---->", expResponse)
-                        
-                    });
-                    resolve ({ 'status': "Success" })
-                }
-            } catch (e) {
-                resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: e } })
-            }
-        })
     }
 
     //INNER FUNCTION FOR LLP-TMS//
@@ -266,6 +135,57 @@ export class ExpTmsService {
             }
         })
     }
+
+    //UPDATE TMS RESPONE IN CORE TABLES//
+    async updateTmsResCoreTables(req:any): Promise<any> {
+
+        //console.log("Request Body in updateTmsResCoreTables---->",req)
+        var jsonObj = JSON.parse(req.message)
+        //console.log("Test----->",JSON.parse(req.message))
+        var today = new Date();
+        var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss") + ' UTC'+moment.utc(today).format("Z")
+        var whereObj = { "customer_order_number":req.customer_order_number }
+        console.log("req.customer_order_number",req.customer_order_number)
+        //Update VendorBooking Table based on Error/Success status
+        if(req.statusCode === 201){
+
+            var vendorBookingObjSuc = await this.vendorBoookingRepository.update(whereObj,{
+                "order_status": process.env.VEN_BOOKING_CON_STATUS,
+                "hawb":req.shipmentTrackingNumber,
+            })
+
+            //Update Documents Table
+
+            var documentsObj = {
+                customerordernumber: req.customer_order_number,
+                shiptrackingnum: req.shipmentTrackingNumber,
+                typecode: jsonObj.documents[0].typeCode,
+                label: jsonObj.documents[0].content
+            }
+            console.log("DOCUMENT---->",documentsObj)
+
+                await this.documentRepository.create(documentsObj)
+            
+
+        }else{
+            var vendorBookingObjErr = await this.vendorBoookingRepository.update(whereObj,{
+                "order_status": process.env.VEN_BOOKING_ERR_STATUS,
+                "response_error_code":jsonObj.status,
+                "response_error_title":jsonObj.title,
+                "response_error_detail":jsonObj.detail,
+                "response_time_stamp":todayUTC
+            })
+        }
+
+
+        
+        
+
+
+    }
+
+
+    // To get TMS DATA
 
     async expTmsData(req: any, res?: any): Promise<any> {
         return new Promise(async (resolve, reject) => {
