@@ -1,6 +1,7 @@
 import { Logger } from "../logger/Logger";
 import { DI } from '../di/DIContainer';
 import { ExpResponseDataRepository } from "../data/repository/ExpResponseDataRepository";
+import { UpdateCoreTablesService } from "./UpdateCoreTablesService";
 
 
 var fs = require('fs');
@@ -11,12 +12,12 @@ export class LlpClien2Service {
     private logger: Logger;
 
     private ExpResponseDataRepository: ExpResponseDataRepository;
-
+    private UpdateCoreTablesService: UpdateCoreTablesService;
 
     constructor() {
         this.logger = DI.get(Logger);
         this.ExpResponseDataRepository = DI.get(ExpResponseDataRepository);
-
+        this.UpdateCoreTablesService = DI.get(UpdateCoreTablesService);
     }
 
 
@@ -45,12 +46,19 @@ export class LlpClien2Service {
                         },
                         body: JSON.stringify(message)
                     };
-                    //let resultList: any = []
                     var result = await request(options, async (error: any, response: any) => {
                         if (error) throw new Error(error);
-                        console.log("response---->>>>>", response)
                         var expResponse = await this.ExpResponseDataRepository.update({ "parent_uuid": tmsReponseItem.parent_uuid }, { "status": "PROCESSED" });
                     });
+
+                    //Update Core Tables
+
+                    var dataObj = tmsReponseItem.dataValues
+
+                    console.log("dataObj",dataObj)
+
+                    var updateDocument = await this.UpdateCoreTablesService.updateTmsResCoreTables(dataObj)
+
 
                 }
 

@@ -2,11 +2,8 @@ import { Logger } from "../logger/Logger";
 import { DI } from '../di/DIContainer';
 import { ExpTmsDataRepository } from "../data/repository/ExpTmsDataRepository";
 import { ExpResponseDataRepository } from "../data/repository/ExpResponseDataRepository";
-import { VendorBookingRepository } from "../data/repository/VendorBookingRepository";
-import { AddressRepository } from "../data/repository/AddressRepository";
-import { LobsterTransformationService } from "./LobsterTransformationService";
-import { ExpResponseDataService } from "../service/ExpResponseDataService";
-import { DocumentRepository } from "../data/repository/DocumentRepository";
+import { UpdateCoreTablesService } from "./UpdateCoreTablesService";
+
 
 import * as moment from 'moment';
 var fs = require('fs');
@@ -17,21 +14,14 @@ export class ExpTmsService {
     private logger: Logger;
     private ExpTmsDataRepository: ExpTmsDataRepository;
     private ExpResponseDataRepository: ExpResponseDataRepository;
-    private LobsterTransformationService: LobsterTransformationService;
-    private ExpResponseDataService: ExpResponseDataService;
-    private vendorBoookingRepository:VendorBookingRepository;
-    private addressRepository:AddressRepository;
-    private documentRepository:DocumentRepository;
+    private UpdateCoreTablesService: UpdateCoreTablesService;
+
 
     constructor() {
         this.logger = DI.get(Logger);
         this.ExpTmsDataRepository = DI.get(ExpTmsDataRepository);
         this.ExpResponseDataRepository = DI.get(ExpResponseDataRepository);
-        this.LobsterTransformationService = DI.get(LobsterTransformationService);
-        this.ExpResponseDataService = DI.get(ExpResponseDataService);
-        this.addressRepository = DI.get(AddressRepository);
-        this.vendorBoookingRepository = DI.get(VendorBookingRepository);
-        this.documentRepository = DI.get(DocumentRepository);
+        this.UpdateCoreTablesService = DI.get(UpdateCoreTablesService);
     }
 
 
@@ -95,7 +85,7 @@ export class ExpTmsService {
 
                         //Update Core Tables
 
-                        var updateDocument = await this.updateTmsResCoreTables(expres)
+                        var updateDocument = await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
 
                         //Update exp_tms_data with shipment_Tracking_Number
                         var whereObj = { "id": tmsDataList.res[i].dataValues.id }
@@ -136,53 +126,6 @@ export class ExpTmsService {
         })
     }
 
-    //UPDATE TMS RESPONE IN CORE TABLES//
-    async updateTmsResCoreTables(req:any): Promise<any> {
-
-        //console.log("Request Body in updateTmsResCoreTables---->",req)
-        var jsonObj = JSON.parse(req.message)
-        //console.log("Test----->",JSON.parse(req.message))
-        var today = new Date();
-        var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss") + ' UTC'+moment.utc(today).format("Z")
-        var whereObj = { "customer_order_number":req.customer_order_number }
-        console.log("req.customer_order_number",req.customer_order_number)
-        //Update VendorBooking Table based on Error/Success status
-        if(req.statusCode === 201){
-
-            var vendorBookingObjSuc = await this.vendorBoookingRepository.update(whereObj,{
-                "order_status": process.env.VEN_BOOKING_CON_STATUS,
-                "hawb":req.shipmentTrackingNumber,
-            })
-
-            //Update Documents Table
-
-            var documentsObj = {
-                customerordernumber: req.customer_order_number,
-                shiptrackingnum: req.shipmentTrackingNumber,
-                typecode: jsonObj.documents[0].typeCode,
-                label: jsonObj.documents[0].content
-            }
-            console.log("DOCUMENT---->",documentsObj)
-
-                await this.documentRepository.create(documentsObj)
-            
-
-        }else{
-            var vendorBookingObjErr = await this.vendorBoookingRepository.update(whereObj,{
-                "order_status": process.env.VEN_BOOKING_ERR_STATUS,
-                "response_error_code":jsonObj.status,
-                "response_error_title":jsonObj.title,
-                "response_error_detail":jsonObj.detail,
-                "response_time_stamp":todayUTC
-            })
-        }
-
-
-        
-        
-
-
-    }
 
 
     // To get TMS DATA
