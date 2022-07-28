@@ -5,7 +5,7 @@ import { Logger } from "../logger/Logger";
 import { DI } from "../di/DIContainer";
 import { ExpTmsService } from "../service/ExpTmsService";
 import { ExpResponseDataService } from "../service/ExpResponseDataService";
-import { LobsterService } from "../service/LobsterService";
+import { LobsterTransformationService } from "../service/LobsterTransformationService";
 import { AuthService } from "../service/AuthService";
 
 import { DataGenTransformationService } from "../service/DataGenTransformationService";
@@ -16,7 +16,7 @@ export class ShipmentController implements Controller {
     private logger: Logger = DI.get(Logger)
     private ExpTmsService: ExpTmsService = DI.get(ExpTmsService)
     private ExpResponseDataService: ExpResponseDataService = DI.get(ExpResponseDataService)
-    private LobsterService: LobsterService = DI.get(LobsterService);
+    private LobsterTransformationService: LobsterTransformationService = DI.get(LobsterTransformationService);
     private DataGenTransformationService: DataGenTransformationService = DI.get(DataGenTransformationService);
     private authService: AuthService;
 

@@ -5,7 +5,7 @@ import { QueryBuilder } from "../util/QueryBuilder";
 var transform = require("node-json-transform").transform;
 import * as moment from 'moment';
 
-export class LobsterService {
+export class LobsterTransformationService {
     private logger: Logger;
 
     constructor() {
@@ -16,7 +16,7 @@ export class LobsterService {
     async lobData(req: any, res?: any, isError?:boolean): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
-                //console.log('Request Body inside LobsterService', req)    
+                //console.log('Request Body inside LobsterTransformationService', req)    
                 var message = req
                 var baseMap = {
                     item : {

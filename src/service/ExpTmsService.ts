@@ -5,7 +5,7 @@ import { ExpResponseDataRepository } from "../data/repository/ExpResponseDataRep
 import { VendorBookingRepository } from "../data/repository/VendorBookingRepository";
 import { AddressRepository } from "../data/repository/AddressRepository";
 
-import { LobsterService } from "../service/LobsterService";
+import { LobsterTransformationService } from "./LobsterTransformationService";
 import { ExpResponseDataService } from "../service/ExpResponseDataService";
 
 var fs = require('fs');
@@ -16,7 +16,7 @@ export class ExpTmsService {
     private logger: Logger;
     private ExpTmsDataRepository: ExpTmsDataRepository;
     private ExpResponseDataRepository: ExpResponseDataRepository;
-    private LobsterService: LobsterService;
+    private LobsterTransformationService: LobsterTransformationService;
     private ExpResponseDataService: ExpResponseDataService;
     private vendorBoookingRepository:VendorBookingRepository;
     private addressRepository:AddressRepository;
@@ -25,7 +25,7 @@ export class ExpTmsService {
         this.logger = DI.get(Logger);
         this.ExpTmsDataRepository = DI.get(ExpTmsDataRepository);
         this.ExpResponseDataRepository = DI.get(ExpResponseDataRepository);
-        this.LobsterService = DI.get(LobsterService);
+        this.LobsterTransformationService = DI.get(LobsterTransformationService);
         this.ExpResponseDataService = DI.get(ExpResponseDataService);
         this.addressRepository = DI.get(AddressRepository);
         this.vendorBoookingRepository = DI.get(VendorBookingRepository);
@@ -213,9 +213,9 @@ export class ExpTmsService {
 
                     //Construct final Loster POST message
                     if(tmsReponseItem.dataValues.statusCode == 201){
-                        conMessage = await this.LobsterService.lobData(message, res);
+                        conMessage = await this.LobsterTransformationService.lobData(message, res);
                     }else{
-                        conMessage = await this.LobsterService.lobData(errorMessage, res, true);
+                        conMessage = await this.LobsterTransformationService.lobData(errorMessage, res, true);
                     }
                     
                     console.log("conMessage",conMessage)
