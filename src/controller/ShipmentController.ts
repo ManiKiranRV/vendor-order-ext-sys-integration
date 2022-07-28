@@ -8,6 +8,7 @@ import { ExpResponseDataService } from "../service/ExpResponseDataService";
 import { LobsterService } from "../service/LobsterService";
 import { AuthService } from "../service/AuthService";
 
+import { DataGenTransformationService } from "../service/DataGenTransformationService";
 
 var request = require('request');
 
@@ -16,6 +17,7 @@ export class ShipmentController implements Controller {
     private ExpTmsService: ExpTmsService = DI.get(ExpTmsService)
     private ExpResponseDataService: ExpResponseDataService = DI.get(ExpResponseDataService)
     private LobsterService: LobsterService = DI.get(LobsterService);
+    private DataGenTransformationService: DataGenTransformationService = DI.get(DataGenTransformationService);
     private authService: AuthService;
 
     constructor(){
@@ -102,7 +104,26 @@ export class ShipmentController implements Controller {
                 res.json(response);
 
             }
-        });        
+        });  
+        
+        
+        //DataGen
+
+        router.post('/datagen',async (req, res) => {
+            try {
+
+                var pubMessage;
+
+                pubMessage = await this.DataGenTransformationService.dataGenTransformation(res);
+
+                res.json({data: pubMessage });
+                
+            } catch (error) {
+                let response: any = { status: { code: 'FAILURE', message: error } }
+                res.json(response);
+
+            }
+        }); 
 
         return router;
     }

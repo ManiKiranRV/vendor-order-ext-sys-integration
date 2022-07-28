@@ -44,6 +44,7 @@ export class ExpTmsService {
                 for (let i = 0; i <= tmsDataList.res.length; i++) {
                     //Loop through tmsDataList variable and get individual message i.e tmsDataItem["message"]
                     var message = tmsDataList.res[i].dataValues.message
+                    //console.log("customerOrderNumber---------->",tmsDataList.res[i].dataValues.message.principalRef)
                     let customerOrderNumber = tmsDataList.res[i].dataValues.message.principalRef+"";
                     console.log("customerOrderNumber",customerOrderNumber)
                     //Remove the extraneous fields from message
@@ -72,8 +73,8 @@ export class ExpTmsService {
                     //console.log("OPTIONS---->",options)
                     var result = await request(options, async (error: any, response: any) => {
                         if (error) throw new Error(error);
-                        // console.log("response--->",response.body)
-                        // console.log("response.body.shipmentTrackingNumber", JSON.parse(response.body).shipmentTrackingNumber)
+                        //console.log("response--->",response.body)
+                        console.log("shipmentTrackingNumber----->", JSON.parse(response.body).shipmentTrackingNumber)
                         // console.log(`Reponse from TMS system is ${response.body}`);
                         var expres = {
                             statusCode: response.statusCode,
@@ -169,7 +170,14 @@ export class ExpTmsService {
                     var resp = JSON.parse(tmsReponseItem.dataValues.message);
                     //Derive accountNumber to be sent to LOSTER system
                     let vendorOrderItem = (await this.vendorBoookingRepository.get({"customer_order_number":tmsReponseItem["customer_order_number"]}))[0];
-                    let addressList = await this.addressRepository.get({"address_type":"consignor","parent_id":vendorOrderItem["id"]});
+                    if (vendorOrderItem.length > 0){
+                        var id = vendorOrderItem["id"]
+                    }else{
+                        //Save Error Message to exp_response_data table --> Need to Impliment
+                        break
+                    }
+                    
+                    let addressList = await this.addressRepository.get({"address_type":"consignor","parent_id":id});
                     let accountNumber;
                     
                     if(addressList.length > 0){
@@ -226,8 +234,9 @@ export class ExpTmsService {
                     var result = await request(options, async (error: any, response: any) => {
                         if (error) throw new Error(error);
                         //Save response from Lobster system to exp_response table
+                        
                         console.log("response----->",response.body)
-                        var expResponse = await this.ExpResponseDataRepository.update({ "parent_uuid": tmsReponseItem.parent_uuid }, { "status": response.body });
+                        var expResponse = await this.ExpResponseDataRepository.update({ "parent_uuid": tmsReponseItem.parent_uuid }, { "status": response.body ,"request": JSON.stringify(options)});
                         //console.log("Response---->", expResponse)
                         
                     });
