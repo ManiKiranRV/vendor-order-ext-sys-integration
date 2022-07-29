@@ -116,18 +116,12 @@ export class LobsterTransformationService {
                         },
                         {
                             run: function(val: any) { 
-                                var body
-                                if(isError){
-                                    
-                                    body = {
-                                        "Error": [message.error]
-                                            
-                                    }
-                                }else{
-                                    body = {
-                                        "Events": [message.content.body]
-                                    }
-                                }
+                                
+                                
+                            var body = {
+                                "Events": [message.content.body]
+                            }
+                                
                                 
     
                                 return body; 

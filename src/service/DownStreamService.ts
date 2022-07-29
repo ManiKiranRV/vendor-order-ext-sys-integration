@@ -6,6 +6,7 @@ import { GenericUtil } from "../util/GenericUtil";
 import { Response } from "express";
 import { NextFunction, Request } from "express-serve-static-core";
 import { ExpResponseDataRepository } from "../data/repository/ExpResponseDataRepository";
+import { UpdateCoreTablesService } from "./UpdateCoreTablesService";
 var request = require('request');
 
 
@@ -17,12 +18,13 @@ export class DownStreamService {
     private logger: Logger;
     private expTmsDataRepository: ExpTmsDataRepository;
     private expResponseDataRepository: ExpResponseDataRepository;
-
+    private UpdateCoreTablesService: UpdateCoreTablesService;
 
     constructor() {
         this.logger = DI.get(Logger);
         this.expTmsDataRepository = DI.get(ExpTmsDataRepository);
         this.expResponseDataRepository = DI.get(ExpResponseDataRepository);
+        this.UpdateCoreTablesService = DI.get(UpdateCoreTablesService);
     }
 
     async expBookingReqDownStreamHandler(message: any): Promise<any> {
@@ -104,6 +106,16 @@ export class DownStreamService {
     async consumeTMSResponse(expResponseItem: any): Promise<any> {
 
         let expRespCreateObj = { "customer_order_number":expResponseItem["customer_order_number"],"message": expResponseItem["message"], "shipmentTrackingNumber": expResponseItem["shipmentTrackingNumber"], status: "UNPROCESSED","statusCode":expResponseItem["statusCode"],"parent_uuid":expResponseItem["parent_uuid"] };
+        
+        
+        //Update Core Tables
+
+        var dataObj = expResponseItem
+
+        console.log("dataObj",dataObj)
+
+        var updateDocument = await this.UpdateCoreTablesService.updateTmsResCoreTables(dataObj)
+
         return await this.expResponseDataRepository.create(expRespCreateObj);
     }
 

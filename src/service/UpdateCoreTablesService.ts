@@ -31,13 +31,17 @@ export class UpdateCoreTablesService {
         var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss") + ' UTC'+moment.utc(today).format("Z")
         var whereObj = { "customer_order_number":req.customer_order_number }
         console.log("req.customer_order_number",req.statusCode, req.customer_order_number,req.shipmentTrackingNumber)
+        var vendorBookingObj
         //Update VendorBooking Table based on Error/Success status
         if(req.statusCode == 201){
-            console.log("Test")
-            var vendorBookingObjSuc = await this.vendorBoookingRepository.update(whereObj,{
+            
+            vendorBookingObj = {
                 "order_status": process.env.VEN_BOOKING_CON_STATUS,
                 "hawb":req.shipmentTrackingNumber,
-            })
+                "response_time_stamp":todayUTC
+            }
+            console.log("vendorBookingObj--->",vendorBookingObj)
+            var vendorBookingObjSuc = await this.vendorBoookingRepository.update(whereObj,vendorBookingObj)
 
             //Update Documents Table
 
@@ -53,13 +57,16 @@ export class UpdateCoreTablesService {
             
 
         }else{
-            var vendorBookingObjErr = await this.vendorBoookingRepository.update(whereObj,{
+
+            vendorBookingObj = {
                 "order_status": process.env.VEN_BOOKING_ERR_STATUS,
                 "response_error_code":jsonObj.status,
                 "response_error_title":jsonObj.title,
                 "response_error_detail":jsonObj.detail,
                 "response_time_stamp":todayUTC
-            })
+            }
+            console.log("vendorBookingObj--->",vendorBookingObj)
+            var vendorBookingObjErr = await this.vendorBoookingRepository.update(whereObj,vendorBookingObj)
         }
 
     }
