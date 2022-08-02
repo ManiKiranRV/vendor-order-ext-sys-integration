@@ -78,7 +78,7 @@ export class ShipmentController implements Controller {
 
                 var lobMessage;
 
-                lobMessage = await this.LobsterService.postToLobsterSystem(res);
+                lobMessage = await this.LobsterService.postTmsResponseToLobster();
 
                 res.json({lobdata: lobMessage });
                 
@@ -87,7 +87,19 @@ export class ShipmentController implements Controller {
                 res.json(response);
 
             }
-        });             
+        }); 
+        
+        
+        //Post Events Data to Lobster
+        router.post('/events-to-lobster',async (req, res) => {
+            try {
+                let result = await this.LobsterService.postEventsToLobster();
+                res.json({result});                
+            } catch (error) {
+                let response: any = { status: { code: 'FAILURE', message: error } }
+                res.json(response);
+            }
+        }); 
         
         //DATAGEN
 
@@ -96,7 +108,7 @@ export class ShipmentController implements Controller {
 
                 var pubMessage;
 
-                pubMessage = await this.DataGenTransformationService.dataGenTransformation(res);
+                pubMessage = await this.DataGenTransformationService.dataGenTransformation("VND_ORD_LLP_TMS_DATAGEN");
 
                 res.json({data: pubMessage });
                 

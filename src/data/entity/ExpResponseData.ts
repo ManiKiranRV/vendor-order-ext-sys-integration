@@ -6,9 +6,10 @@ export interface ExpResponseDataAttributes {
   message: object;
   shipmentTrackingNumber?: string;
   customer_order_number?: string;
-  statusCode: string;
-  status: string;
-  parent_uuid: string;
+  statusCode?: string;
+  status?: string;
+  error_reason?: string;
+  parent_uuid?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -16,7 +17,7 @@ export interface ExpResponseDataAttributes {
 
 export type ExpResponseDataPk = "id";
 export type ExpResponseDataId = ExpResponseData[ExpResponseDataPk];
-export type ExpResponseDataOptionalAttributes = "id" | "shipmentTrackingNumber" | "customer_order_number" | "createdAt" | "updatedAt" | "deletedAt";
+export type ExpResponseDataOptionalAttributes = "id" | "shipmentTrackingNumber" | "customer_order_number" | "statusCode" | "status" | "error_reason" | "parent_uuid" | "createdAt" | "updatedAt" | "deletedAt";
 export type ExpResponseDataCreationAttributes = Optional<ExpResponseDataAttributes, ExpResponseDataOptionalAttributes>;
 
 export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpResponseDataCreationAttributes> implements ExpResponseDataAttributes {
@@ -24,9 +25,10 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
   message!: object;
   shipmentTrackingNumber?: string;
   customer_order_number?: string;
-  statusCode!: string;
-  status!: string;
-  parent_uuid!: string;
+  statusCode?: string;
+  status?: string;
+  error_reason?: string;
+  parent_uuid?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -54,15 +56,19 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
     },
     statusCode: {
       type: DataTypes.STRING(100),
-      allowNull: false
+      allowNull: true
     },
     status: {
       type: DataTypes.STRING(100),
-      allowNull: false
+      allowNull: true
+    },
+    error_reason: {
+      type: DataTypes.TEXT,
+      allowNull: true
     },
     parent_uuid: {
       type: DataTypes.STRING(1000),
-      allowNull: false
+      allowNull: true
     }
   }, {
     sequelize,

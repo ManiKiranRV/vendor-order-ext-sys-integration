@@ -55,7 +55,7 @@ export class Documents extends Model<DocumentsAttributes, DocumentsCreationAttri
       allowNull: true
     },
     label: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.TEXT,
       allowNull: true
     }
   }, {

@@ -88,7 +88,7 @@ class Main {
                     this.logger.log('cron Execution Success for LLP to CLIENT2');
                 });
                 var client2ToLob = cron.job(process.env.CRON3, async () => {
-                    await lobsterService.postToLobsterSystem();
+                    await lobsterService.postTmsResponseToLobster();
                     this.logger.log('cron Execution Success for CLIENT2 to Lobster');
                 });
                 if(process.env.LLP_TMS_CRON=="ON"){

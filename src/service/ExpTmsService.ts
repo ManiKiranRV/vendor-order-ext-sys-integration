@@ -25,12 +25,13 @@ export class ExpTmsService {
     }
 
 
-    //LLP-TMS & Persisting the TMS Response//
+    /*
+        Send EXP Message to TMS System(From LLP Node) & Persisting the TMS Response
+    */
     async ExpDhl(): Promise<any> {
 
         return new Promise(async (resolve, reject) => {
             try {
-
                 //Take data from exp_tms_data table and assign to tmsDataList variable
                 var tmsDataList = await this.getAllExpTmsData()
                 //console.log("tmsDataList",tmsDataList.res, tmsDataList.res.length)

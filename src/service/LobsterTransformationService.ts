@@ -8,26 +8,26 @@ import * as moment from 'moment';
 export class LobsterTransformationService {
     private logger: Logger;
 
+
     constructor() {
         this.logger = DI.get(Logger);
     }
 
 
-    async lobData(req: any, res?: any, isError?:boolean): Promise<any> {
+    async lobData(message: any, isError?: boolean): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
                 //console.log('Request Body inside LobsterTransformationService', req)    
-                var message = req
                 var baseMap = {
-                    item : {
+                    item: {
                         "header": "content",
                         "body": "content"
                     },
                     operate: [
                         {
-                            run: function(val: any) { 
+                            run: function (val: any) {
                                 var today = new Date();
-                                var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss") + ' UTC'+moment.utc(today).format("Z")
+                                var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss") + ' UTC' + moment.utc(today).format("Z")
                                 var _header = {
                                     "Transmission": {
                                         "toEntity": "Kalmar",
@@ -40,39 +40,39 @@ export class LobsterTransformationService {
                                         "PrincipalreferenceNumber": message.content.PrincipalreferenceNumber,
                                     }
                                 }
-                                return _header; 
+                                return _header;
                             },
                             on: "header"
                         },
                         {
-                            run: function(val: any) { 
+                            run: function (val: any) {
                                 var body
-                                if(isError){
-                                    
+                                if (isError) {
+
                                     body = {
                                         "Error": [message.error]
-                                            
+
                                     }
-                                }else{
+                                } else {
                                     body = {
                                         "documents": message.content.documents
                                     }
                                 }
-                                
-    
-                                return body; 
+
+
+                                return body;
                             },
                             on: "body"
                         }
                     ]
                 };
-                    
+
                 //console.log("baseMap",baseMap)
-    
+
                 var tdata = transform(message, baseMap);
 
                 //console.log("tdata",tdata)
-                         
+
                 resolve({ tdata })
 
             } catch (e) {
@@ -83,21 +83,19 @@ export class LobsterTransformationService {
 
     }
 
-    async eventLobData(req: any, res?: any, isError?:boolean): Promise<any> {
-        return new Promise(async (resolve, reject) => {
-            try {
-                //console.log('Request Body inside LobsterTransformationService', req)    
-                var message = req
+    async transformEvents(message: any, res?: any, isError?: boolean): Promise<any> {
+       return new Promise(async (resolve, reject) => {
+            try {                
                 var baseMap = {
-                    item : {
+                    item: {
                         "header": "content",
                         "body": "content"
                     },
                     operate: [
                         {
-                            run: function(val: any) { 
+                            run: function (val: any) {
                                 var today = new Date();
-                                var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss") + ' UTC'+moment.utc(today).format("Z")
+                                var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss") + ' UTC' + moment.utc(today).format("Z")
                                 var _header = {
                                     "Transmission": {
                                         "toEntity": "Kalmar",
@@ -105,42 +103,37 @@ export class LobsterTransformationService {
                                         "datacreationDate": todayUTC//"2022-06-29 06:21:57 UTC+02:00"
                                     },
                                     "businessKeys": {
-                                        "accountNumber": message.content.accountNumber,
-                                        "HAWB": message.content.HAWB,
-                                        "PrincipalreferenceNumber": message.content.PrincipalreferenceNumber,
+                                        "accountNumber": message.shipperId,
+                                        "HAWB": message.hawb,
+                                        "PrincipalreferenceNumber": message.customerOrderNumber,
                                     }
                                 }
-                                return _header; 
+                                return _header;
                             },
                             on: "header"
                         },
                         {
-                            run: function(val: any) { 
-                                
-                                
-                            var body = {
-                                "Events": [message.content.body]
-                            }
-                                
-                                
-    
-                                return body; 
+                            run: function (val: any) {
+
+
+                                var body = {
+                                    "Events": message.events
+                                }
+
+
+
+                                return body;
                             },
                             on: "body"
                         }
                     ]
                 };
-                    
-                //console.log("baseMap",baseMap)
-    
-                var tdata = transform(message, baseMap);
 
-                //console.log("tdata",tdata)
-                         
-                resolve({ tdata })
+
+                resolve(await transform(message, baseMap));
 
             } catch (e) {
-                resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: e } })
+                reject(e)
             }
         })
 

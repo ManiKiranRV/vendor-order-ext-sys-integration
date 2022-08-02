@@ -36,7 +36,6 @@ export class DownStreamController implements Controller {
             }
         });
 
-
         router.post('/consume-tms-response', async (req, res) => {
             try {
                 let expResponseList;
@@ -54,9 +53,6 @@ export class DownStreamController implements Controller {
                 res.json(response);
             }
         });
-
-
-
 
         return router;
     }

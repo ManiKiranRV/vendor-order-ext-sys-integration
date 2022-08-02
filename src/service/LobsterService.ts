@@ -5,6 +5,8 @@ import { VendorBookingRepository } from "../data/repository/VendorBookingReposit
 import { AddressRepository } from "../data/repository/AddressRepository";
 
 import { LobsterTransformationService } from "./LobsterTransformationService";
+import { EventsToLobsterRepository } from "../data/repository/EventsToLobsterRepository";
+import { EventsRepository } from "../data/repository/EventsRepository";
 
 var fs = require('fs');
 
@@ -12,71 +14,71 @@ var request = require('request');
 
 export class LobsterService {
     private logger: Logger;
-    private ExpResponseDataRepository: ExpResponseDataRepository;
-    private LobsterTransformationService: LobsterTransformationService;
-    private vendorBoookingRepository:VendorBookingRepository;
-    private addressRepository:AddressRepository;
+    private expResponseDataRepository: ExpResponseDataRepository;
+    private lobsterTransformationService: LobsterTransformationService;
+    private vendorBoookingRepository: VendorBookingRepository;
+    private addressRepository: AddressRepository;
+    private eventsToLobsterRepository: EventsToLobsterRepository;
+    private eventsRepository: EventsRepository;
 
     constructor() {
         this.logger = DI.get(Logger);
-        this.ExpResponseDataRepository = DI.get(ExpResponseDataRepository);
-        this.LobsterTransformationService = DI.get(LobsterTransformationService);
+        this.expResponseDataRepository = DI.get(ExpResponseDataRepository);
+        this.lobsterTransformationService = DI.get(LobsterTransformationService);
         this.addressRepository = DI.get(AddressRepository);
         this.vendorBoookingRepository = DI.get(VendorBookingRepository);
+        this.eventsToLobsterRepository = DI.get(EventsToLobsterRepository);
+        this.eventsRepository = DI.get(EventsRepository);
     }
 
 
-    //CLIENT2-LOBSTER-VendorOrder//
 
-    async postToLobsterSystem( res?: any): Promise<any> {
+    async postTmsResponseToLobster(): Promise<any> {
 
         return new Promise(async (resolve, reject) => {
             try {
-                //Get Response all UNPROCESSED Messages from exp_response_data table 
-                let tmsResponseList: any = await this.ExpResponseDataRepository.get({ "status": "UNPROCESSED" })
+                //Get all UNPROCESSED TMS Response Messages from exp_response_data table 
+                let tmsResponseList: any = await this.expResponseDataRepository.get({ "status": "UNPROCESSED" })
                 //Loop the UNPROCESSED rows and submit to LOBSTER SYSTEM
                 for (let tmsReponseItem of tmsResponseList) {
-                    console.log("tmsReponseItem.dataValues.parent_uuid",tmsReponseItem.dataValues.parent_uuid)
-                    let uuid = tmsReponseItem.dataValues.parent_uuid
-                    console.log("uuid",uuid)
                     var resp = JSON.parse(tmsReponseItem.dataValues.message)
                     var conMessage
                     var resp = JSON.parse(tmsReponseItem.dataValues.message);
                     //Derive accountNumber to be sent to LOSTER system
-                    let vendorOrderItem = (await this.vendorBoookingRepository.get({"customer_order_number":tmsReponseItem["customer_order_number"]}))[0];
-                    if (vendorOrderItem.length > 0){
-                        var id = vendorOrderItem["id"]
-                    }else{
-                        //Save Error Message to exp_response_data table --> Need to Impliment
-                        break
+                    let vendorOrderItem = (await this.vendorBoookingRepository.get({ "customer_order_number": tmsReponseItem["customer_order_number"] }));
+                    if (vendorOrderItem.length > 0) {
+                        var id = vendorOrderItem[0]["id"]
+                    } else {
+                        //Save Error Message to exp_response_data table
+                        await this.expResponseDataRepository.update({ "id": tmsReponseItem.id }, { "status": "ERROR", "error_reason": `No Vendor Booking Found with customer_order_number=${tmsReponseItem["customer_order_number"]}` });
+                        continue;
                     }
-                    
-                    let addressList = await this.addressRepository.get({"address_type":"consignor","parent_id":id});
+
+                    let addressList = await this.addressRepository.get({ "address_type": "consignor", "parent_id": id });
                     let accountNumber;
-                    
-                    if(addressList.length > 0){
+
+                    if (addressList.length > 0) {
                         accountNumber = addressList[0]["address_id"];
-                    }else{
+                    } else {
                         accountNumber = "";
                     }
                     console.log(`Account Number is ${accountNumber}`)
-                    
+
                     var message = {
-                        "content":{
+                        "content": {
                             "accountNumber": accountNumber,
                             "HAWB": resp.shipmentTrackingNumber,
                             "PrincipalreferenceNumber": tmsReponseItem["customer_order_number"],
                             "documents": resp.documents
                         }
                     };
-                    
-                    //Removing few fields in the error message
+
+                    //Removing extraneous fields in the error message
                     var errorBody = JSON.parse(tmsReponseItem.dataValues.message)
                     delete errorBody["instance"];
                     delete errorBody["message"];
-                    console.log("errorBody--------->",errorBody)
                     var errorMessage = {
-                        "content":{
+                        "content": {
                             "accountNumber": accountNumber,
                             "HAWB": resp.shipmentTrackingNumber,
                             "PrincipalreferenceNumber": tmsReponseItem["customer_order_number"],
@@ -86,14 +88,14 @@ export class LobsterService {
                     };
 
                     //Construct final Loster POST message
-                    if(tmsReponseItem.dataValues.statusCode == 201){
-                        conMessage = await this.LobsterTransformationService.lobData(message, res);
-                    }else{
-                        conMessage = await this.LobsterTransformationService.lobData(errorMessage, res, true);
+                    if (tmsReponseItem.dataValues.statusCode == 201) {
+                        conMessage = await this.lobsterTransformationService.lobData(message);
+                    } else {
+                        conMessage = await this.lobsterTransformationService.lobData(errorMessage, true);
                     }
-                    
-                    console.log("conMessage",conMessage)
-                
+
+                    console.log("conMessage", conMessage)
+
                     var options = {
                         'method': 'POST',
                         'url': process.env.LOBSTER_POST_URL,
@@ -101,29 +103,67 @@ export class LobsterService {
                             'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
                             'Content-Type': 'text/plain'
                         },
-                       body: JSON.stringify(conMessage.tdata)
+                        body: JSON.stringify(conMessage.tdata)
                     };
 
                     this.logger.log(`Lobster Options is ${JSON.stringify(options)}`);
                     var result = await request(options, async (error: any, response: any) => {
                         if (error) throw new Error(error);
                         //Save response from Lobster system to exp_response table
-                        
-                        console.log("response----->",response.body)
-                        var expResponse = await this.ExpResponseDataRepository.update({ "parent_uuid": tmsReponseItem.parent_uuid }, { "status": response.body ,"request": JSON.stringify(options)});
+
+                        console.log("response----->", response.body)
+                        var expResponse = await this.expResponseDataRepository.update({ "id": tmsReponseItem.id }, { "status": response.body, "request": JSON.stringify(options) });
                         //console.log("Response---->", expResponse)
-                        
+
                     });
-                    resolve ({ 'status': "Success" })
+                    resolve({ 'status': "Success" })
                 }
-            } catch (e) {
-                resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: e } })
+            } catch (error) {
+                //Update processing_status of events table to ERROR
+                await this.expResponseDataRepository.update({ "id": id }, { "status": "ERROR", "error_reason": error });
+                resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: error } })
             }
         })
     }
 
-    async postEventToLobster(): Promise<any> {
-        //Need to be developed 
+    async postEventsToLobster(): Promise<any> {
+        //Get Data from EVENTS_TO_LOBSTER View
+        let evenntsDataToLobster = await this.eventsToLobsterRepository.get({});
+
+        let transformedEventsData: any;
+        let options: any;
+        let eventsUpdateObj: any;
+        let eventsUpdateWhereObj: any;
+        for (let evenntsDataToLobsterItem of evenntsDataToLobster) {
+            try {
+                //Only Hawb should be enough as the events table will only contain the events that should be sent to LOBSTER System
+                eventsUpdateWhereObj = { "hawb": evenntsDataToLobsterItem["hawb"] };
+                eventsUpdateObj = { "processing_status": "SENT" }
+                transformedEventsData = await this.lobsterTransformationService.transformEvents(evenntsDataToLobsterItem);
+                options = {
+                    'method': 'POST',
+                    'url': process.env.LOBSTER_POST_URL,
+                    'headers': {
+                        'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
+                        'Content-Type': 'text/plain'
+                    },
+                    body: JSON.stringify(transformedEventsData)
+                };
+
+                this.logger.log(`Lobster Options is ${JSON.stringify(options)}`);
+                await request(options, async (error: any, response: any) => {
+                    if (error) throw new Error(error);
+                    //Update processing_status of events table to SENT
+                    await this.eventsRepository.update(eventsUpdateWhereObj, eventsUpdateObj);
+                });
+            } catch (error) {
+                //Update processing_status of events table to ERROR
+                eventsUpdateObj = { "processing_status": "ERROR", "error_reason": error };
+                await this.eventsRepository.update(eventsUpdateWhereObj, eventsUpdateObj);
+            }
+        }
     }
+
+
 
 }

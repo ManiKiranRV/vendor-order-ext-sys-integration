@@ -5,7 +5,7 @@ export interface InvoiceDetailsAttributes {
   id: number;
   customerordernumber?: string;
   mwab?: string;
-  hwab?: string;
+  hawb?: string;
   customerreference?: string;
   typecode?: string;
   uploadstatus?: string;
@@ -22,18 +22,20 @@ export interface InvoiceDetailsAttributes {
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
+  additionalcharge?: number;
+  additionalchargetype?: string;
 }
 
 export type InvoiceDetailsPk = "id";
 export type InvoiceDetailsId = InvoiceDetails[InvoiceDetailsPk];
-export type InvoiceDetailsOptionalAttributes = "id" | "customerordernumber" | "mwab" | "hwab" | "customerreference" | "typecode" | "uploadstatus" | "invoicenumber" | "invoicedate" | "declaredvalue" | "declaredvaluecurrency" | "incoterm" | "description" | "responseerrorcode" | "responseerrortitle" | "responseerrordetail" | "responsetimestamp" | "createdAt" | "updatedAt" | "deletedAt";
+export type InvoiceDetailsOptionalAttributes = "id" | "customerordernumber" | "mwab" | "hawb" | "customerreference" | "typecode" | "uploadstatus" | "invoicenumber" | "invoicedate" | "declaredvalue" | "declaredvaluecurrency" | "incoterm" | "description" | "responseerrorcode" | "responseerrortitle" | "responseerrordetail" | "responsetimestamp" | "createdAt" | "updatedAt" | "deletedAt" | "additionalcharge" | "additionalchargetype";
 export type InvoiceDetailsCreationAttributes = Optional<InvoiceDetailsAttributes, InvoiceDetailsOptionalAttributes>;
 
 export class InvoiceDetails extends Model<InvoiceDetailsAttributes, InvoiceDetailsCreationAttributes> implements InvoiceDetailsAttributes {
   id!: number;
   customerordernumber?: string;
   mwab?: string;
-  hwab?: string;
+  hawb?: string;
   customerreference?: string;
   typecode?: string;
   uploadstatus?: string;
@@ -50,6 +52,8 @@ export class InvoiceDetails extends Model<InvoiceDetailsAttributes, InvoiceDetai
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
+  additionalcharge?: number;
+  additionalchargetype?: string;
 
 
   static initModel(sequelize: Sequelize.Sequelize): typeof InvoiceDetails {
@@ -68,8 +72,8 @@ export class InvoiceDetails extends Model<InvoiceDetailsAttributes, InvoiceDetai
       type: DataTypes.STRING(45),
       allowNull: true
     },
-    hwab: {
-      type: DataTypes.STRING(45),
+    hawb: {
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     customerreference: {
@@ -122,6 +126,14 @@ export class InvoiceDetails extends Model<InvoiceDetailsAttributes, InvoiceDetai
     },
     responsetimestamp: {
       type: DataTypes.DATE,
+      allowNull: true
+    },
+    additionalcharge: {
+      type: DataTypes.DOUBLE,
+      allowNull: true
+    },
+    additionalchargetype: {
+      type: DataTypes.STRING(45),
       allowNull: true
     }
   }, {
