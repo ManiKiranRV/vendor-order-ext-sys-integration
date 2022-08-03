@@ -65,7 +65,7 @@ export class DataGenTransformationService implements BaseService {
                 objJsonStr["PlannedShippingDateTime"] =  vendBkngItem[0]["planned_shipping_date_and_time"];
                 objJsonStr["ShipmentCreationDateTime"] = vendBkngItem[0]["shipment_creation_date_time"];
 
-               //  console.log("objJsonStr------->", objJsonStr)
+                console.log("objJsonStr------->", objJsonStr)
                 //Converting the response[i] to base64 formate
 
                 objJsonB64 = Buffer.from(JSON.stringify({"body":objJsonStr})).toString("base64");

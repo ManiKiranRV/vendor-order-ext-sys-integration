@@ -186,7 +186,7 @@ export class DownStreamService {
 
                 console.log("expres----->\n\n",expres)
 
-                console.log("Response ")
+                console.log("Response-------->\n\n",Buffer.from(JSON.stringify({"body":expres})).toString("base64"))
                 //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
                 var expResponse = await this.ExpResponseDataRepository.create(expres)
 
@@ -220,20 +220,25 @@ export class DownStreamService {
         return new Promise(async (resolve, reject) => {
             try {
                 //Get all UNPROCESSED TMS Response Messages from exp_response_data table 
-                let tmsResponseList: any = await this.ExpResponseDataRepository.get({ "status": "UNPROCESSED" })
+                //let tmsResponseList: any = await this.ExpResponseDataRepository.get({ "status": "UNPROCESSED" })
                 //Loop the UNPROCESSED rows and submit to LOBSTER SYSTEM
-                for (let tmsReponseItem of tmsResponseList) {
-                    var resp = JSON.parse(tmsReponseItem.dataValues.message)
+                //for (let tmsReponseItem of tmsResponseList) {
+                    var baseMessage =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
+                    console.log("Data after converting base64---->/n/n",baseMessage)
+                    //var resp = JSON.parse(tmsReponseItem.dataValues.message)
                     var conMessage
-                    var resp = JSON.parse(tmsReponseItem.dataValues.message);
                     //Derive accountNumber to be sent to LOSTER system
-                    let vendorOrderItem = (await this.VendorBoookingRepository.get({ "customer_order_number": tmsReponseItem["customer_order_number"] }));
+                    console.log("baseMessage.customer_order_number-------->\n\n",baseMessage.customer_order_number)
+                    let vendorOrderItem = (await this.VendorBoookingRepository.get({ "customer_order_number": baseMessage.customer_order_number }));
+                    console.log("vendorOrderItem---->\n\n",vendorOrderItem)
+                    
                     if (vendorOrderItem.length > 0) {
                         var id = vendorOrderItem[0]["id"]
-                    } else {
+                        console.log("id----->\n\n",id)
+                    }else {
                         //Save Error Message to exp_response_data table
-                        await this.ExpResponseDataRepository.update({ "id": tmsReponseItem.id }, { "status": "ERROR", "error_reason": `No Vendor Booking Found with customer_order_number=${tmsReponseItem["customer_order_number"]}` });
-                        continue;
+                        await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": "ERROR", "error_reason": `No Vendor Booking Found with customer_order_number=${baseMessage["customer_order_number"]}` });
+                        //continue;
                     }
 
                     let addressList = await this.AddressRepository.get({ "address_type": "consignor", "parent_id": id });
@@ -241,6 +246,7 @@ export class DownStreamService {
 
                     if (addressList.length > 0) {
                         accountNumber = addressList[0]["address_id"];
+                        console.log("accountNumber----->\n\n",accountNumber)
                     } else {
                         accountNumber = "";
                     }
@@ -249,28 +255,31 @@ export class DownStreamService {
                     var message = {
                         "content": {
                             "accountNumber": accountNumber,
-                            "HAWB": resp.shipmentTrackingNumber,
-                            "PrincipalreferenceNumber": tmsReponseItem["customer_order_number"],
-                            "documents": resp.documents
+                            "HAWB": baseMessage.shipmentTrackingNumber,
+                            "PrincipalreferenceNumber": baseMessage.customer_order_number,
+                            "documents": JSON.parse(baseMessage.message).documents
                         }
                     };
 
+                    console.log("message----->\n\n",message)
+
                     //Removing extraneous fields in the error message
-                    var errorBody = JSON.parse(tmsReponseItem.dataValues.message)
+                    //var errorBody = JSON.parse(tmsReponseItem.dataValues.message)
+                    var errorBody = JSON.parse(baseMessage.message) //Need to check
                     delete errorBody["instance"];
                     delete errorBody["message"];
                     var errorMessage = {
                         "content": {
                             "accountNumber": accountNumber,
-                            "HAWB": resp.shipmentTrackingNumber,
-                            "PrincipalreferenceNumber": tmsReponseItem["customer_order_number"],
-                            "documents": resp.documents
+                            "HAWB": baseMessage.shipmentTrackingNumber,
+                            "PrincipalreferenceNumber": baseMessage.customer_order_number,
+                            "documents": JSON.parse(baseMessage.message).documents
                         },
                         "error": errorBody
                     };
 
                     //Construct final Loster POST message
-                    if (tmsReponseItem.dataValues.statusCode == 201) {
+                    if (baseMessage.statusCode == 201) {
                         conMessage = await this.LobsterTransformationService.lobData(message);
                     } else {
                         conMessage = await this.LobsterTransformationService.lobData(errorMessage, true);
@@ -294,12 +303,12 @@ export class DownStreamService {
                         //Save response from Lobster system to exp_response table
 
                         console.log("response----->", response.body)
-                        var expResponse = await this.ExpResponseDataRepository.update({ "id": tmsReponseItem.id }, { "status": response.body, "request": JSON.stringify(options) });
+                       //var expResponse = await this.ExpResponseDataRepository.update({ "id": tmsReponseItem.id }, { "status": response.body, "request": JSON.stringify(options) });
                         //console.log("Response---->", expResponse)
 
                     });
                     resolve({ 'status': "Success" })
-                }
+                //}
             } catch (error) {
                 //Update processing_status of events table to ERROR
                 await this.ExpResponseDataRepository.update({ "id": id }, { "status": "ERROR", "error_reason": error });

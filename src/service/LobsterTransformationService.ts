@@ -71,7 +71,7 @@ export class LobsterTransformationService {
 
                 var tdata = transform(message, baseMap);
 
-                //console.log("tdata",tdata)
+                console.log("tdata----->\n\n",tdata)
 
                 resolve({ tdata })
 
