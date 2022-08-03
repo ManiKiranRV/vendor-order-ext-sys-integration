@@ -36,6 +36,11 @@ export class DownStreamController implements Controller {
             }
         });
 
+        /*
+            **Downstream Wrapper which handles the TMS Response and posts it to LOBSTER system.
+            
+        */
+
         router.post('/consume-tms-response', async (req, res) => {
             try {
                 let expResponseList;

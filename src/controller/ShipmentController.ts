@@ -105,13 +105,9 @@ export class ShipmentController implements Controller {
 
         router.post('/datagen',async (req, res) => {
             try {
-
                 var pubMessage;
-
                 pubMessage = await this.DataGenTransformationService.dataGenTransformation("VND_ORD_LLP_TMS_DATAGEN");
-
-                res.json({data: pubMessage });
-                
+                res.json({data: pubMessage });                
             } catch (error) {
                 let response: any = { status: { code: 'FAILURE', message: error } }
                 res.json(response);
