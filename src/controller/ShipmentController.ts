@@ -10,6 +10,7 @@ import { LobsterService } from "../service/LobsterService";
 import { AuthService } from "../service/AuthService";
 
 import { DataGenTransformationService } from "../service/DataGenTransformationService";
+import { DownStreamService } from "../service/DownStreamService";
 
 var request = require('request');
 
@@ -20,6 +21,7 @@ export class ShipmentController implements Controller {
     private LlpClien2Service: LlpClien2Service = DI.get(LlpClien2Service);
     private LobsterService: LobsterService = DI.get(LobsterService);
     private DataGenTransformationService: DataGenTransformationService = DI.get(DataGenTransformationService);
+    private DownStreamService: DownStreamService = DI.get(DownStreamService);
     private authService: AuthService;
 
     constructor(){
@@ -51,18 +53,23 @@ export class ShipmentController implements Controller {
         });
 
     
-        //LLP-CLIENT2//  
+        //LLP-TMS & LLP-CLIENT2//  
 
-        router.post('/tmsResponse',async (req, res) => {
+        router.post('/tmsResponse',async (req:any, res) => {
             try {
 
-                var response;
+                console.log("Inside tmsResponse--->",req.body.transformedMessage)
 
-                console.log("Inside tmsResponse--->")
+                // var message = req.message
 
-                response = await this.LlpClien2Service.clientTmsResponse();
+                //Calling Downstream service from LLP to TMS
+                var downstreamToTmsSystem = await this.DownStreamService.downStreamToTmsSystem(req.body.transformedMessage,res)
 
-                res.json({lobdata: response });
+                // Datagen service ends TMS-Resp from LLP to Client2
+                //var response = await this.LlpClien2Service.clientTmsResponse();
+                var dataGen = await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
+
+                //res.json({lobdata: response });
                 
             } catch (error) {
                 let response: any = { status: { code: 'FAILURE', message: error } }
@@ -71,7 +78,23 @@ export class ShipmentController implements Controller {
             }
         });
 
-        //CLIENT2-LOBSTER//    
+        //CLIENT2-LOBSTER//
+        
+        router.post('/client-lobster-tms-resp',async (req:any, res) => {
+            try {
+
+                var lobMessage;
+
+                lobMessage = await this.DownStreamService.downStreamToLobsterSystem(req.body.transformedMessage,res);
+
+                res.json({lobdata: lobMessage });
+                
+            } catch (error) {
+                let response: any = { status: { code: 'FAILURE', message: error } }
+                res.json(response);
+
+            }
+        });         
 
         router.post('/lobsterData',async (req, res) => {
             try {

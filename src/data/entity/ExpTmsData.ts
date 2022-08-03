@@ -8,6 +8,7 @@ export interface ExpTmsDataAttributes {
   status?: string;
   token?: string;
   uuid?: string;
+  customer_order_number?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -15,7 +16,7 @@ export interface ExpTmsDataAttributes {
 
 export type ExpTmsDataPk = "id";
 export type ExpTmsDataId = ExpTmsData[ExpTmsDataPk];
-export type ExpTmsDataOptionalAttributes = "id" | "message" | "shipment_Tracking_Number" | "status" | "token" | "uuid" | "createdAt" | "updatedAt" | "deletedAt";
+export type ExpTmsDataOptionalAttributes = "id" | "message" | "shipment_Tracking_Number" | "status" | "token" | "uuid" | "customer_order_number" | "createdAt" | "updatedAt" | "deletedAt";
 export type ExpTmsDataCreationAttributes = Optional<ExpTmsDataAttributes, ExpTmsDataOptionalAttributes>;
 
 export class ExpTmsData extends Model<ExpTmsDataAttributes, ExpTmsDataCreationAttributes> implements ExpTmsDataAttributes {
@@ -25,6 +26,7 @@ export class ExpTmsData extends Model<ExpTmsDataAttributes, ExpTmsDataCreationAt
   status?: string;
   token?: string;
   uuid?: string;
+  customer_order_number?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -56,6 +58,10 @@ export class ExpTmsData extends Model<ExpTmsDataAttributes, ExpTmsDataCreationAt
     },
     uuid: {
       type: DataTypes.STRING(1000),
+      allowNull: true
+    },
+    customer_order_number: {
+      type: DataTypes.STRING(255),
       allowNull: true
     }
   }, {
