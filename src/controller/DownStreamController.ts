@@ -12,13 +12,14 @@ var request = require('request');
 
 export class DownStreamController implements Controller {
     private logger: Logger;
-    private downStreamService: DownStreamService;
+    private DownStreamService: DownStreamService;
     private expResponseDataRepository: ExpResponseDataRepository;
+    
 
 
     constructor() {
         this.logger = DI.get(Logger);
-        this.downStreamService = DI.get(DownStreamService);
+        this.DownStreamService = DI.get(DownStreamService);
         this.expResponseDataRepository = DI.get(ExpResponseDataRepository);
     }
 
@@ -27,7 +28,7 @@ export class DownStreamController implements Controller {
 
         router.post('/exp-bkng-rqst', AuthService.verifyToken, async (req: Request, res: Response, next: NextFunction) => {
             try {
-                let token = await this.downStreamService.expBookingReqDownStreamHandler(req.body.message);
+                let token = await this.DownStreamService.expBookingReqDownStreamHandler(req.body.message);
                 res.json({ "token": token })
             } catch (error) {
                 let response: any = { status: { code: 'FAILURE', message: error } }
@@ -50,7 +51,7 @@ export class DownStreamController implements Controller {
                     expResponseList = [req.body];
                 }
                 this.logger.log(`req.body is ${JSON.stringify(req.body)}`)
-                await this.downStreamService.consumeTMSResponse(req.body["tmsResponse"]);
+                await this.DownStreamService.consumeTMSResponse(req.body["tmsResponse"]);
                 res.json({ "token": "" });
 
             } catch (error) {
@@ -58,6 +59,54 @@ export class DownStreamController implements Controller {
                 res.json(response);
             }
         });
+
+        /*
+            **Downstream Wrapper which handles the TMS Response and persist response in LLP system.
+            
+        */ 
+
+        router.post('/tmsResponse',async (req:any, res) => {
+            try {
+                this.logger.log(`=============================================START-TMS To LLP DOWNSTREAM=======================================`)
+                this.logger.log(`BLESS REQUEST BODY is ${JSON.parse(req.body.message)}`);
+
+                //Calling Downstream service from LLP to TMS
+                var downstreamToTmsSystem = await this.DownStreamService.downStreamToTmsSystem(JSON.parse(req.body.message).transformedMessage,res)
+
+                //var response = await this.LlpClien2Service.clientTmsResponse();
+
+                res.json({ token:downstreamToTmsSystem });
+                this.logger.log(`=============================================END-TMS To LLP DOWNSTREAM=======================================`)
+                
+            } catch (error) {
+                let response: any = { status: { code: 'FAILURE', message: error } }
+                res.json(response);
+
+            }
+        });
+
+        /*
+            **Downstream Wrapper which handles the TMS Response and posts it to LOBSTER system.
+            
+        */
+        
+        router.post('/client-lobster-tms-resp',async (req:any, res) => {
+            try {
+
+                this.logger.log(`=============================================START-C2 To Lobster DOWNSTREAM=======================================`)
+                this.logger.log(`BLESS REQUEST BODY is ${JSON.parse(req.body.message)}`);
+
+                var lobMessage = await this.DownStreamService.downStreamToLobsterSystem(JSON.parse(req.body.message).transformedMessage,res);
+                res.json({token:lobMessage });
+                
+                this.logger.log(`=============================================END-C2 To Lobster DOWNSTREAM=======================================`)              
+                
+            } catch (error) {
+                let response: any = { status: { code: 'FAILURE', message: error } }
+                res.json(response);
+
+            }
+        });             
 
         return router;
     }

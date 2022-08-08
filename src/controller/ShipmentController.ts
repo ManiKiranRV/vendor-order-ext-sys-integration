@@ -53,24 +53,20 @@ export class ShipmentController implements Controller {
         });
 
     
-        //LLP-TMS & LLP-CLIENT2//  
+        //DOWNSTREAM LLP-TMS & LLP-CLIENT2//  
 
         router.post('/tmsResponse',async (req:any, res) => {
             try {
-                //this.logger.log(`BLESS REQUEST BODY stringify is ${JSON.stringify(req.body.message)}`);
-                //this.logger.log(`BLESS REQUEST BODY Messageis ${req.body.message}`);
-                this.logger.log(`BLESS REQUEST BODY parse Messageis ${JSON.parse(req.body.message)}`);
-                //this.logger.log(`BLESS REQUEST BODY typeof Messageis ${typeof (req.body.message)}`);
-                //console.log("Inside tmsResponse--->",req.body.transformedMessage)
-
-                // var message = req.message
+                this.logger.log(`=============================================START-TMS To LLP DOWNSTREAM=======================================`)
+                this.logger.log(`BLESS REQUEST BODY is ${JSON.parse(req.body.message)}`);
 
                 //Calling Downstream service from LLP to TMS
                 var downstreamToTmsSystem = await this.DownStreamService.downStreamToTmsSystem(JSON.parse(req.body.message).transformedMessage,res)
 
                 //var response = await this.LlpClien2Service.clientTmsResponse();
 
-                //res.json({lobdata: response });
+                res.json({ token:downstreamToTmsSystem });
+                this.logger.log(`=============================================END-TMS To LLP DOWNSTREAM=======================================`)
                 
             } catch (error) {
                 let response: any = { status: { code: 'FAILURE', message: error } }
@@ -79,22 +75,18 @@ export class ShipmentController implements Controller {
             }
         });
 
-        //CLIENT2-LOBSTER//
+        //DOWNSTREAM CLIENT2-LOBSTER//
         
         router.post('/client-lobster-tms-resp',async (req:any, res) => {
             try {
 
-                var lobMessage;
-this.logger.log(`=============================================START-C2 To Lobster DOWNSTREAM=======================================`)
-this.logger.log(`BLESS REQUEST BODY is ${JSON.stringify(req.body.message)}`);
-this.logger.log(`BLESS REQUEST is ${req}`);
+                this.logger.log(`=============================================START-C2 To Lobster DOWNSTREAM=======================================`)
+                this.logger.log(`BLESS REQUEST BODY is ${JSON.parse(req.body.message)}`);
 
-
-
-                lobMessage = await this.DownStreamService.downStreamToLobsterSystem(JSON.parse(req.body.message).transformedMessage,res);
-                this.logger.log(`=============================================END-C2 To Lobster DOWNSTREAM=======================================`)
-
-                res.json({lobdata: lobMessage });
+                var lobMessage = await this.DownStreamService.downStreamToLobsterSystem(JSON.parse(req.body.message).transformedMessage,res);
+                res.json({token:lobMessage });
+                
+                this.logger.log(`=============================================END-C2 To Lobster DOWNSTREAM=======================================`)              
                 
             } catch (error) {
                 let response: any = { status: { code: 'FAILURE', message: error } }
