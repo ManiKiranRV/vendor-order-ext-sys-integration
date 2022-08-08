@@ -35,7 +35,7 @@ export class DataGenTransformationService implements BaseService {
         }//Similary use cases to implement other DatagenMessage 
         console.log("fianlPublishMessage--------->", fianlPublishMessage)
         //Sending the Final Datagen messages Array to Message Service
-        await this.MessagingService.publishMessageToDataGen(fianlPublishMessage);
+        //await this.MessagingService.publishMessageToDataGen(fianlPublishMessage);
     }
 
     //Transformation service to build TMS RESPONSE data which is intended to send from LLP to CLIENT2
@@ -55,7 +55,9 @@ export class DataGenTransformationService implements BaseService {
         try {
             for (let tmsReponseItem of tmsResponseList) {
                 //Update the status in the response table of LLP to IN-PROGRESS. So that no other process picks the same record
-                await this.ExpResponseDataRepository.update({ "id": tmsReponseItem["id"] }, { "status": "IN-PROGRESS" });
+                
+                this.logger.log("customer_order_number-------->",tmsReponseItem["customer_order_number"])
+                await this.ExpResponseDataRepository.update({ "customer_order_number":tmsReponseItem["customer_order_number"] }, { "status": "IN-PROGRESS" });
                 
                 vendBkngItem = await this.vendorBookingRepository.get({"customer_order_number":tmsReponseItem["customer_order_number"]})
                 let objJsonStr = JSON.parse(JSON.stringify(tmsReponseItem));
@@ -89,7 +91,7 @@ export class DataGenTransformationService implements BaseService {
                 fianlPublishMessage.push(publishMessage);
 
                 //Update the status in the response table of LLP 
-                await this.ExpResponseDataRepository.update({ "id": tmsReponseItem["id"] }, { "status": "PROCESSED" });
+                await this.ExpResponseDataRepository.update({ "customer_order_number":tmsReponseItem["customer_order_number"] }, { "status": "PROCESSED" });
             }
             console.log("fianlPublishMessage------->", fianlPublishMessage)
             return fianlPublishMessage

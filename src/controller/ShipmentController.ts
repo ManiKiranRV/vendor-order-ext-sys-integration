@@ -57,17 +57,18 @@ export class ShipmentController implements Controller {
 
         router.post('/tmsResponse',async (req:any, res) => {
             try {
-
-                console.log("Inside tmsResponse--->",req.body.transformedMessage)
+                //this.logger.log(`BLESS REQUEST BODY stringify is ${JSON.stringify(req.body.message)}`);
+                //this.logger.log(`BLESS REQUEST BODY Messageis ${req.body.message}`);
+                this.logger.log(`BLESS REQUEST BODY parse Messageis ${JSON.parse(req.body.message)}`);
+                //this.logger.log(`BLESS REQUEST BODY typeof Messageis ${typeof (req.body.message)}`);
+                //console.log("Inside tmsResponse--->",req.body.transformedMessage)
 
                 // var message = req.message
 
                 //Calling Downstream service from LLP to TMS
-                var downstreamToTmsSystem = await this.DownStreamService.downStreamToTmsSystem(req.body.transformedMessage,res)
+                var downstreamToTmsSystem = await this.DownStreamService.downStreamToTmsSystem(JSON.parse(req.body.message).transformedMessage,res)
 
-                // Datagen service ends TMS-Resp from LLP to Client2
                 //var response = await this.LlpClien2Service.clientTmsResponse();
-                var dataGen = await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
 
                 //res.json({lobdata: response });
                 
@@ -84,8 +85,14 @@ export class ShipmentController implements Controller {
             try {
 
                 var lobMessage;
+this.logger.log(`=============================================START-C2 To Lobster DOWNSTREAM=======================================`)
+this.logger.log(`BLESS REQUEST BODY is ${JSON.stringify(req.body.message)}`);
+this.logger.log(`BLESS REQUEST is ${req}`);
 
-                lobMessage = await this.DownStreamService.downStreamToLobsterSystem(req.body.transformedMessage,res);
+
+
+                lobMessage = await this.DownStreamService.downStreamToLobsterSystem(JSON.parse(req.body.message).transformedMessage,res);
+                this.logger.log(`=============================================END-C2 To Lobster DOWNSTREAM=======================================`)
 
                 res.json({lobdata: lobMessage });
                 

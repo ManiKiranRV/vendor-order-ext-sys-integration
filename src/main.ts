@@ -13,13 +13,16 @@ import { AuthController } from './controller/AuthController';
 import { ExpTmsService } from "./service/ExpTmsService";
 import { LlpClien2Service } from "./service/LlpClien2Service";
 import { LobsterService } from "./service/LobsterService";
+const multer  = require('multer');
+
+var upload = multer();
 
 const expressApp: express.Application = express(); 
 var bodyParser = require('body-parser');            
 var cron = require('cron');
 expressApp.use(bodyParser.json({limit:'500mb'})); 
 expressApp.use(bodyParser.urlencoded({extended:true, limit:'500mb'})); 
-
+expressApp.use(upload.array());
 var schedule = require('node-schedule');
 var request = require('request');
 

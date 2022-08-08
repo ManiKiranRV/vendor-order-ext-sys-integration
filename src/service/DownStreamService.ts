@@ -12,6 +12,7 @@ var request = require('request');
 import { VendorBookingRepository } from "../data/repository/VendorBookingRepository";
 import { AddressRepository } from "../data/repository/AddressRepository";
 import { LobsterTransformationService } from "./LobsterTransformationService";
+import { DataGenTransformationService } from "../service/DataGenTransformationService";
 
 var fs = require('fs');
 
@@ -24,6 +25,8 @@ export class DownStreamService {
     private LobsterTransformationService: LobsterTransformationService;
     private VendorBoookingRepository: VendorBookingRepository;
     private AddressRepository: AddressRepository;
+    private DataGenTransformationService: DataGenTransformationService;
+
 
     constructor() {
         this.logger = DI.get(Logger);
@@ -33,6 +36,7 @@ export class DownStreamService {
         this.LobsterTransformationService = DI.get(LobsterTransformationService);
         this.AddressRepository = DI.get(AddressRepository);
         this.VendorBoookingRepository = DI.get(VendorBookingRepository);
+        this.DataGenTransformationService = DI.get(DataGenTransformationService);
     }
 
     async expBookingReqDownStreamHandler(message: any): Promise<any> {
@@ -133,10 +137,10 @@ export class DownStreamService {
     async downStreamToTmsSystem(req:any,res:any): Promise<any> {
 
         try {
-            console.log("Request---------->/n/n",req)
+            this.logger.log("Request---------->/n/n",req)
 
             var message =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
-            console.log("Data after converting base64---->/n/n",message)
+            this.logger.log("Data after converting base64---->/n/n",message)
             let customerOrderNumber = message.principalRef+"";
             
             //Creating the Data Object from exp_tms_data table and Persisting the Data
@@ -146,7 +150,7 @@ export class DownStreamService {
                 message: message,
                 customer_order_number: customerOrderNumber
             }
-            console.log("Object", tmsDataobj)
+            this.logger.log("Object", tmsDataobj)
             var result = await this.ExpTmsDataRepository.create(tmsDataobj);
                 
             //Remove the extraneous fields from message
@@ -157,7 +161,7 @@ export class DownStreamService {
             delete message["principalRef"];
             delete message["shipper_account_number"];
             delete message["trailToken"];
-            //console.log("Message after deleteing-------->/n/n",message);
+            //this.logger.log("Message after deleteing-------->/n/n",message);
             
             //Creating the Data Object from tms data and calling TMS URL
             var options = {
@@ -171,11 +175,11 @@ export class DownStreamService {
                 body: JSON.stringify(message)
             };
             //let resultList: any = []
-            console.log("OPTIONS---->\n\n",options)
+            this.logger.log("OPTIONS---->\n\n",options)
             var result = await request(options, async (error: any, response: any) => {
                 if (error) throw new Error(error);
-                // console.log("response--->/n/n",response.body)
-                // console.log("shipmentTrackingNumber----->", JSON.parse(response.body).shipmentTrackingNumber)
+                // this.logger.log("response--->/n/n",response.body)
+                // this.logger.log("shipmentTrackingNumber----->", JSON.parse(response.body).shipmentTrackingNumber)
                 var expres = {
                     statusCode: response.statusCode,
                     message: response.body,
@@ -184,9 +188,9 @@ export class DownStreamService {
                     customer_order_number:customerOrderNumber
                 }
 
-                console.log("expres----->\n\n",expres)
+                this.logger.log("expres----->\n\n",expres)
 
-                console.log("Response-------->\n\n",Buffer.from(JSON.stringify({"body":expres})).toString("base64"))
+               // this.logger.log("Response-------->\n\n",Buffer.from(JSON.stringify({"body":expres})).toString("base64"))
                 //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
                 var expResponse = await this.ExpResponseDataRepository.create(expres)
 
@@ -196,12 +200,16 @@ export class DownStreamService {
 
                 //Update exp_tms_data with shipment_Tracking_Number
                 var whereObj = { "customer_order_number":customerOrderNumber}
-                console.log("WhereOBJ---->\n\n",whereObj)
+                this.logger.log("WhereOBJ---->\n\n",whereObj)
                 var updateRes = await this.ExpTmsDataRepository.update(whereObj, {
                     shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
                     status: "PROCESSED"
                 })
 
+                // Datagen service ends TMS-Resp from LLP to Client2
+                
+                var dataGen = await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
+                await this.ExpResponseDataRepository.update( whereObj, { "status": "PROCESSED" });
             });
 
             resolve({ status: { code: 'Success'}})
@@ -224,17 +232,17 @@ export class DownStreamService {
                 //Loop the UNPROCESSED rows and submit to LOBSTER SYSTEM
                 //for (let tmsReponseItem of tmsResponseList) {
                     var baseMessage =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
-                    console.log("Data after converting base64---->/n/n",baseMessage)
+                    this.logger.log("Data after converting base64---->/n/n",baseMessage)
                     //var resp = JSON.parse(tmsReponseItem.dataValues.message)
                     var conMessage
                     //Derive accountNumber to be sent to LOSTER system
-                    console.log("baseMessage.customer_order_number-------->\n\n",baseMessage.customer_order_number)
+                    this.logger.log("baseMessage.customer_order_number-------->\n\n",baseMessage.customer_order_number)
                     let vendorOrderItem = (await this.VendorBoookingRepository.get({ "customer_order_number": baseMessage.customer_order_number }));
-                    console.log("vendorOrderItem---->\n\n",vendorOrderItem)
+                    this.logger.log("vendorOrderItem---->\n\n",vendorOrderItem)
                     
                     if (vendorOrderItem.length > 0) {
                         var id = vendorOrderItem[0]["id"]
-                        console.log("id----->\n\n",id)
+                        this.logger.log("id----->\n\n",id)
                     }else {
                         //Save Error Message to exp_response_data table
                         await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": "ERROR", "error_reason": `No Vendor Booking Found with customer_order_number=${baseMessage["customer_order_number"]}` });
@@ -246,11 +254,11 @@ export class DownStreamService {
 
                     if (addressList.length > 0) {
                         accountNumber = addressList[0]["address_id"];
-                        console.log("accountNumber----->\n\n",accountNumber)
+                        this.logger.log("accountNumber----->\n\n",accountNumber)
                     } else {
                         accountNumber = "";
                     }
-                    console.log(`Account Number is ${accountNumber}`)
+                    this.logger.log(`Account Number is ${accountNumber}`)
 
                     var message = {
                         "content": {
@@ -261,7 +269,7 @@ export class DownStreamService {
                         }
                     };
 
-                    console.log("message----->\n\n",message)
+                    this.logger.log("message----->\n\n",message)
 
                     //Removing extraneous fields in the error message
                     //var errorBody = JSON.parse(tmsReponseItem.dataValues.message)
@@ -278,6 +286,8 @@ export class DownStreamService {
                         "error": errorBody
                     };
 
+                    this.logger.log("errorMessage--->",errorMessage)
+
                     //Construct final Loster POST message
                     if (baseMessage.statusCode == 201) {
                         conMessage = await this.LobsterTransformationService.lobData(message);
@@ -285,7 +295,7 @@ export class DownStreamService {
                         conMessage = await this.LobsterTransformationService.lobData(errorMessage, true);
                     }
 
-                    console.log("conMessage", conMessage)
+                    this.logger.log("conMessage---->", conMessage)
 
                     var options = {
                         'method': 'POST',
@@ -302,9 +312,9 @@ export class DownStreamService {
                         if (error) throw new Error(error);
                         //Save response from Lobster system to exp_response table
 
-                        console.log("response----->", response.body)
-                       //var expResponse = await this.ExpResponseDataRepository.update({ "id": tmsReponseItem.id }, { "status": response.body, "request": JSON.stringify(options) });
-                        //console.log("Response---->", expResponse)
+                        this.logger.log("response----->", response.body)
+                       var expResponse = await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": response.body }); //, "request": JSON.stringify(options)
+                        //this.logger.log("Response---->", expResponse)
 
                     });
                     resolve({ 'status': "Success" })
