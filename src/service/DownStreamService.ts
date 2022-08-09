@@ -208,7 +208,7 @@ export class DownStreamService {
 
                 // Datagen service ends TMS-Resp from LLP to Client2
                 
-                var dataGen = await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
+                await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
                 await this.ExpResponseDataRepository.update( whereObj, { "status": "PROCESSED" });
             });
 
