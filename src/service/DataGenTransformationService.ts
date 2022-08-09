@@ -32,7 +32,7 @@ export class DataGenTransformationService implements BaseService {
         let fianlPublishMessage;
         if (msgType === process.env.DATAGEN_TMS_RESP_MSG) {
             fianlPublishMessage = await this.expTmsLlpClient2(msgType)
-        }//Similary use cases to implement other DatagenMessage 
+        }//Similar use cases to implement other DatagenMessage 
         console.log("fianlPublishMessage--------->", fianlPublishMessage)
         //Sending the Final Datagen messages Array to Message Service
         await this.MessagingService.publishMessageToDataGen(fianlPublishMessage);
@@ -91,11 +91,11 @@ export class DataGenTransformationService implements BaseService {
                 fianlPublishMessage.push(publishMessage);
 
                 //Update the status in the response table of LLP 
-                this.logger.log("BEFORE UPDATE RES TABLE",tmsReponseItem["customer_order_number"])
-                const whereObj = { "customer_order_number":tmsReponseItem["customer_order_number"]}
-                const updateObj = { status: "PROCESSED" }
-                this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
-                await this.ExpResponseDataRepository.update(whereObj,updateObj);
+                // this.logger.log("BEFORE UPDATE RES TABLE",tmsReponseItem["customer_order_number"])
+                // const whereObj = { "customer_order_number":tmsReponseItem["customer_order_number"]}
+                // const updateObj = { status: "PROCESSED" }
+                // this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
+                // await this.ExpResponseDataRepository.update(whereObj,updateObj);
             //}
             console.log("fianlPublishMessage------->", fianlPublishMessage)
             return fianlPublishMessage

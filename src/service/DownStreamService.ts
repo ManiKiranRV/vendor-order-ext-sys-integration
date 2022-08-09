@@ -152,7 +152,7 @@ export class DownStreamService {
                 token:token
             }
             this.logger.log("Object", tmsDataobj)
-            var result = await this.ExpTmsDataRepository.create(tmsDataobj);
+            await this.ExpTmsDataRepository.create(tmsDataobj);
 
             
                 
@@ -178,7 +178,7 @@ export class DownStreamService {
                 body: JSON.stringify(message)
             };
             this.logger.log("OPTIONS---->\n\n",options)
-            var result = await request(options, async (error: any, response: any) => {
+            await request(options, async (error: any, response: any) => {
                 if (error) throw new Error(error);
                 var expres = {
                     statusCode: response.statusCode,
@@ -192,34 +192,31 @@ export class DownStreamService {
                 this.logger.log("Response-------->\n\n",Buffer.from(JSON.stringify({"body":expres})).toString("base64"))
 
                 //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
-                var expResponse = await this.ExpResponseDataRepository.create(expres)
+                await this.ExpResponseDataRepository.create(expres)
 
                 //Update Core Tables
-
-                var updateDocument = await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+                await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
 
                 //Update exp_tms_data with shipment_Tracking_Number
-                const whereObj = { "customer_order_number":customerOrderNumber}
+                let whereObj = { "customer_order_number":customerOrderNumber}
                 this.logger.log("WhereOBJ---->\n\n",whereObj)
-                var updateRes = await this.ExpTmsDataRepository.update(whereObj, {
+                await this.ExpTmsDataRepository.update(whereObj, {
                     shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
                     status: "PROCESSED"
                 })
 
                 // Datagen service ends TMS-Resp from LLP to Client2
-<<<<<<< HEAD
-                
+                const updateObj = { status: "PROCESSED" }
                 await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
-                await this.ExpResponseDataRepository.update( whereObj, { "status": "PROCESSED" });
-=======
-                //const updateObj = { status: "PROCESSED" }
-                var dataGen = await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
                 // this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
-                // const updateStatus = await this.ExpResponseDataRepository.update( whereObj, updateObj );
+                //await this.ExpResponseDataRepository.update( whereObj, updateObj );
                 // this.logger.log("updateStatus----------->",updateStatus)
->>>>>>> 37be2ad468a1a2e79536e3915893c1e1b3076402
             });
 
+            let whereObj = { "customer_order_number":customerOrderNumber}
+            let updateObj = { status: "PROCESSED" }
+            this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj);
+            await this.ExpResponseDataRepository.update(whereObj,updateObj);
             return token
 
         } catch (e) {
