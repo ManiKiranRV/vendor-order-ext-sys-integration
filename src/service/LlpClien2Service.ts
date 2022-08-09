@@ -48,7 +48,7 @@ export class LlpClien2Service {
                     };
                     var result = await request(options, async (error: any, response: any) => {
                         if (error) throw new Error(error);
-                        var expResponse = await this.ExpResponseDataRepository.update({ "parent_uuid": tmsReponseItem.parent_uuid }, { "status": "PROCESSED" });
+                        //var expResponse = await this.ExpResponseDataRepository.update({ "parent_uuid": tmsReponseItem.parent_uuid }, { "status": "PROCESSED" });
                     });
 
                     
