@@ -62,7 +62,7 @@ export class UpdateCoreTablesService {
                 "order_status": process.env.VEN_BOOKING_ERR_STATUS,
                 "response_error_code":jsonObj.status,
                 "response_error_title":jsonObj.title,
-                "response_error_detail":jsonObj.detail,
+                "response_error_detail":(jsonObj.additionalDetails != undefined)?jsonObj.detail+","+"["+jsonObj.additionalDetails+"]":jsonObj.detail,
                 "response_time_stamp":todayUTC
             }
             console.log("vendorBookingObj--->",vendorBookingObj)

@@ -199,7 +199,7 @@ export class DownStreamService {
                 var updateDocument = await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
 
                 //Update exp_tms_data with shipment_Tracking_Number
-                var whereObj = { "customer_order_number":customerOrderNumber}
+                const whereObj = { "customer_order_number":customerOrderNumber}
                 this.logger.log("WhereOBJ---->\n\n",whereObj)
                 var updateRes = await this.ExpTmsDataRepository.update(whereObj, {
                     shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
@@ -207,9 +207,11 @@ export class DownStreamService {
                 })
 
                 // Datagen service ends TMS-Resp from LLP to Client2
-                
+                //const updateObj = { status: "PROCESSED" }
                 var dataGen = await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
-                await this.ExpResponseDataRepository.update( whereObj, { "status": "PROCESSED" });
+                // this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
+                // const updateStatus = await this.ExpResponseDataRepository.update( whereObj, updateObj );
+                // this.logger.log("updateStatus----------->",updateStatus)
             });
 
             return token
@@ -231,6 +233,17 @@ export class DownStreamService {
             this.logger.log("Data after converting base64---->/n/n",baseMessage)
             var conMessage
             const token = GenericUtil.generateRandomHash();
+            var expres = {
+                statusCode: baseMessage.statusCode,
+                message: baseMessage.message,
+                shipmentTrackingNumber: baseMessage.shipmentTrackingNumber,
+                status: "UNPROCESSED",
+                customer_order_number:baseMessage.customer_order_number
+            }
+            //Update Core Tables
+
+            var updateDocument = await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+
             //Derive accountNumber to be sent to LOSTER system
             this.logger.log("baseMessage.customer_order_number-------->\n\n",baseMessage.customer_order_number)
             let vendorOrderItem = (await this.VendorBoookingRepository.get({ "customer_order_number": baseMessage.customer_order_number }));
@@ -298,6 +311,8 @@ export class DownStreamService {
                 },
                 body: JSON.stringify(conMessage.tdata)
             };
+
+            
 
             // this.logger.log(`Lobster Options is ${JSON.stringify(options)}`);
             var result = await request(options, async (error: any, response: any) => {
