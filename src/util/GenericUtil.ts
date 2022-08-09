@@ -47,4 +47,9 @@ export class GenericUtil {
     static generateRandomHash(){
         return Md5.hashStr((new Date()).toString());
     }
+
+    static generateHash(data:any){
+        return Md5.hashStr((data).toString());
+    }
+    
 }

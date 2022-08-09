@@ -63,7 +63,7 @@ export class ExpTmsService {
                         },
                         body: JSON.stringify(message)
                     };
-                    let resultList: any = []
+                    let resultList: any = [];
                     //console.log("OPTIONS---->",options)
                     var result = await request(options, async (error: any, response: any) => {
                         if (error) throw new Error(error);
