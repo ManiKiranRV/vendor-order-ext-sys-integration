@@ -48,7 +48,7 @@ export class GenericUtil {
         return Md5.hashStr((new Date()).toString());
     }
 
-    static generateHash(data:any){
+    generateHash(data:any){
         return Md5.hashStr((data).toString());
     }
     

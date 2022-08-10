@@ -106,8 +106,8 @@ export class DownStreamController implements Controller {
                 res.json(response);
 
             }
-        });             
-
+        });
+        
         return router;
     }
 
