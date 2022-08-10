@@ -156,7 +156,7 @@ export class DownStreamService {
                 token:token
             }
             this.logger.log("Object", tmsDataobj)
-            var result = await this.ExpTmsDataRepository.create(tmsDataobj);
+            await this.ExpTmsDataRepository.create(tmsDataobj);
 
             
                 
@@ -182,7 +182,7 @@ export class DownStreamService {
                 body: JSON.stringify(message)
             };
             this.logger.log("OPTIONS---->\n\n",options)
-            var result = await request(options, async (error: any, response: any) => {
+            await request(options, async (error: any, response: any) => {
                 if (error) throw new Error(error);
                 var expres = {
                     statusCode: response.statusCode,
@@ -196,26 +196,31 @@ export class DownStreamService {
                 this.logger.log("Response-------->\n\n",Buffer.from(JSON.stringify({"body":expres})).toString("base64"))
 
                 //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
-                var expResponse = await this.ExpResponseDataRepository.create(expres)
+                await this.ExpResponseDataRepository.create(expres)
 
                 //Update Core Tables
-
-                var updateDocument = await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+                await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
 
                 //Update exp_tms_data with shipment_Tracking_Number
-                var whereObj = { "customer_order_number":customerOrderNumber}
+                let whereObj = { "customer_order_number":customerOrderNumber}
                 this.logger.log("WhereOBJ---->\n\n",whereObj)
-                var updateRes = await this.ExpTmsDataRepository.update(whereObj, {
+                await this.ExpTmsDataRepository.update(whereObj, {
                     shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
                     status: "PROCESSED"
                 })
 
                 // Datagen service ends TMS-Resp from LLP to Client2
-                
-                var dataGen = await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
-                await this.ExpResponseDataRepository.update( whereObj, { "status": "PROCESSED" });
+                const updateObj = { status: "PROCESSED" }
+                await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
+                // this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
+                //await this.ExpResponseDataRepository.update( whereObj, updateObj );
+                // this.logger.log("updateStatus----------->",updateStatus)
             });
 
+            let whereObj = { "customer_order_number":customerOrderNumber}
+            let updateObj = { status: "PROCESSED" }
+            this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj);
+            await this.ExpResponseDataRepository.update(whereObj,updateObj);
             return token
 
         } catch (e) {
@@ -235,6 +240,17 @@ export class DownStreamService {
             this.logger.log("Data after converting base64---->/n/n",baseMessage)
             var conMessage
             const token = GenericUtil.generateRandomHash();
+            var expres = {
+                statusCode: baseMessage.statusCode,
+                message: baseMessage.message,
+                shipmentTrackingNumber: baseMessage.shipmentTrackingNumber,
+                status: "UNPROCESSED",
+                customer_order_number:baseMessage.customer_order_number
+            }
+            //Update Core Tables
+
+            var updateDocument = await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+
             //Derive accountNumber to be sent to LOSTER system
             this.logger.log("baseMessage.customer_order_number-------->\n\n",baseMessage.customer_order_number)
             let vendorOrderItem = (await this.VendorBoookingRepository.get({ "customer_order_number": baseMessage.customer_order_number }));
@@ -305,6 +321,8 @@ export class DownStreamService {
                 },
                 body: JSON.stringify(conMessage.tdata)
             };
+
+            
 
             // this.logger.log(`Lobster Options is ${JSON.stringify(options)}`);
             var result = await request(options, async (error: any, response: any) => {
