@@ -140,7 +140,7 @@ export class DownStreamService {
             this.logger.log("Request---------->/n/n",req)
 
             var message =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
-            this.logger.log("Data after converting base64---->/n/n",message)
+            //this.logger.log("Data after converting base64---->/n/n",message)
             let customerOrderNumber = message.principalRef+"";
             const token = GenericUtil.generateRandomHash();
             //Creating the Data Object from exp_tms_data table and Persisting the Data
@@ -151,7 +151,7 @@ export class DownStreamService {
                 customer_order_number: customerOrderNumber,
                 token:token
             }
-            this.logger.log("Object", tmsDataobj)
+            //this.logger.log("Object", tmsDataobj)
             await this.ExpTmsDataRepository.create(tmsDataobj);
 
             
@@ -177,7 +177,7 @@ export class DownStreamService {
                 },
                 body: JSON.stringify(message)
             };
-            this.logger.log("OPTIONS---->\n\n",options)
+            //this.logger.log("OPTIONS---->\n\n",options)
             await request(options, async (error: any, response: any) => {
                 if (error) throw new Error(error);
                 var expres = {
@@ -189,7 +189,7 @@ export class DownStreamService {
                 }
 
                 this.logger.log("expres----->\n\n",expres)
-                this.logger.log("Response-------->\n\n",Buffer.from(JSON.stringify({"body":expres})).toString("base64"))
+                //this.logger.log("Response-------->\n\n",Buffer.from(JSON.stringify({"body":expres})).toString("base64"))
 
                 //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
                 await this.ExpResponseDataRepository.create(expres)
@@ -199,7 +199,7 @@ export class DownStreamService {
 
                 //Update exp_tms_data with shipment_Tracking_Number
                 let whereObj = { "customer_order_number":customerOrderNumber}
-                this.logger.log("WhereOBJ---->\n\n",whereObj)
+                //this.logger.log("WhereOBJ---->\n\n",whereObj)
                 await this.ExpTmsDataRepository.update(whereObj, {
                     shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
                     status: "PROCESSED"
@@ -213,10 +213,10 @@ export class DownStreamService {
                 // this.logger.log("updateStatus----------->",updateStatus)
             });
 
-            let whereObj = { "customer_order_number":customerOrderNumber}
-            let updateObj = { status: "PROCESSED" }
-            this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj);
-            await this.ExpResponseDataRepository.update(whereObj,updateObj);
+            // let whereObj = { "customer_order_number":customerOrderNumber}
+            // let updateObj = { status: "PROCESSED" }
+            // this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj);
+            // await this.ExpResponseDataRepository.update(whereObj,updateObj);
             return token
 
         } catch (e) {

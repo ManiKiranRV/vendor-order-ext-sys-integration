@@ -32,10 +32,10 @@ export class DataGenTransformationService implements BaseService {
         let fianlPublishMessage;
         if (msgType === process.env.DATAGEN_TMS_RESP_MSG) {
             fianlPublishMessage = await this.expTmsLlpClient2(msgType)
-        }//Similar use cases to implement other DatagenMessage 
+        }//Similary use cases to implement other DatagenMessage 
         console.log("fianlPublishMessage--------->", fianlPublishMessage)
         //Sending the Final Datagen messages Array to Message Service
-        await this.MessagingService.publishMessageToDataGen(fianlPublishMessage);
+       await this.MessagingService.publishMessageToDataGen(fianlPublishMessage);
     }
 
     //Transformation service to build TMS RESPONSE data which is intended to send from LLP to CLIENT2
@@ -53,9 +53,9 @@ export class DataGenTransformationService implements BaseService {
         let objJsonB64;
         let vendBkngItem;
         try {
-            //for (let tmsReponseItem of tmsResponseList) {
+            for (let tmsReponseItem of tmsResponseList) {
                 //Update the status in the response table of LLP to IN-PROGRESS. So that no other process picks the same record
-                let tmsReponseItem = tmsResponseList[0]
+                //let tmsReponseItem = tmsResponseList[0]
                 this.logger.log("customer_order_number-------->",tmsReponseItem["customer_order_number"])
                 //await this.ExpResponseDataRepository.update({ "customer_order_number":tmsReponseItem["customer_order_number"] }, { "status": "IN-PROGRESS" });
                 
@@ -75,7 +75,7 @@ export class DataGenTransformationService implements BaseService {
                 let publishMessage: any = {};
                 var vcId = await this.utilityService.genVcid(issuer, messagePrimary, BLESS_datagen_appId);
 
-                console.log("vcId----->", vcId)
+                //console.log("vcId----->", vcId)
                 publishMessage['receivers'] = {};
                 publishMessage['id'] = vcId;
                 publishMessage['msgType'] = process.env.DATAGEN_TMS_RESP_MSG
@@ -92,12 +92,12 @@ export class DataGenTransformationService implements BaseService {
 
                 //Update the status in the response table of LLP 
                 // this.logger.log("BEFORE UPDATE RES TABLE",tmsReponseItem["customer_order_number"])
-                // const whereObj = { "customer_order_number":tmsReponseItem["customer_order_number"]}
-                // const updateObj = { status: "PROCESSED" }
-                // this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
-                // await this.ExpResponseDataRepository.update(whereObj,updateObj);
-            //}
-            console.log("fianlPublishMessage------->", fianlPublishMessage)
+                const whereObj = { "customer_order_number":tmsReponseItem["customer_order_number"]}
+                const updateObj = { status: "PROCESSED" }
+                this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
+                await this.ExpResponseDataRepository.update(whereObj,updateObj);
+            }
+            //console.log("fianlPublishMessage------->", fianlPublishMessage)
             return fianlPublishMessage
         }
         catch (error) {

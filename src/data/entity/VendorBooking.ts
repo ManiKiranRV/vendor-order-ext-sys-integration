@@ -20,7 +20,7 @@ export interface VendorBookingAttributes {
   response_error_code?: string;
   response_error_title?: string;
   response_error_detail?: string;
-  response_time_stamp?: Date;
+  response_time_stamp?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -50,7 +50,7 @@ export class VendorBooking extends Model<VendorBookingAttributes, VendorBookingC
   response_error_code?: string;
   response_error_title?: string;
   response_error_detail?: string;
-  response_time_stamp?: Date;
+  response_time_stamp?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -133,7 +133,7 @@ export class VendorBooking extends Model<VendorBookingAttributes, VendorBookingC
       allowNull: true
     },
     response_time_stamp: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(255),
       allowNull: true
     }
   }, {
