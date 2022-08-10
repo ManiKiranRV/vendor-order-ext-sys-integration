@@ -3,6 +3,7 @@ import { DI } from '../di/DIContainer';
 import { ExpTmsDataRepository } from "../data/repository/ExpTmsDataRepository";
 import { any, resolve } from "bluebird";
 import { GenericUtil } from "../util/GenericUtil";
+import { FileUtil } from "../util/FileUtil";
 import { Response } from "express";
 import { NextFunction, Request } from "express-serve-static-core";
 import { ExpResponseDataRepository } from "../data/repository/ExpResponseDataRepository";
@@ -26,7 +27,8 @@ export class DownStreamService {
     private VendorBoookingRepository: VendorBookingRepository;
     private AddressRepository: AddressRepository;
     private DataGenTransformationService: DataGenTransformationService;
-
+    private genericUtil: GenericUtil;
+    private fileUtil: FileUtil;
 
     constructor() {
         this.logger = DI.get(Logger);
@@ -37,6 +39,8 @@ export class DownStreamService {
         this.AddressRepository = DI.get(AddressRepository);
         this.VendorBoookingRepository = DI.get(VendorBookingRepository);
         this.DataGenTransformationService = DI.get(DataGenTransformationService);
+        this.genericUtil = DI.get(GenericUtil);
+        this.fileUtil = DI.get(FileUtil);
     }
 
     async expBookingReqDownStreamHandler(message: any): Promise<any> {
@@ -304,6 +308,9 @@ export class DownStreamService {
             }
 
             this.logger.log("conMessage---->", conMessage)
+            const fileName: string = this.genericUtil.generateHash(conMessage.tdata);
+            const filePath = process.env.EXP_FILE_PATH + '/' + fileName + '.txt'
+            this.fileUtil.dataToFile(filePath, JSON.stringify(conMessage.tdata));
 
             var options = {
                 'method': 'POST',
@@ -323,7 +330,7 @@ export class DownStreamService {
                 //Save response from Lobster system to exp_response table
 
                 this.logger.log("response----->", response.body)
-                var expResponse = await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": response.body, "token":token}); //, "request": JSON.stringify(options)
+                var expResponse = await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": response.body, "token":token, "exp_file_path": filePath, "exp_uuid": fileName }); //, "request": JSON.stringify(options)
                 //this.logger.log("Response---->", expResponse)
 
             });
