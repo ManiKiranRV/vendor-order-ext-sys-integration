@@ -49,6 +49,7 @@ export class GenericUtil {
     }
 
     generateHash(data:any){
+        console.log("generatehash--->", Md5.hashStr((data).toString()))
         return Md5.hashStr((data).toString());
     }
     

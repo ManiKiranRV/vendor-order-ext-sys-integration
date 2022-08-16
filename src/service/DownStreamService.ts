@@ -144,7 +144,7 @@ export class DownStreamService {
             this.logger.log("Request---------->/n/n",req)
 
             var message =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
-            //this.logger.log("Data after converting base64---->/n/n",message)
+            this.logger.log("Data after converting base64---->/n/n",message)
             let customerOrderNumber = message.principalRef+"";
             const token = GenericUtil.generateRandomHash();
             //Creating the Data Object from exp_tms_data table and Persisting the Data
@@ -168,7 +168,7 @@ export class DownStreamService {
             delete message["principalRef"];
             delete message["shipper_account_number"];
             delete message["trailToken"];
-            //this.logger.log("Message after deleteing-------->/n/n",message);
+            this.logger.log("Message after deleteing-------->/n/n",message);
             
             //Creating the Data Object from tms data and calling TMS URL
             var options = {
@@ -182,8 +182,9 @@ export class DownStreamService {
                 body: JSON.stringify(message)
             };
             //Write the request to file
+            console.log("MESSAGE---->",message)
             const fileName: string = this.genericUtil.generateHash(message);
-            const filePath = process.env.REQ_TO_TMS_FILE_PATH+ fileName + '.txt'
+            const filePath = process.env.REQ_TO_TMS_FILE_PATH1+ fileName + '.txt'
             this.fileUtil.writeToFile(filePath, JSON.stringify(message));
             this.logger.log(`filePath is ${filePath}`);
             this.logger.log(`fileName is ${fileName}`);
@@ -318,7 +319,7 @@ export class DownStreamService {
 
             this.logger.log("conMessage---->", conMessage)
             const fileName: string = this.genericUtil.generateHash(conMessage.tdata);
-            const filePath = process.env.REQ_TO_LOBSTER_FILE_PATH+ fileName + '.txt'
+            const filePath = process.env.REQ_TO_LOBSTER_FILE_PATH1+ fileName + '.txt'
             this.fileUtil.writeToFile(filePath, JSON.stringify(conMessage.tdata));
 
             var options = {
