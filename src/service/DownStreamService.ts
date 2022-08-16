@@ -181,6 +181,13 @@ export class DownStreamService {
                 },
                 body: JSON.stringify(message)
             };
+            //Write the request to file
+            const fileName: string = this.genericUtil.generateHash(message);
+            const filePath = process.env.REQ_TO_TMS_FILE_PATH+ fileName + '.txt'
+            this.fileUtil.writeToFile(filePath, JSON.stringify(message));
+            this.logger.log(`filePath is ${filePath}`);
+            this.logger.log(`fileName is ${fileName}`);
+
             //this.logger.log("OPTIONS---->\n\n",options)
             await request(options, async (error: any, response: any) => {
                 if (error) throw new Error(error);
@@ -189,7 +196,9 @@ export class DownStreamService {
                     message: response.body,
                     shipmentTrackingNumber: JSON.parse(response.body).shipmentTrackingNumber,
                     status: "UNPROCESSED",
-                    customer_order_number:customerOrderNumber
+                    customer_order_number:customerOrderNumber,
+                    req_file_path:filePath,
+                    req_file_uuid:fileName
                 }
 
                 this.logger.log("expres----->\n\n",expres)
@@ -209,7 +218,7 @@ export class DownStreamService {
                     status: "PROCESSED"
                 })
 
-                // Datagen service ends TMS-Resp from LLP to Client2
+                // Datagen service Sends TMS-Resp from LLP to Client2
                 const updateObj = { status: "PROCESSED" }
                 await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
                 // this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
@@ -230,7 +239,7 @@ export class DownStreamService {
     }    
 
     /*
-        DownStream Service to send TMS Response to Client2 System & Persisting the TMS Response
+        DownStream Service to send TMS Response to LOBSTER System & Persisting the TMS Response
     */
     async downStreamToLobsterSystem(req:any,res:any): Promise<any> {
 
@@ -300,7 +309,7 @@ export class DownStreamService {
 
             // this.logger.log("errorMessage--->",errorMessage)
 
-            //Construct final Loster POST message
+            //Construct final Lobster POST message
             if (baseMessage.statusCode == 201) {
                 conMessage = await this.LobsterTransformationService.lobData(message);
             } else {
@@ -309,8 +318,8 @@ export class DownStreamService {
 
             this.logger.log("conMessage---->", conMessage)
             const fileName: string = this.genericUtil.generateHash(conMessage.tdata);
-            const filePath = process.env.EXP_FILE_PATH + '/' + fileName + '.txt'
-            this.fileUtil.dataToFile(filePath, JSON.stringify(conMessage.tdata));
+            const filePath = process.env.REQ_TO_LOBSTER_FILE_PATH+ fileName + '.txt'
+            this.fileUtil.writeToFile(filePath, JSON.stringify(conMessage.tdata));
 
             var options = {
                 'method': 'POST',
@@ -330,7 +339,7 @@ export class DownStreamService {
                 //Save response from Lobster system to exp_response table
 
                 this.logger.log("response----->", response.body)
-                var expResponse = await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": response.body, "token":token, "exp_file_path": filePath, "exp_uuid": fileName }); //, "request": JSON.stringify(options)
+                var expResponse = await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": response.body, "token":token, "req_file_path": filePath, "req_file_uuid": fileName }); //, "request": JSON.stringify(options)
                 //this.logger.log("Response---->", expResponse)
 
             });
@@ -339,7 +348,7 @@ export class DownStreamService {
         } catch (error) {
             //Update processing_status of events table to ERROR
             await this.ExpResponseDataRepository.update({ "id": id }, { "status": "ERROR", "error_reason": error });
-            resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: error } })
+            resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: error } });
         }
 
     }    

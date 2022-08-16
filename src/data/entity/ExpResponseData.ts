@@ -10,6 +10,8 @@ export interface ExpResponseDataAttributes {
   statusCode?: string;
   status?: string;
   error_reason?: string;
+  req_file_path?: string;
+  req_file_uuid?: string;
   parent_uuid?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -18,7 +20,7 @@ export interface ExpResponseDataAttributes {
 
 export type ExpResponseDataPk = "id";
 export type ExpResponseDataId = ExpResponseData[ExpResponseDataPk];
-export type ExpResponseDataOptionalAttributes = "id" | "shipmentTrackingNumber" | "customer_order_number" | "token" | "statusCode" | "status" | "error_reason" | "parent_uuid" | "createdAt" | "updatedAt" | "deletedAt";
+export type ExpResponseDataOptionalAttributes = "id" | "shipmentTrackingNumber" | "customer_order_number" | "token" | "statusCode" | "status" | "error_reason" | "req_file_path" | "req_file_uuid" | "parent_uuid" | "createdAt" | "updatedAt" | "deletedAt";
 export type ExpResponseDataCreationAttributes = Optional<ExpResponseDataAttributes, ExpResponseDataOptionalAttributes>;
 
 export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpResponseDataCreationAttributes> implements ExpResponseDataAttributes {
@@ -30,6 +32,8 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
   statusCode?: string;
   status?: string;
   error_reason?: string;
+  req_file_path?: string;
+  req_file_uuid?: string;
   parent_uuid?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -70,6 +74,14 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
     },
     error_reason: {
       type: DataTypes.TEXT,
+      allowNull: true
+    },
+    req_file_path: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    req_file_uuid: {
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     parent_uuid: {

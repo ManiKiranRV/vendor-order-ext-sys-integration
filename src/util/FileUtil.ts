@@ -11,7 +11,7 @@ export class FileUtil {
         this.logger = DI.get(Logger)
     }
 
-    dataToFile(filePath: any, data: string) {
+    writeToFile(filePath: any, data: string) {
         try {
             fs.writeFile(filePath, data, { flag: 'w' }, e => {
                 if (e) console.error(e)

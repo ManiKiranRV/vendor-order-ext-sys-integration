@@ -8,6 +8,8 @@ import { ExpResponseDataService } from "../service/ExpResponseDataService";
 import { LlpClien2Service } from "../service/LlpClien2Service";
 import { LobsterService } from "../service/LobsterService";
 import { AuthService } from "../service/AuthService";
+import { VerifyJwtTokenService } from "../security/VerifyJwtTokenService";
+
 
 import { DataGenTransformationService } from "../service/DataGenTransformationService";
 import { DownStreamService } from "../service/DownStreamService";
@@ -23,9 +25,13 @@ export class ShipmentController implements Controller {
     private DataGenTransformationService: DataGenTransformationService = DI.get(DataGenTransformationService);
     private DownStreamService: DownStreamService = DI.get(DownStreamService);
     private authService: AuthService;
+    private verifyJwtTokenService: VerifyJwtTokenService;
+
 
     constructor(){
         this.authService = DI.get(AuthService);
+        this.verifyJwtTokenService = DI.get(VerifyJwtTokenService);
+
     }
 
     getRouter(): Router {
@@ -53,12 +59,12 @@ export class ShipmentController implements Controller {
         });
 
     
-        //DOWNSTREAM LLP-TMS & LLP-CLIENT2//  
+        //DOWNSTREAM LLP-TMS(EXP Request Data) & LLP-CLIENT2(TMS Response)//  
 
-        router.post('/tmsResponse',async (req:any, res) => {
+        router.post('/tmsResponse',this.verifyJwtTokenService.verifyToken, async (req:any, res) => {
             try {
-                this.logger.log(`=============================================START-TMS To LLP DOWNSTREAM=======================================`)
-                this.logger.log(`BLESS REQUEST BODY is ${JSON.parse(req.body.message)}`);
+                this.logger.log(`=============================================START-LLP -TMS DOWNSTREAM=======================================`)
+                this.logger.log(`BLESS REQUEST BODY is ${JSON.stringify(req.body.message)}`);
 
                 //Calling Downstream service from LLP to TMS
                 var downstreamToTmsSystem = await this.DownStreamService.downStreamToTmsSystem(JSON.parse(req.body.message).transformedMessage,res)
@@ -77,7 +83,7 @@ export class ShipmentController implements Controller {
 
         //DOWNSTREAM CLIENT2-LOBSTER//
         
-        router.post('/client-lobster-tms-resp',async (req:any, res) => {
+        router.post('/client-lobster-tms-resp', this.verifyJwtTokenService.verifyToken, async (req:any, res) => {
             try {
 
                 this.logger.log(`=============================================START-C2 To Lobster DOWNSTREAM=======================================`)
@@ -138,7 +144,7 @@ export class ShipmentController implements Controller {
         }); 
 
         // To get TMS DATA
-        router.post('/expTmsData',async (req, res) => {
+        router.post('/expTmsData', async (req, res) => {
             try {
 
                 var result;
