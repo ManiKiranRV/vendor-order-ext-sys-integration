@@ -11,9 +11,6 @@
         "compile": "webpack --progress --watch",
         "start": "tsc && node ./dist/main.js",
         "stop": "kill $(cat .pid)",
-        "start-bmx": "pm2 start app.json --env dev && echo $! > .pid",
-        "consumeStart-dhl": "pm2 start consume-app.json --env dhl && echo $! > consume.pid",
-        "consumeStart-bmx": "pm2 start consume-app.json --env bmx && echo $! > consume.pid",
         "prod": "tsc && node ./dist/main.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },

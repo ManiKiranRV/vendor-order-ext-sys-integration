@@ -182,12 +182,12 @@ export class DownStreamService {
                 body: JSON.stringify(message)
             };
             //Write the request to file
-            console.log("MESSAGE---->",message)
-            const fileName: string = this.genericUtil.generateHash(message);
-            const filePath = process.env.REQ_TO_TMS_FILE_PATH1+ fileName + '.txt'
+            console.log("MESSAGE------------------------------------------------------>",JSON.stringify(message));
+            const fileName: string = GenericUtil.generateHash(JSON.stringify(message));
+            const filePath = process.env.REQ_TO_TMS_FILE_PATH+ fileName + '.txt'
             this.fileUtil.writeToFile(filePath, JSON.stringify(message));
-            this.logger.log(`filePath is ${filePath}`);
-            this.logger.log(`fileName is ${fileName}`);
+            this.logger.log(`filePath is -----------------------------> ${filePath}`);
+            this.logger.log(`fileName is -----------------------------> ${fileName}`);
 
             //this.logger.log("OPTIONS---->\n\n",options)
             await request(options, async (error: any, response: any) => {
@@ -240,7 +240,7 @@ export class DownStreamService {
     }    
 
     /*
-        DownStream Service to send TMS Response to LOBSTER System & Persisting the TMS Response
+        DownStream Service to send TMS Response to LOBSTER System & Persisting the LOBSTER Response
     */
     async downStreamToLobsterSystem(req:any,res:any): Promise<any> {
 
@@ -318,10 +318,10 @@ export class DownStreamService {
             }
 
             this.logger.log("conMessage---->", conMessage)
-            const fileName: string = this.genericUtil.generateHash(conMessage.tdata);
-            const filePath = process.env.REQ_TO_LOBSTER_FILE_PATH1+ fileName + '.txt'
+            const fileName: string = GenericUtil.generateHash(JSON.stringify(conMessage.tdata));
+            const filePath = process.env.REQ_TO_LOBSTER_FILE_PATH+ fileName + '.txt'
             this.fileUtil.writeToFile(filePath, JSON.stringify(conMessage.tdata));
-
+            this.logger.log(`filePath is ${filePath}`);
             var options = {
                 'method': 'POST',
                 'url': process.env.LOBSTER_POST_URL,
@@ -351,7 +351,6 @@ export class DownStreamService {
             await this.ExpResponseDataRepository.update({ "id": id }, { "status": "ERROR", "error_reason": error });
             resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: error } });
         }
-
     }    
     
 
