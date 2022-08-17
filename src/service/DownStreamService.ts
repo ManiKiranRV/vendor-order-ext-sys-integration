@@ -168,7 +168,7 @@ export class DownStreamService {
             delete message["principalRef"];
             delete message["shipper_account_number"];
             delete message["trailToken"];
-            this.logger.log("Message after deleteing-------->/n/n",message);
+            //this.logger.log("Message after deleteing-------->/n/n",message);
             
             //Creating the Data Object from tms data and calling TMS URL
             var options = {
