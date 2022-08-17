@@ -13,6 +13,7 @@ import { VerifyJwtTokenService } from "../security/VerifyJwtTokenService";
 
 import { DataGenTransformationService } from "../service/DataGenTransformationService";
 import { DownStreamService } from "../service/DownStreamService";
+import { GenericUtil } from "../util/GenericUtil";
 
 var request = require('request');
 
@@ -64,8 +65,7 @@ export class ShipmentController implements Controller {
         router.post('/tmsResponse', async (req:any, res) => {
             try {
                 this.logger.log(`=============================================START-LLP -TMS DOWNSTREAM=======================================`)
-                this.logger.log(`BLESS REQUEST BODY is ${JSON.stringify(req.body.message)}`);
-
+                //this.logger.log(`BLESS REQUEST BODY is ${JSON.stringify(req.body.message)}`);
                 //Calling Downstream service from LLP to TMS
                 var downstreamToTmsSystem = await this.DownStreamService.downStreamToTmsSystem(JSON.parse(req.body.message).transformedMessage,res)
 
