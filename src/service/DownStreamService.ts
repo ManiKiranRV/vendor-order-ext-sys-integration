@@ -139,13 +139,14 @@ export class DownStreamService {
         DownStream Service to send EXP Message to TMS System(From LLP Node) & Persisting the TMS Response
     */
     async downStreamToTmsSystem(req:any,res:any): Promise<any> {
-
+        let message:any
+        let customerOrderNumber:any
         try {
             this.logger.log("Request---------->/n/n",req)
 
-            var message =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
+            message =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
             this.logger.log("Data after converting base64---->/n/n",message)
-            let customerOrderNumber = message.principalRef+"";
+            customerOrderNumber = message.principalRef+"";
             const token = GenericUtil.generateRandomHash();
             //Creating the Data Object from exp_tms_data table and Persisting the Data
             var tmsDataobj = {
@@ -233,8 +234,12 @@ export class DownStreamService {
             // await this.ExpResponseDataRepository.update(whereObj,updateObj);
             return token
 
-        } catch (e) {
-            resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: e } })
+        } catch (error) {
+            //resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: e } })
+            //Update processing_status of events table to ERROR
+            console.log("Error----->",error)
+            //await this.ExpResponseDataRepository.update({ "customer_order_number" : customerOrderNumber }, { "status": "ERROR", "error_reason": error });
+            resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: error } });
         }
 
     }    
@@ -243,10 +248,10 @@ export class DownStreamService {
         DownStream Service to send TMS Response to LOBSTER System & Persisting the LOBSTER Response
     */
     async downStreamToLobsterSystem(req:any,res:any): Promise<any> {
-
+        let baseMessage:any
         try {
 
-            var baseMessage =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
+            baseMessage =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
             this.logger.log("Data after converting base64---->/n/n",baseMessage)
             var conMessage
             const token = GenericUtil.generateRandomHash();
@@ -273,47 +278,49 @@ export class DownStreamService {
                 //continue;
             }
 
-            let addressList = await this.AddressRepository.get({ "address_type": "consignor", "parent_id": id });
+            let addressList = await this.AddressRepository.get({ "address_type": "CONSIGNOR", "customer_order_number": baseMessage.customer_order_number });
             let accountNumber;
-
+            this.logger.log("Account List",addressList)
+            this.logger.log("Account Number is from List",addressList[0]["address_id"])
+            // this.logger.log("Estimated Date---->",JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate)
             if (addressList.length > 0) {
                 accountNumber = addressList[0]["address_id"];
             } else {
                 accountNumber = "";
             }
             this.logger.log(`Account Number is ${accountNumber}`)
-
-            var message = {
-                "content": {
-                    "accountNumber": accountNumber,
-                    "HAWB": baseMessage.shipmentTrackingNumber,
-                    "PrincipalreferenceNumber": baseMessage.customer_order_number,
-                    "documents": JSON.parse(baseMessage.message).documents
-                }
-            };
-
-            // this.logger.log("message----->\n\n",message)
-
-            //Removing extraneous fields in the error message
-            var errorBody = JSON.parse(baseMessage.message)
-            delete errorBody["instance"];
-            delete errorBody["message"];
-            var errorMessage = {
-                "content": {
-                    "accountNumber": accountNumber,
-                    "HAWB": baseMessage.shipmentTrackingNumber,
-                    "PrincipalreferenceNumber": baseMessage.customer_order_number,
-                    "documents": JSON.parse(baseMessage.message).documents
-                },
-                "error": errorBody
-            };
-
-            // this.logger.log("errorMessage--->",errorMessage)
-
+                    
             //Construct final Lobster POST message
             if (baseMessage.statusCode == 201) {
-                conMessage = await this.LobsterTransformationService.lobData(message);
+                var successMessage = {
+                    "content": {
+                        "accountNumber": accountNumber,
+                        "HAWB": baseMessage.shipmentTrackingNumber,
+                        "PrincipalreferenceNumber": baseMessage.customer_order_number,
+                        "documents": JSON.parse(baseMessage.message).documents,
+                        "estimatedDeliveryDate":  JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate
+                    }
+                };
+    
+                this.logger.log("message----->\n\n",successMessage)
+                conMessage = await this.LobsterTransformationService.lobData(successMessage);
             } else {
+                //Removing extraneous fields in the error message
+                var errorBody = JSON.parse(baseMessage.message)
+                delete errorBody["instance"];
+                delete errorBody["message"];
+                var errorMessage = {
+                    "content": {
+                        "accountNumber": accountNumber,
+                        "HAWB": baseMessage.shipmentTrackingNumber,
+                        "PrincipalreferenceNumber": baseMessage.customer_order_number,
+                        "documents": JSON.parse(baseMessage.message).documents,
+                        "estimatedDeliveryDate":"null"
+                    },
+                    "error": errorBody
+                };
+
+                this.logger.log("errorMessage--->",errorMessage)
                 conMessage = await this.LobsterTransformationService.lobData(errorMessage, true);
             }
 
@@ -348,7 +355,8 @@ export class DownStreamService {
             //}
         } catch (error) {
             //Update processing_status of events table to ERROR
-            await this.ExpResponseDataRepository.update({ "id": id }, { "status": "ERROR", "error_reason": error });
+            console.log("Error----->",error)
+            //await this.ExpResponseDataRepository.update({ "customer_order_number":baseMessage.customer_order_number }, { "status": "ERROR", "error_reason": error });
             resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: error } });
         }
     }    

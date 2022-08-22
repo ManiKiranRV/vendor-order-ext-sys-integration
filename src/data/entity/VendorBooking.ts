@@ -125,11 +125,11 @@ export class VendorBooking extends Model<VendorBookingAttributes, VendorBookingC
       allowNull: true
     },
     response_error_title: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     response_error_detail: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     response_time_stamp: {

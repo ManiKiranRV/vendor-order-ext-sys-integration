@@ -42,6 +42,7 @@ export class DataGenTransformationService implements BaseService {
     async expTmsLlpClient2(msgType: any): Promise<any> {
 
         var tmsResponseList = await this.ExpResponseDataRepository.get({ 'status': "UNPROCESSED" })
+        //console.log("Unprocessed responses--->",tmsResponseList)
         console.log("msgType------->", msgType)
 
         //BLESS Datagen variables

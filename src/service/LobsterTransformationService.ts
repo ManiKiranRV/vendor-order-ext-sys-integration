@@ -38,8 +38,10 @@ export class LobsterTransformationService {
                                         "accountNumber": message.content.accountNumber,
                                         "HAWB": message.content.HAWB,
                                         "PrincipalreferenceNumber": message.content.PrincipalreferenceNumber,
+                                        "estimatedDeliveryDate": message.content.estimatedDeliveryDate
                                     }
                                 }
+                                console.log("HEADER--->", _header)
                                 return _header;
                             },
                             on: "header"
