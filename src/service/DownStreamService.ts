@@ -288,8 +288,8 @@ export class DownStreamService {
             } else {
                 accountNumber = "";
             }
-            this.logger.log(`Account Number is ${accountNumber}`)
-                    
+            //this.logger.log(`Account Number is ${accountNumber}`)
+              this.logger.log("Tracking URL--->", JSON.parse(baseMessage.message).trackingUrl)      
             //Construct final Lobster POST message
             if (baseMessage.statusCode == 201) {
                 var successMessage = {
@@ -298,7 +298,8 @@ export class DownStreamService {
                         "HAWB": baseMessage.shipmentTrackingNumber,
                         "PrincipalreferenceNumber": baseMessage.customer_order_number,
                         "documents": JSON.parse(baseMessage.message).documents,
-                        "estimatedDeliveryDate":  JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate
+                        "estimatedDeliveryDate":  JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate,
+                        "trackingUrl":  JSON.parse(baseMessage.message).trackingUrl
                     }
                 };
     
@@ -315,7 +316,8 @@ export class DownStreamService {
                         "HAWB": baseMessage.shipmentTrackingNumber,
                         "PrincipalreferenceNumber": baseMessage.customer_order_number,
                         "documents": JSON.parse(baseMessage.message).documents,
-                        "estimatedDeliveryDate":"null"
+                        "estimatedDeliveryDate":"null",
+                        "trackingUrl":"null"
                     },
                     "error": errorBody
                 };
