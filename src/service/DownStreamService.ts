@@ -368,7 +368,17 @@ export class DownStreamService {
     */   
     
         async downStreamToTmsSystemInvoice(req:any,res:any): Promise<any> {
-            
+           // Converting Base64 Bless Message
+           
+           //Construct object for POST Method
+
+           //Construct object for PATCH Method
+
+           //Check the Condition for "Content"
+
+           //Send the objects to POST & PATCH Methods in Utils file
+
+           // Map the Response to columns in the document & invoice table           
     
         }  
 
