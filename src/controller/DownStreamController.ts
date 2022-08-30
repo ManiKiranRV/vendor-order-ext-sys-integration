@@ -114,22 +114,24 @@ export class DownStreamController implements Controller {
             
         */ 
 
-            router.post('/uploadInvoice',async (req:any, res) => {
-                try {
-                    this.logger.log(`=============================================START-COMMERCIAL INVOICE TMS To LLP DOWNSTREAM=======================================`)
-    
-                    //Calling Downstream service for Commercial Invoice from LLP to TMS
-                    var downstreamToTmsSystemInvoice = await this.DownStreamService.downStreamToTmsSystemInvoice(req,res)
-    
-                    res.json({ token:downstreamToTmsSystemInvoice });
-                    this.logger.log(`=============================================END-COMMERCIAL INVOICE TMS To LLP DOWNSTREAM=======================================`)
-                    
-                } catch (error) {
-                    let response: any = { status: { code: 'FAILURE', message: error } }
-                    res.json(response);
-    
-                }
-            });
+        router.post('/uploadInvoice',async (req:any, res) => {
+            try {
+                this.logger.log(`=============================================START-COMMERCIAL INVOICE TMS To LLP DOWNSTREAM=======================================`)
+
+                //Calling Downstream service for Commercial Invoice from LLP to TMS
+                this.logger.log("REQUEST BODY",req.body[0].body)
+                let request = req.body[0].body
+                var downstreamToTmsSystemInvoice = await this.DownStreamService.downStreamToTmsSystemInvoice(request,res)
+
+                res.json({ token:downstreamToTmsSystemInvoice });
+                this.logger.log(`=============================================END-COMMERCIAL INVOICE TMS To LLP DOWNSTREAM=======================================`)
+                
+            } catch (error) {
+                let response: any = { status: { code: 'FAILURE', message: error } }
+                res.json(response);
+
+            }
+        });
         
         return router;
     }

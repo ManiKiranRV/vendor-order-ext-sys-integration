@@ -15,6 +15,8 @@ import { AddressRepository } from "../data/repository/AddressRepository";
 import { LobsterTransformationService } from "./LobsterTransformationService";
 import { DataGenTransformationService } from "../service/DataGenTransformationService";
 
+import { CommonInvoiceService } from "../service/CommonInvoiceService";
+
 var fs = require('fs');
 
 
@@ -29,6 +31,7 @@ export class DownStreamService {
     private DataGenTransformationService: DataGenTransformationService;
     private genericUtil: GenericUtil;
     private fileUtil: FileUtil;
+    private CommonInvoiceService: CommonInvoiceService;
 
     constructor() {
         this.logger = DI.get(Logger);
@@ -41,6 +44,7 @@ export class DownStreamService {
         this.DataGenTransformationService = DI.get(DataGenTransformationService);
         this.genericUtil = DI.get(GenericUtil);
         this.fileUtil = DI.get(FileUtil);
+        this.CommonInvoiceService = DI.get(CommonInvoiceService)
     }
 
     async expBookingReqDownStreamHandler(message: any): Promise<any> {
@@ -368,13 +372,155 @@ export class DownStreamService {
     */   
     
         async downStreamToTmsSystemInvoice(req:any,res:any): Promise<any> {
-           // Converting Base64 Bless Message
+            // Converting Base64 Bless Message
+
+            //Check the Condition for "Content"
+            this.logger.log("Content----->",req.content)
+            if(req.content !== null){
+                //Construct object for POST Method
+                let postObj = {
+                    "shipmentTrackingNumber": "9741118730",
+                    "plannedShipDate": "2020-08-03",
+                    "accounts": [
+                        {
+                            "typeCode": "shipper",
+                            "number": "210284188"
+                        }
+                    ],
+                    "content": {
+                        "exportDeclaration": [
+                            {
+                                "lineItems": [
+                                    {
+                                        "number": 1,
+                                        "commodityCodes": [
+                                            {
+                                                "value": "84313900",
+                                                "typeCode": "outbound"
+                                            }
+                                        ],
+                                        "quantity": {
+                                            "unitOfMeasurement": "PCS",
+                                            "value": 1
+                                        },
+                                        "price": 37.83,
+                                        "description": "NON-RETURN VALVE",
+                                        "weight": {
+                                            "netValue": 0.56
+                                        },
+                                        "manufacturerCountry": "FI"
+                                    },
+                                    {
+                                        "number": 2,
+                                        "commodityCodes": [
+                                            {
+                                                "value": "84313900",
+                                                "typeCode": "outbound"
+                                            }
+                                        ],
+                                        "quantity": {
+                                            "unitOfMeasurement": "PCS",
+                                            "value": 2
+                                        },
+                                        "price": 53.33,
+                                        "description": "PRESSURE SWITCH",
+                                        "weight": {
+                                            "netValue": 0.1
+                                        },
+                                        "manufacturerCountry": "FI"
+                                    },
+                                    {
+                                        "number": 3,
+                                        "commodityCodes": [
+                                            {
+                                                "value": "84313900",
+                                                "typeCode": "outbound"
+                                            }
+                                        ],
+                                        "quantity": {
+                                            "unitOfMeasurement": "PCS",
+                                            "value": 1
+                                        },
+                                        "price": 119.06,
+                                        "description": "VALVE CARTRIDGE 3-WAY",
+                                        "weight": {
+                                            "netValue": 0.28
+                                        },
+                                        "manufacturerCountry": "PL"
+                                    },
+                                    {
+                                        "number": 4,
+                                        "commodityCodes": [
+                                            {
+                                                "value": "84313900",
+                                                "typeCode": "outbound"
+                                            }
+                                        ],
+                                        "quantity": {
+                                            "unitOfMeasurement": "PCS",
+                                            "value": 1
+                                        },
+                                        "price": 105.42,
+                                        "description": "BLOCK,HYDRAULIC CAVITY T-11A",
+                                        "weight": {
+                                            "netValue": 1.57
+                                        },
+                                        "manufacturerCountry": "PL"
+                                    }
+                                ],
+                                "invoice": {
+                                    "date": "2022-06-16",
+                                    "number": "97746412",
+                                    "function": "both"
+                                },
+                                "additionalCharges": [
+                                    {
+                                        "value": 32.5,
+                                        "typeCode": "freight"
+                                    }
+                                ],
+                                "incoterm": "DAP"
+                            }
+                        ],
+                        "currency": "USD",
+                        "unitOfMeasurement": "metric"
+                    }
+                }
+                this.logger.log("POST OBJECT---->",postObj)
+
+
+            }else{
+                //Construct object for PATCH Method
+
+                let patchObj = {
+                    "shipmentTrackingNumber": "9741117842",
+                    "originalPlannedShippingDate": "2022-08-29",
+                    "accounts": [
+                        {
+                        "typeCode": "shipper",
+                        "number": "954987611"
+                        }
+                    ],
+                    "productCode": "P",
+                    "documentImages": [
+                        {
+                        "typeCode": "CIN",
+                        "imageFormat": "PDF",
+                        "content": "1yfvHHwAM8Ph89xfAN4/nU40kfG3xa41vDAxODc5OCAwMDAwMCBuIAowMDAwMDmVmCjE4OTU1CiUlRU9GCg=="
+                        }
+                    ]
+                }
+
+                let patchResult = await this.CommonInvoiceService.invoicePatchMethod(patchObj,res)
+                this.logger.log("patchResult----->",patchResult)
+
+            }
+
            
-           //Construct object for POST Method
+           
 
-           //Construct object for PATCH Method
 
-           //Check the Condition for "Content"
+
 
            //Send the objects to POST & PATCH Methods in Utils file
 
