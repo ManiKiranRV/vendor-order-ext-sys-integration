@@ -361,8 +361,15 @@ export class DownStreamService {
             //await this.ExpResponseDataRepository.update({ "customer_order_number":baseMessage.customer_order_number }, { "status": "ERROR", "error_reason": error });
             resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: error } });
         }
-    }    
+    }  
     
-
+     /*
+        DownStream Service to send Commertial Message to TMS System(From LLP Node) & Persisting the TMS Response
+    */   
+    
+        async downStreamToTmsSystemInvoice(req:any,res:any): Promise<any> {
+            
+    
+        }  
 
 }
