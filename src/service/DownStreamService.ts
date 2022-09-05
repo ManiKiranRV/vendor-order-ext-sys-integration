@@ -16,9 +16,11 @@ import { LobsterTransformationService } from "./LobsterTransformationService";
 import { DataGenTransformationService } from "../service/DataGenTransformationService";
 
 import { CommonInvoiceService } from "../service/CommonInvoiceService";
+import { InvoiceDetailsRepository } from "../data/repository/InvoiceDetailsRepository";
+import { DocumentRepository } from "../data/repository/DocumentRepository";
 
 var fs = require('fs');
-
+import * as moment from 'moment';
 
 export class DownStreamService {
     private logger: Logger;
@@ -26,12 +28,15 @@ export class DownStreamService {
     private ExpResponseDataRepository: ExpResponseDataRepository;
     private UpdateCoreTablesService: UpdateCoreTablesService;
     private LobsterTransformationService: LobsterTransformationService;
-    private VendorBoookingRepository: VendorBookingRepository;
+    private VendorBookingRepository: VendorBookingRepository;
     private AddressRepository: AddressRepository;
     private DataGenTransformationService: DataGenTransformationService;
     private genericUtil: GenericUtil;
     private fileUtil: FileUtil;
     private CommonInvoiceService: CommonInvoiceService;
+    private InvoiceDetailsRepository: InvoiceDetailsRepository;
+    private DocumentRepository: DocumentRepository;
+    
 
     constructor() {
         this.logger = DI.get(Logger);
@@ -40,11 +45,13 @@ export class DownStreamService {
         this.UpdateCoreTablesService = DI.get(UpdateCoreTablesService);
         this.LobsterTransformationService = DI.get(LobsterTransformationService);
         this.AddressRepository = DI.get(AddressRepository);
-        this.VendorBoookingRepository = DI.get(VendorBookingRepository);
+        this.VendorBookingRepository = DI.get(VendorBookingRepository);
         this.DataGenTransformationService = DI.get(DataGenTransformationService);
         this.genericUtil = DI.get(GenericUtil);
         this.fileUtil = DI.get(FileUtil);
-        this.CommonInvoiceService = DI.get(CommonInvoiceService)
+        this.CommonInvoiceService = DI.get(CommonInvoiceService);
+        this.InvoiceDetailsRepository = DI.get(InvoiceDetailsRepository);
+        this.DocumentRepository = DI.get(DocumentRepository);
     }
 
     async expBookingReqDownStreamHandler(message: any): Promise<any> {
@@ -272,7 +279,7 @@ export class DownStreamService {
 
             //Derive accountNumber to be sent to LOSTER system
             this.logger.log("baseMessage.customer_order_number-------->\n\n",baseMessage.customer_order_number)
-            let vendorOrderItem = (await this.VendorBoookingRepository.get({ "customer_order_number": baseMessage.customer_order_number }));
+            let vendorOrderItem = (await this.VendorBookingRepository.get({ "customer_order_number": baseMessage.customer_order_number }));
             
             if (vendorOrderItem.length > 0) {
                 var id = vendorOrderItem[0]["id"]
@@ -371,161 +378,166 @@ export class DownStreamService {
         DownStream Service to send Commertial Message to TMS System(From LLP Node) & Persisting the TMS Response
     */   
     
-        async downStreamToTmsSystemInvoice(req:any,res:any): Promise<any> {
-            // Converting Base64 Bless Message
+    async downStreamToTmsSystemInvoice(req:any,res:any): Promise<any> {
+        // Converting Base64 Bless Message
 
-            //Check the Condition for "Content"
-            this.logger.log("Content----->",req.content)
-            if(req.content !== null){
-                //Construct object for POST Method
-                let postObj = {
-                    "shipmentTrackingNumber": "9741118730",
-                    "plannedShipDate": "2020-08-03",
-                    "accounts": [
-                        {
-                            "typeCode": "shipper",
-                            "number": "210284188"
-                        }
-                    ],
-                    "content": {
-                        "exportDeclaration": [
-                            {
-                                "lineItems": [
-                                    {
-                                        "number": 1,
-                                        "commodityCodes": [
-                                            {
-                                                "value": "84313900",
-                                                "typeCode": "outbound"
-                                            }
-                                        ],
-                                        "quantity": {
-                                            "unitOfMeasurement": "PCS",
-                                            "value": 1
-                                        },
-                                        "price": 37.83,
-                                        "description": "NON-RETURN VALVE",
-                                        "weight": {
-                                            "netValue": 0.56
-                                        },
-                                        "manufacturerCountry": "FI"
-                                    },
-                                    {
-                                        "number": 2,
-                                        "commodityCodes": [
-                                            {
-                                                "value": "84313900",
-                                                "typeCode": "outbound"
-                                            }
-                                        ],
-                                        "quantity": {
-                                            "unitOfMeasurement": "PCS",
-                                            "value": 2
-                                        },
-                                        "price": 53.33,
-                                        "description": "PRESSURE SWITCH",
-                                        "weight": {
-                                            "netValue": 0.1
-                                        },
-                                        "manufacturerCountry": "FI"
-                                    },
-                                    {
-                                        "number": 3,
-                                        "commodityCodes": [
-                                            {
-                                                "value": "84313900",
-                                                "typeCode": "outbound"
-                                            }
-                                        ],
-                                        "quantity": {
-                                            "unitOfMeasurement": "PCS",
-                                            "value": 1
-                                        },
-                                        "price": 119.06,
-                                        "description": "VALVE CARTRIDGE 3-WAY",
-                                        "weight": {
-                                            "netValue": 0.28
-                                        },
-                                        "manufacturerCountry": "PL"
-                                    },
-                                    {
-                                        "number": 4,
-                                        "commodityCodes": [
-                                            {
-                                                "value": "84313900",
-                                                "typeCode": "outbound"
-                                            }
-                                        ],
-                                        "quantity": {
-                                            "unitOfMeasurement": "PCS",
-                                            "value": 1
-                                        },
-                                        "price": 105.42,
-                                        "description": "BLOCK,HYDRAULIC CAVITY T-11A",
-                                        "weight": {
-                                            "netValue": 1.57
-                                        },
-                                        "manufacturerCountry": "PL"
-                                    }
-                                ],
-                                "invoice": {
-                                    "date": "2022-06-16",
-                                    "number": "97746412",
-                                    "function": "both"
-                                },
-                                "additionalCharges": [
-                                    {
-                                        "value": 32.5,
-                                        "typeCode": "freight"
-                                    }
-                                ],
-                                "incoterm": "DAP"
-                            }
-                        ],
-                        "currency": "USD",
-                        "unitOfMeasurement": "metric"
-                    }
+        //Getting the data from Vendor Booking Table & Address Table
+        //let customer_order_number = req.principalRef
+        let vendorOrderDetails = await this.VendorBookingRepository.get({ customer_order_number: req.principalRef })
+        this.logger.log("vendorOrderDetails---->",vendorOrderDetails)
+        //this.logger.log("vendorOrderDetails[0].planned_shipping_date_and_time",(vendorOrderDetails[0].planned_shipping_date_and_time).toISOString().split('T')[0])
+        let addressDetails = await this.AddressRepository.get({ customer_order_number: req.principalRef, address_type: "SHIPPER" })
+        this.logger.log("addressDetails---->",addressDetails)
+        
+        //Timestamp
+
+        let today = new Date();
+        let todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss") + ' UTC'+moment.utc(today).format("Z")
+
+        //Construct object for PATCH Method
+
+        let patchObj = {
+            "shipmentTrackingNumber": req.shipmentTrackingNumber,
+            //"originalPlannedShippingDate": (vendorOrderDetails[0].planned_shipping_date_and_time).toISOString().split('T')[0], //planned_shipping_date_and_time from vendor,
+            "originalPlannedShippingDate": vendorOrderDetails[0].planned_shipping_date_and_time, //planned_shipping_date_and_time from vendor,
+            "accounts": [
+                {
+                "typeCode": "shipper",
+                "number": addressDetails[0].address_id // addressid of the shipper account from Address_Details
                 }
-                this.logger.log("POST OBJECT---->",postObj)
+            ],
+            "productCode": vendorOrderDetails[0].shipment_service_code, // shipmentservicecode from Vendor_Booking
+            "documentImages": [
+                {
+                "typeCode": req.typeCode,
+                "imageFormat": req.documentType,
+                "content": req.documentContent
+                }
+            ]
+        }
+        this.logger.log("PatchObj----->",patchObj)
 
+        //Check the Condition for "Content"
 
-            }else{
-                //Construct object for PATCH Method
-
-                let patchObj = {
-                    "shipmentTrackingNumber": "9741117842",
-                    "originalPlannedShippingDate": "2022-08-29",
-                    "accounts": [
-                        {
+        this.logger.log("Content----->",req.content)
+        if(req.content !== null){
+            //Construct object for POST Method
+            let postObj = {
+                "shipmentTrackingNumber": req.shipmentTrackingNumber,
+                "plannedShipDate": (vendorOrderDetails[0].planned_shipping_date_and_time).toISOString().split('T')[0], //planned_shipping_date_and_time from vendor
+                "accounts": [
+                    {
                         "typeCode": "shipper",
-                        "number": "954987611"
-                        }
-                    ],
-                    "productCode": "P",
-                    "documentImages": [
-                        {
-                        "typeCode": "CIN",
-                        "imageFormat": "PDF",
-                        "content": "1yfvHHwAM8Ph89xfAN4/nU40kfG3xa41vDAxODc5OCAwMDAwMCBuIAowMDAwMDmVmCjE4OTU1CiUlRU9GCg=="
-                        }
-                    ]
+                        "number": addressDetails[0].address_id // addressid of the shipper account from Address_Details
+                    }
+                ],
+                "content": req.content
+            }
+            this.logger.log("POST OBJECT---->",postObj)
+            /** Delete Start**/
+            var postOptions = {
+                'method': 'POST',
+                'url': process.env.POST_INVOICE_URL,
+                'headers': {
+                    'Authorization': 'Basic ZGhsYmxlc3NibG9DSDpDJDJhTyExbkMhMmVWQDhr',
+                    'Content-Type': 'application/json',
+                    'Cookie': 'BIGipServer~WSB~pl_wsb-express-cbj.dhl.com_443=293349575.64288.0000'
+                },
+                body: JSON.stringify(req)
+            };
+            console.log("OPTIONS FOR POST METHOD---->",postOptions)
+
+            await request(postOptions, async (error: any, response: any) => {
+                if (error) throw new Error(error);
+                console.log("response--->",response.body,response.statusCode)
+                let invoiceObj
+                if(response.statusCode == 200){
+                    invoiceObj = {
+                        "uploadstatus": process.env.VEN_BOOKING_CON_STATUS
+                    }
+                    this.logger.log("invoiceObj---->",invoiceObj)
+                    this.logger.log("req.principalRef----->",req.principalRef)
+                    var invoiceObjSucc = await this.InvoiceDetailsRepository.update({ "customerordernumber":req.principalRef },invoiceObj)
+
+                }else{                
+                    invoiceObj = {
+                        "uploadstatus": process.env.VEN_BOOKING_ERR_STATUS,
+                        "responseerrorcode":JSON.parse(response.body).status,
+                        "responseerrortitle":JSON.parse(response.body).title,
+                        "responseerrordetail":(JSON.parse(response.body).additionalDetails != undefined)?JSON.parse(response.body).detail+","+"["+JSON.parse(response.body).additionalDetails+"]":JSON.parse(response.body).detail,
+                        "responsetimestamp":todayUTC
+                    }
+                    console.log("invoiceObj--->",invoiceObj)
+                    this.logger.log("req.principalRef----->",req.principalRef)
+                    var invoiceObjErr = await this.InvoiceDetailsRepository.update({ "customerordernumber":req.principalRef },invoiceObj)
                 }
 
-                let patchResult = await this.CommonInvoiceService.invoicePatchMethod(patchObj,res)
-                this.logger.log("patchResult----->",patchResult)
+                });
+            /** Delete End**/
 
+        }
+            
+        this.logger.log("PatchObj inside else----->",patchObj)
+        /** Delete Start**/
+        var patchOptions = {
+            'method': 'PATCH',
+            'url': process.env.PATCH_INVOICE_URL+req.shipmentTrackingNumber+process.env.PATCH_INVOICE_URL1,
+            'headers': {
+                'Authorization': 'Basic ZGhsYmxlc3NibG9DSDpDJDJhTyExbkMhMmVWQDhr',
+                'Content-Type': 'application/json',
+                'Cookie': 'BIGipServer~WSB~pl_wsb-express-cbj.dhl.com_443=293349575.64288.0000'
+            },
+            body: JSON.stringify(patchObj)
+        };
+        this.logger.log("OPTIONS FOR PATCH METHOD---->",patchOptions)
+        // let resultList: any = [];
+        // let response
+        //console.log("OPTIONS---->",options)
+        await request(patchOptions, async (error: any, response: any) => {
+            if (error) throw new Error(error);
+            
+            console.log("response--->",response.body,response.statusCode)
+            let documentObj
+            if(response.statusCode == 200){
+                documentObj = {
+                    "uploadstatus": process.env.VEN_BOOKING_CON_STATUS
+                }
+                this.logger.log("documentObj---->",documentObj)
+                this.logger.log("req.principalRef----->",req.principalRef)
+                var documentObjSucc = await this.DocumentRepository.update({ "customerordernumber":req.principalRef },documentObj)
+
+            }else{    
+                console.log("response object--->",JSON.parse(response.body).status)            
+                documentObj = {
+                    "responseerrorcode":JSON.parse(response.body).status,
+                    "responseerrortitle":JSON.parse(response.body).title,
+                    "responseerrordetail":(JSON.parse(response.body).additionalDetails != undefined)?JSON.parse(response.body).detail+","+"["+JSON.parse(response.body).additionalDetails+"]":JSON.parse(response.body).detail,
+                    "responsetimestamp":todayUTC
+                }
+                console.log("documentObj--->",documentObj)
+                this.logger.log("req.principalRef----->",req.principalRef)
+                var documentObjErr = await this.DocumentRepository.update({ "customerordernumber":req.principalRef },documentObj)
             }
 
-           
-           
+
+
+
+            //return response.body
+
+        });
+        /** Delete End**/
+        
+
+        
+        
 
 
 
 
-           //Send the objects to POST & PATCH Methods in Utils file
+        //Send the objects to POST & PATCH Methods in Utils file
 
-           // Map the Response to columns in the document & invoice table           
-    
-        }  
+        // Map the Response to columns in the document & invoice table           
+
+    }  
 
 }

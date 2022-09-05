@@ -123,7 +123,7 @@ export class DownStreamController implements Controller {
                 let request = req.body[0].body
                 var downstreamToTmsSystemInvoice = await this.DownStreamService.downStreamToTmsSystemInvoice(request,res)
 
-                res.json({ token:downstreamToTmsSystemInvoice });
+                //res.json({ token:downstreamToTmsSystemInvoice });
                 this.logger.log(`=============================================END-COMMERCIAL INVOICE TMS To LLP DOWNSTREAM=======================================`)
                 
             } catch (error) {
