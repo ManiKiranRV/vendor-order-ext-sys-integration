@@ -19,7 +19,7 @@ var upload = multer();
 
 const expressApp: express.Application = express(); 
 var bodyParser = require('body-parser');            
-var cron = require('cron');
+//var cron = require('cron');
 expressApp.use(bodyParser.json({limit:'500mb'})); 
 expressApp.use(bodyParser.urlencoded({extended:true, limit:'500mb'})); 
 expressApp.use(upload.array());
@@ -76,39 +76,39 @@ class Main {
             this.logger.log('Application Server Started',process.env.PORT);
 
   
-                let expTmsService: ExpTmsService = DI.get(ExpTmsService)
-                let llpToClient2Service: LlpClien2Service = DI.get(LlpClien2Service)
-                let lobsterService: LobsterService = DI.get(LobsterService)
+                // let expTmsService: ExpTmsService = DI.get(ExpTmsService)
+                // let llpToClient2Service: LlpClien2Service = DI.get(LlpClien2Service)
+                // let lobsterService: LobsterService = DI.get(LobsterService)
 
-                var llpToTms = cron.job(process.env.CRON1, async () => {              
-                    await expTmsService.ExpDhl()
-                    this.logger.log('cron Execution Success for LLP to TMS');
+                // var llpToTms = cron.job(process.env.CRON1, async () => {              
+                //     await expTmsService.ExpDhl()
+                //     this.logger.log('cron Execution Success for LLP to TMS');
     
     
-                });
-                var llpToClient2 = cron.job(process.env.CRON2, async () => {
-                    await llpToClient2Service.clientTmsResponse();
-                    this.logger.log('cron Execution Success for LLP to CLIENT2');
-                });
-                var client2ToLob = cron.job(process.env.CRON3, async () => {
-                    await lobsterService.postTmsResponseToLobster();
-                    this.logger.log('cron Execution Success for CLIENT2 to Lobster');
-                });
-                if(process.env.LLP_TMS_CRON=="ON"){
-                    llpToTms.start(); 
-                }else if(process.env.LLP_TMS_CRON=="OFF"){
-                    llpToTms.stop();
-                }  
-                if(process.env.LLP_CLIENT2_CRON=="ON"){   
-                    llpToClient2.start();
-                }else if(process.env.LLP_CLIENT2_CRON=="OFF"){
-                    llpToClient2.stop();
-                }
-                if(process.env.CLIENT2_LOBSTER_CRON=="ON"){  
-                    client2ToLob.start();             
-                }else if(process.env.CLIENT2_LOBSTER_CRON=="OFF"){                  
-                    client2ToLob.stop();
-                }
+                // });
+                // var llpToClient2 = cron.job(process.env.CRON2, async () => {
+                //     await llpToClient2Service.clientTmsResponse();
+                //     this.logger.log('cron Execution Success for LLP to CLIENT2');
+                // });
+                // var client2ToLob = cron.job(process.env.CRON3, async () => {
+                //     await lobsterService.postTmsResponseToLobster();
+                //     this.logger.log('cron Execution Success for CLIENT2 to Lobster');
+                // });
+                // if(process.env.LLP_TMS_CRON=="ON"){
+                //     llpToTms.start(); 
+                // }else if(process.env.LLP_TMS_CRON=="OFF"){
+                //     llpToTms.stop();
+                // }  
+                // if(process.env.LLP_CLIENT2_CRON=="ON"){   
+                //     llpToClient2.start();
+                // }else if(process.env.LLP_CLIENT2_CRON=="OFF"){
+                //     llpToClient2.stop();
+                // }
+                // if(process.env.CLIENT2_LOBSTER_CRON=="ON"){  
+                //     client2ToLob.start();             
+                // }else if(process.env.CLIENT2_LOBSTER_CRON=="OFF"){                  
+                //     client2ToLob.stop();
+                // }
                 
                 //nodeApis.start();
                 //cronApis.start();

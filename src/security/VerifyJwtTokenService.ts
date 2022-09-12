@@ -20,10 +20,10 @@ export class VerifyJwtTokenService implements BaseService {
 
     let bearerHeader: any = req.headers['authorization'];
     console.log('auth', bearerHeader)
-    let token: any = '';
-    if (bearerHeader != undefined) {
-      token = bearerHeader.split(" ")[1];
-    }
+    let token: any = bearerHeader;
+    // if (bearerHeader != undefined) {
+    //   token = bearerHeader.split(" ")[1];
+    // }
     console.log('verifying jwt', token)
     if (!token) {
       return res.status(403).send({
