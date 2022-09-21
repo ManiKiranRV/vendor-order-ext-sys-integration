@@ -5,7 +5,7 @@ import { any, resolve } from "bluebird";
 import { GenericUtil } from "../util/GenericUtil";
 import { FileUtil } from "../util/FileUtil";
 import { Response } from "express";
-import { NextFunction, Request } from "express-serve-static-core";
+//import { NextFunction, Request } from "express-serve-static-core";
 import { ExpResponseDataRepository } from "../data/repository/ExpResponseDataRepository";
 import { UpdateCoreTablesService } from "./UpdateCoreTablesService";
 var request = require('request');
@@ -146,6 +146,9 @@ export class DownStreamService {
 
             message =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
             this.logger.log("Data after converting base64---->/n/n",message)
+            //console.log("Adding additional field------>",message["customerReferences"][0].value+"-"+message["consignorRef"])
+            message["customerReferences"][0].value = message["customerReferences"][0].value+"-"+message["consignorRef"]
+            this.logger.log("Data after adding additional Details---->/n/n",message)
             customerOrderNumber = message.principalRef+"";
             const token = GenericUtil.generateRandomHash();
             //Creating the Data Object from exp_tms_data table and Persisting the Data
@@ -169,7 +172,8 @@ export class DownStreamService {
             delete message["principalRef"];
             delete message["shipper_account_number"];
             delete message["trailToken"];
-            //this.logger.log("Message after deleteing-------->/n/n",message);
+            delete message["consignorRef"]
+            this.logger.log("Message after deleteing-------->/n/n",message);
             
             //Creating the Data Object from tms data and calling TMS URL
             var options = {

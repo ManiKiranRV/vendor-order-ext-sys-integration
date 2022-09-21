@@ -35,6 +35,7 @@ export class VerifyJwtTokenService implements BaseService {
 
     jwt.verify(token, key, (err: any, authData: any) => {
       if (err) {
+        console.log("Invalid Token")
         return res.status(403).send({
           auth: false,
           message: 'Invalid Token'
