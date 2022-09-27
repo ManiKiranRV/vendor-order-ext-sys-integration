@@ -17,6 +17,11 @@ import { DataGenTransformationService } from "../service/DataGenTransformationSe
 
 var fs = require('fs');
 
+//For Timestamp
+import * as moment from 'moment';
+var today = new Date();
+var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z")
+
 
 export class DownStreamService {
     private logger: Logger;
@@ -195,8 +200,10 @@ export class DownStreamService {
             this.logger.log(`fileName is -----------------------------> ${fileName}`);
 
             //this.logger.log("OPTIONS---->\n\n",options)
+            console.log("Timestamp before sending to TMS System--->",todayUTC);
             await request(options, async (error: any, response: any) => {
                 if (error) throw new Error(error);
+                console.log("Timestamp after getting response from TMS System--->",todayUTC);
                 var expres = {
                     statusCode: response.statusCode,
                     message: response.body,
@@ -254,7 +261,7 @@ export class DownStreamService {
     async downStreamToLobsterSystem(req:any,res:any): Promise<any> {
         let baseMessage:any
         try {
-
+            console.log("Timestamp at Client2 side after Datagen happen--->",todayUTC);
             baseMessage =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
             this.logger.log("Data after converting base64---->/n/n",baseMessage)
             var conMessage
@@ -348,8 +355,10 @@ export class DownStreamService {
             
 
             // this.logger.log(`Lobster Options is ${JSON.stringify(options)}`);
+            console.log("Timestamp before sending request to Lobster system--->",todayUTC);
             var result = await request(options, async (error: any, response: any) => {
                 if (error) throw new Error(error);
+                console.log("Timestamp after getting response from Lobster system--->",todayUTC);
                 //Save response from Lobster system to exp_response table
 
                 this.logger.log("response----->", response.body)

@@ -62,7 +62,7 @@ export class ShipmentController implements Controller {
     
         //DOWNSTREAM LLP-TMS(EXP Request Data) & LLP-CLIENT2(TMS Response)//  
 
-        router.post('/tmsResponse', this.verifyJwtTokenService.verifyToken, async (req:any, res) => {
+        router.post('/tmsResponse',  async (req:any, res) => {
             try {
                 this.logger.log(`=============================================START-LLP -TMS DOWNSTREAM=======================================`)
                 //this.logger.log(`BLESS REQUEST BODY is ${JSON.stringify(req.body.message)}`);

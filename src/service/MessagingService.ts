@@ -3,7 +3,10 @@ import { Kafka, Consumer, Producer } from "kafkajs";
 import { DI } from "../di/DIContainer";
 import { Logger } from "../logger/Logger";
 
-
+//For Timestamp
+import * as moment from 'moment';
+var today = new Date();
+var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z")
 
 
 export class MessagingService implements BaseService {
@@ -30,7 +33,8 @@ export class MessagingService implements BaseService {
             this.logger.log("================================START-DATAGEN MESSAGE PUBLISH==================", message);
             this.logger.log("Datagen Message ", message);
             this.logger.log("Topic name ", process.env.PUBLISH_TOPIC!);
-            this.logger.log("payloads ", message.payloads);
+            //this.logger.log("payloads ", message.payloads);
+            console.log("Timestamp before Datagen in LLP---->",todayUTC);
             const producer: Producer = this.kafkav.producer();
             await producer.connect();
             let blessToken = await producer.send({
@@ -41,6 +45,7 @@ export class MessagingService implements BaseService {
                     }
                 ]
             });
+            console.log("Timestamp After Datagen in LLP---->",todayUTC);
             this.logger.log(`BLESS TOKEN is ${JSON.stringify(blessToken)}`);
             this.logger.log("================================STOP-DATAGEN MESSAGE PUBLISH==================");
         }
