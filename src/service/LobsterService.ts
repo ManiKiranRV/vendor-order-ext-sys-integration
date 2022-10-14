@@ -154,8 +154,13 @@ export class LobsterService {
                 await request(options, async (error: any, response: any) => {
                     if (error) throw new Error(error);
                     //Update processing_status of events table to SENT
-                    await this.eventsRepository.update(eventsUpdateWhereObj, eventsUpdateObj);
+                    // this.logger.log("DATA after getting response---->",eventsUpdateWhereObj, eventsUpdateObj)
+                    // var resultEvent = await this.eventsRepository.update(eventsUpdateWhereObj, eventsUpdateObj);
                 });
+                this.logger.log("DATA after getting response---->",eventsUpdateWhereObj, eventsUpdateObj)
+                var resultEvent = await this.eventsRepository.update(eventsUpdateWhereObj, eventsUpdateObj);
+
+
             } catch (error) {
                 //Update processing_status of events table to ERROR
                 eventsUpdateObj = { "processing_status": "ERROR", "error_reason": error };
