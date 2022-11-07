@@ -15,6 +15,12 @@ import { AddressRepository } from "../data/repository/AddressRepository";
 import { LobsterTransformationService } from "./LobsterTransformationService";
 import { DataGenTransformationService } from "../service/DataGenTransformationService";
 
+//Rates
+
+import { ExpRateTmsDataRepository } from "../data/repository/ExpRateTmsDataRepository";
+import { ExpRateResponseDataRepository } from "../data/repository/ExpRateResponseDataRepository";
+
+
 var fs = require('fs');
 
 //For Timestamp
@@ -35,6 +41,9 @@ export class DownStreamService {
     private genericUtil: GenericUtil;
     private fileUtil: FileUtil;
 
+    private ExpRateTmsDataRepository: ExpRateTmsDataRepository;
+    private ExpRateResponseDataRepository: ExpRateResponseDataRepository;
+
     constructor() {
         this.logger = DI.get(Logger);
         this.ExpTmsDataRepository = DI.get(ExpTmsDataRepository);
@@ -46,6 +55,9 @@ export class DownStreamService {
         this.DataGenTransformationService = DI.get(DataGenTransformationService);
         this.genericUtil = DI.get(GenericUtil);
         this.fileUtil = DI.get(FileUtil);
+
+        this.ExpRateTmsDataRepository = DI.get(ExpRateTmsDataRepository);
+        this.ExpRateResponseDataRepository = DI.get(ExpRateResponseDataRepository);
     }
 
     async expBookingReqDownStreamHandler(message: any): Promise<any> {
@@ -376,23 +388,245 @@ export class DownStreamService {
         }
     }  
     
-     /*
-        DownStream Service to send Commertial Message to TMS System(From LLP Node) & Persisting the TMS Response
+    /*
+        DownStream Service to send Rates Message to TMS System(From LLP Node) & Persisting the exp_rate_response_data
     */   
     
-        async downStreamToTmsSystemInvoice(req:any,res:any): Promise<any> {
-           // Converting Base64 Bless Message
-           
-           //Construct object for POST Method
+    async downStreamToTmsSystemRates(req:any,res:any): Promise<any> {
 
-           //Construct object for PATCH Method
+        let message:any
+        let customer_order_number:any
+        let shipper_account_number:any
+        let sequence_timestamp:any
+		let shipper_postalCode:any
+        let receiver_postalCode:any        
+        let token:any
+        let vcid:any
+        try {
+            this.logger.log("Request---------->/n/n",req)
 
-           //Check the Condition for "Content"
+            message =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body //Uncomment when request is coming form BLESS
+            this.logger.log("Data after converting base64---->/n/n",message)
 
-           //Send the objects to POST & PATCH Methods in Utils file
+            //Delete
 
-           // Map the Response to columns in the document & invoice table           
-    
-        }  
+            // message = req
+
+            // console.log("Data inside downStreamToTmsSystemRates----> ",message)
+            
+            token = GenericUtil.generateRandomHash(); 
+            // customer_order_number = message.sequence_timestamp
+            shipper_account_number = message.shipper_account_number
+            sequence_timestamp = message.sequence_timestamp
+            shipper_postalCode = message.shipper_postalCode
+            receiver_postalCode = message.receiver_postalCode
+            vcid = shipper_account_number+sequence_timestamp
+            //Creating the Data Object from exp_rate_tms_data and Persisting the Data
+            var tmsRatesDataobj = {
+                status: "UNPROCESSED",
+                shipper_account_number: shipper_account_number,
+                sequence_timestamp : sequence_timestamp,
+                shipper_postalCode : shipper_postalCode,
+                receiver_postalCode : receiver_postalCode,
+                message: message,
+                // customer_order_number: customer_order_number,
+                token:token,
+                vcid:vcid
+            }
+            this.logger.log("exp_rate_tms_data Object", tmsRatesDataobj)
+            await this.ExpRateTmsDataRepository.create(tmsRatesDataobj);
+
+            
+                
+            //Remove the extraneous fields from message
+            delete message["sequence_timestamp"];
+            delete message["shipper_account_number"];
+            delete message["shipper_postalCode"];
+            // delete message["vcid"];
+            delete message["receiver_postalCode"];
+            delete message["jobNr"];
+            this.logger.log("Message after deleteing-------->/n/n",message);
+            
+            //Creating the Data Object from tms data and calling TMS URL
+            var options = {
+                'method': 'POST',
+                'url': process.env.POST_RATES_URL,
+                'headers': {
+                    'Authorization': 'Basic ZGhsYmxlc3NibG9DSDpDJDJhTyExbkMhMmVWQDhr',
+                    'Content-Type': 'application/json',
+                    'Cookie': 'BIGipServer~WSB~pl_wsb-express-cbj.dhl.com_443=293349575.64288.0000'
+                },
+                body: JSON.stringify(message)
+            };
+            //Write the request to file
+            console.log("MESSAGE------------------------------------------------------>",JSON.stringify(message));
+            const fileName: string = GenericUtil.generateHash(JSON.stringify(message));
+            const filePath = process.env.REQ_TO_TMS_RATES_FILE_PATH+ fileName + '.txt' // Server
+            // const filePath = process.env.REQ_TO_TMS_RATES_FILE_PATH1+ fileName + '.txt' // Local
+            this.fileUtil.writeToFile(filePath, JSON.stringify(message));
+            this.logger.log(`filePath is -----------------------------> ${filePath}`);
+            this.logger.log(`fileName is -----------------------------> ${fileName}`);
+
+            //this.logger.log("OPTIONS---->\n\n",options)
+            console.log("Timestamp before sending to TMS System--->",todayUTC);
+            await request(options, async (error: any, response: any) => {
+                if (error) throw new Error(error);
+                console.log("Timestamp after getting response from TMS System--->",todayUTC);
+                console.log("Response from TMS----->",response)
+                var expRatesRes = {
+                    message: response.body,
+                    shipper_account_number: shipper_account_number,
+                    sequence_timestamp : sequence_timestamp,
+                    shipper_postalCode : shipper_postalCode,
+                    receiver_postalCode : receiver_postalCode,
+                    // customer_order_number:customer_order_number,
+                    token:token,
+                    vcid:vcid,
+                    statusCode: response.statusCode,
+                    status: "UNPROCESSED",
+                    req_file_path:filePath,
+                    req_file_uuid:fileName
+                }
+
+                this.logger.log("expRatesRes----->\n\n",expRatesRes)
+                //this.logger.log("Response-------->\n\n",Buffer.from(JSON.stringify({"body":expres})).toString("base64"))
+
+                //Save expRatesRes in `exp_taes_response_data` table along with shipper_account_number
+                await this.ExpRateResponseDataRepository.create(expRatesRes)
+
+                // //Update Core Tables
+                // await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+
+                //Update exp_tms_data with shipper_account_number
+                let whereObj = { "sequence_timestamp":sequence_timestamp}
+                this.logger.log("WhereOBJ---->\n\n",whereObj)
+                await this.ExpRateTmsDataRepository.update(whereObj, {
+                    // shipper_account_number:shipper_account_number,
+                    // shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
+                    status: "PROCESSED"
+                })
+
+                // Datagen service Sends TMS-Resp from LLP to Client2
+                await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RATE_RESP_MSG!);
+                // this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
+                //await this.ExpResponseDataRepository.update( whereObj, updateObj );
+                // this.logger.log("updateStatus----------->",updateStatus)
+            });
+
+            // let whereObj = { "customer_order_number":customerOrderNumber}
+            // let updateObj = { status: "PROCESSED" }
+            // this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj);
+            // await this.ExpResponseDataRepository.update(whereObj,updateObj);
+            return token
+
+        } catch (error) {
+            //resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: e } })
+            //Update processing_status of events table to ERROR
+            console.log("Error----->",error)
+            //await this.ExpResponseDataRepository.update({ "customer_order_number" : customerOrderNumber }, { "status": "ERROR", "error_reason": error });
+            resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: error } });
+        }
+        
+
+    }  
+
+    /*
+        DownStream Service to send TMS Rates Response to LOBSTER System & Persisting the LOBSTER Response
+    */
+    async downStreamToLobsterSystemRates(req:any,res:any): Promise<any> {
+        let baseMessage:any
+        try {
+            console.log("Timestamp at Client2 side after Datagen happen--->",todayUTC);
+            // baseMessage =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
+            // this.logger.log("Data after converting base64---->/n/n",baseMessage)
+            var conMessage
+            const token = GenericUtil.generateRandomHash();
+            // Fetch UNPROCESSED data from exp_rates_response_data table
+            var tmsRatesResponseList = await this.ExpRateResponseDataRepository.get({ 'status': "UNPROCESSED" })  
+            console.log("Fetch data in downStreamToLobsterSystemRates------->",tmsRatesResponseList)
+            
+            for (let tmsRatesReponseItem of tmsRatesResponseList){
+
+                console.log("tmsRatesReponseItem-------->",tmsRatesReponseItem)
+
+                var msgType = process.env.DATAGEN_TMS_RATE_RESP_MSG
+                var data = tmsRatesReponseItem.dataValues.message
+                let sequence_timestamp = tmsRatesReponseItem.dataValues.sequence_timestamp
+                console.log("Message------>",data)
+
+                //Construct final Lobster POST message
+                if (tmsRatesReponseItem.statusCode == 200) {
+                    var successMessage = {
+                        "msgType" : msgType,
+                        "data" : data
+                    };
+        
+                    this.logger.log("message----->\n\n",successMessage)
+                    conMessage = await this.LobsterTransformationService.lobData(successMessage);
+                }else{
+                    var errorMessage = {
+                        "msgType" : msgType,
+                        "data" : data
+                    };
+        
+                    this.logger.log("message----->\n\n",errorMessage)
+                    conMessage = await this.LobsterTransformationService.lobData(errorMessage);
+                }
+
+                
+                
+
+                this.logger.log("conMessage---->", conMessage)
+                // const fileName: string = GenericUtil.generateHash(JSON.stringify(conMessage.tdata));
+                // const filePath = process.env.REQ_TO_LOBSTER_RATES_FILE_PATH1+ fileName + '.txt'
+                // this.fileUtil.writeToFile(filePath, JSON.stringify(conMessage.tdata));
+                // this.logger.log(`filePath is ${filePath}`);
+                var options = {
+                    'method': 'POST',
+                    'url': process.env.LOBSTER_POST_URL,
+                    'headers': {
+                        'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
+                        'Content-Type': 'text/plain'
+                    },
+                    // body: JSON.stringify(conMessage.tdata)
+                    body: conMessage.tdata
+                };
+
+                
+
+                this.logger.log(`Lobster Options is ${options}`);
+                console.log("Timestamp before sending request to Lobster system--->",todayUTC);
+                var result = await request(options, async (error: any, response: any) => {
+                    if (error) throw new Error(error);
+                    console.log("Timestamp after getting response from Lobster system--->",todayUTC);
+                    //Save response from Lobster system to exp_response table
+
+                    this.logger.log("response----->", response.body)
+                    // var expResponse = await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": response.body, "token":token, "req_file_path": filePath, "req_file_uuid": fileName }); //, "request": JSON.stringify(options)
+                    
+                    // const whereObj = { "sequence_timestamp":sequence_timestamp}
+                    // const updateObj = { "status": "PROCESSED"}
+                    // this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
+                    // var expResponse =    await this.ExpRateResponseDataRepository.update(whereObj,updateObj);
+                    
+                    //this.logger.log("Response---->", expResponse)
+
+                });
+
+                const whereObj = { "sequence_timestamp":sequence_timestamp}
+                const updateObj = { "status": "PROCESSED"}
+                this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
+                var expResponse =    await this.ExpRateResponseDataRepository.update(whereObj,updateObj);
+
+            } 
+            return token
+            //}
+        } catch (error) {
+            //Update processing_status of events table to ERROR
+            console.log("Error----->",error)
+            //await this.ExpResponseDataRepository.update({ "customer_order_number":baseMessage.customer_order_number }, { "status": "ERROR", "error_reason": error });
+            resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: error } });
+        }
+    }  
 
 }

@@ -1,11 +1,15 @@
 import * as Sequelize from 'sequelize';
 import { DataTypes, Model, Optional } from 'sequelize';
 
-export interface ExpResponseDataAttributes {
+export interface ExpRateResponseDataAttributes {
   id: number;
   message?: object;
-  shipmentTrackingNumber?: string;
+  shipper_account_number?: string;
+  sequence_timestamp?: string;
+  shipper_postalCode?: string;
+  receiver_postalCode?: string;
   customer_order_number?: string;
+  vcid?: string;
   token?: string;
   statusCode?: string;
   status?: string;
@@ -18,16 +22,20 @@ export interface ExpResponseDataAttributes {
   deletedAt?: Date;
 }
 
-export type ExpResponseDataPk = "id";
-export type ExpResponseDataId = ExpResponseData[ExpResponseDataPk];
-export type ExpResponseDataOptionalAttributes = "id" | "message" | "shipmentTrackingNumber" | "customer_order_number" | "token" | "statusCode" | "status" | "error_reason" | "req_file_path" | "req_file_uuid" | "parent_uuid" | "createdAt" | "updatedAt" | "deletedAt";
-export type ExpResponseDataCreationAttributes = Optional<ExpResponseDataAttributes, ExpResponseDataOptionalAttributes>;
+export type ExpRateResponseDataPk = "id";
+export type ExpRateResponseDataId = ExpRateResponseData[ExpRateResponseDataPk];
+export type ExpRateResponseDataOptionalAttributes = "id" | "message" | "shipper_account_number" | "sequence_timestamp" | "shipper_postalCode" | "receiver_postalCode" | "customer_order_number" | "vcid" | "token" | "statusCode" | "status" | "error_reason" | "req_file_path" | "req_file_uuid" | "parent_uuid" | "createdAt" | "updatedAt" | "deletedAt";
+export type ExpRateResponseDataCreationAttributes = Optional<ExpRateResponseDataAttributes, ExpRateResponseDataOptionalAttributes>;
 
-export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpResponseDataCreationAttributes> implements ExpResponseDataAttributes {
+export class ExpRateResponseData extends Model<ExpRateResponseDataAttributes, ExpRateResponseDataCreationAttributes> implements ExpRateResponseDataAttributes {
   id!: number;
   message?: object;
-  shipmentTrackingNumber?: string;
+  shipper_account_number?: string;
+  sequence_timestamp?: string;
+  shipper_postalCode?: string;
+  receiver_postalCode?: string;
   customer_order_number?: string;
+  vcid?: string;
   token?: string;
   statusCode?: string;
   status?: string;
@@ -40,8 +48,8 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
   deletedAt?: Date;
 
 
-  static initModel(sequelize: Sequelize.Sequelize): typeof ExpResponseData {
-    return ExpResponseData.init({
+  static initModel(sequelize: Sequelize.Sequelize): typeof ExpRateResponseData {
+    return ExpRateResponseData.init({
     id: {
       autoIncrement: true,
       type: DataTypes.INTEGER,
@@ -52,11 +60,27 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
       type: DataTypes.JSON,
       allowNull: true
     },
-    shipmentTrackingNumber: {
+    shipper_account_number: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    sequence_timestamp: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
+    shipper_postalCode: {
+      type: DataTypes.STRING(45),
+      allowNull: true
+    },
+    receiver_postalCode: {
+      type: DataTypes.STRING(45),
+      allowNull: true
+    },
     customer_order_number: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    vcid: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
@@ -69,7 +93,7 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
       allowNull: true
     },
     status: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     error_reason: {
@@ -85,12 +109,12 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
       allowNull: true
     },
     parent_uuid: {
-      type: DataTypes.STRING(1000),
+      type: DataTypes.STRING(255),
       allowNull: true
     }
   }, {
     sequelize,
-    tableName: 'exp_response_data',
+    tableName: 'exp_rate_response_data',
     timestamps: true,
     paranoid: true,
     indexes: [
