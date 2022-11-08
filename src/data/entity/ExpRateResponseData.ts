@@ -8,7 +8,7 @@ export interface ExpRateResponseDataAttributes {
   sequence_timestamp?: string;
   shipper_postalCode?: string;
   receiver_postalCode?: string;
-  customer_order_number?: string;
+  customer_reference?: string;
   vcid?: string;
   token?: string;
   statusCode?: string;
@@ -24,7 +24,7 @@ export interface ExpRateResponseDataAttributes {
 
 export type ExpRateResponseDataPk = "id";
 export type ExpRateResponseDataId = ExpRateResponseData[ExpRateResponseDataPk];
-export type ExpRateResponseDataOptionalAttributes = "id" | "message" | "shipper_account_number" | "sequence_timestamp" | "shipper_postalCode" | "receiver_postalCode" | "customer_order_number" | "vcid" | "token" | "statusCode" | "status" | "error_reason" | "req_file_path" | "req_file_uuid" | "parent_uuid" | "createdAt" | "updatedAt" | "deletedAt";
+export type ExpRateResponseDataOptionalAttributes = "id" | "message" | "shipper_account_number" | "sequence_timestamp" | "shipper_postalCode" | "receiver_postalCode" | "customer_reference" | "vcid" | "token" | "statusCode" | "status" | "error_reason" | "req_file_path" | "req_file_uuid" | "parent_uuid" | "createdAt" | "updatedAt" | "deletedAt";
 export type ExpRateResponseDataCreationAttributes = Optional<ExpRateResponseDataAttributes, ExpRateResponseDataOptionalAttributes>;
 
 export class ExpRateResponseData extends Model<ExpRateResponseDataAttributes, ExpRateResponseDataCreationAttributes> implements ExpRateResponseDataAttributes {
@@ -34,7 +34,7 @@ export class ExpRateResponseData extends Model<ExpRateResponseDataAttributes, Ex
   sequence_timestamp?: string;
   shipper_postalCode?: string;
   receiver_postalCode?: string;
-  customer_order_number?: string;
+  customer_reference?: string;
   vcid?: string;
   token?: string;
   statusCode?: string;
@@ -76,7 +76,7 @@ export class ExpRateResponseData extends Model<ExpRateResponseDataAttributes, Ex
       type: DataTypes.STRING(45),
       allowNull: true
     },
-    customer_order_number: {
+    customer_reference: {
       type: DataTypes.STRING(255),
       allowNull: true
     },

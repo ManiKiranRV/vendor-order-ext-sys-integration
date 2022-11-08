@@ -312,10 +312,12 @@ export class DownStreamService {
                 accountNumber = "";
             }
             //this.logger.log(`Account Number is ${accountNumber}`)
-              this.logger.log("Tracking URL--->", JSON.parse(baseMessage.message).trackingUrl)      
+              this.logger.log("Tracking URL--->", JSON.parse(baseMessage.message).trackingUrl) 
+              let msgType = process.env.DATAGEN_TMS_RESP_MSG    
             //Construct final Lobster POST message
             if (baseMessage.statusCode == 201) {
                 var successMessage = {
+                    "msgType":msgType,
                     "content": {
                         "accountNumber": accountNumber,
                         "HAWB": baseMessage.shipmentTrackingNumber,
@@ -335,6 +337,7 @@ export class DownStreamService {
                 delete errorBody["message"];
                 var errorMessage = {
                     "content": {
+                        "msgType":msgType,
                         "accountNumber": accountNumber,
                         "HAWB": baseMessage.shipmentTrackingNumber,
                         "PrincipalreferenceNumber": baseMessage.customer_order_number,
@@ -353,7 +356,7 @@ export class DownStreamService {
             const fileName: string = GenericUtil.generateHash(JSON.stringify(conMessage.tdata));
             const filePath = process.env.REQ_TO_LOBSTER_FILE_PATH+ fileName + '.txt'
             this.fileUtil.writeToFile(filePath, JSON.stringify(conMessage.tdata));
-            this.logger.log(`filePath is ${filePath}`);
+            // this.logger.log(`filePath is ${filePath}`);
             var options = {
                 'method': 'POST',
                 'url': process.env.LOBSTER_POST_URL,
@@ -399,7 +402,8 @@ export class DownStreamService {
         let shipper_account_number:any
         let sequence_timestamp:any
 		let shipper_postalCode:any
-        let receiver_postalCode:any        
+        let receiver_postalCode:any 
+        let customer_reference:any        
         let token:any
         let vcid:any
         try {
@@ -419,7 +423,8 @@ export class DownStreamService {
             shipper_account_number = message.shipper_account_number
             sequence_timestamp = message.sequence_timestamp
             shipper_postalCode = message.shipper_postalCode
-            receiver_postalCode = message.receiver_postalCode
+            receiver_postalCode = message.receiver_postalCode 
+            customer_reference = message.jobNr
             vcid = shipper_account_number+sequence_timestamp
             //Creating the Data Object from exp_rate_tms_data and Persisting the Data
             var tmsRatesDataobj = {
@@ -479,7 +484,7 @@ export class DownStreamService {
                     sequence_timestamp : sequence_timestamp,
                     shipper_postalCode : shipper_postalCode,
                     receiver_postalCode : receiver_postalCode,
-                    // customer_order_number:customer_order_number,
+                    customer_reference : customer_reference,
                     token:token,
                     vcid:vcid,
                     statusCode: response.statusCode,
@@ -539,6 +544,20 @@ export class DownStreamService {
             console.log("Timestamp at Client2 side after Datagen happen--->",todayUTC);
             // baseMessage =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
             // this.logger.log("Data after converting base64---->/n/n",baseMessage)
+            // var tmsRatesDataobj = {
+            //     status: "UNPROCESSED",
+            //     shipper_account_number: baseMessage.shipper_account_number,
+            //     sequence_timestamp : baseMessage.sequence_timestamp,
+            //     shipper_postalCode : baseMessage.shipper_postalCode,
+            //     receiver_postalCode : baseMessage.receiver_postalCode,
+            //     message: baseMessage.message,
+            //     // customer_order_number: customer_order_number,
+            //     // token:token,
+            //     vcid:baseMessage.vcid
+            // }
+            // this.logger.log("exp_rate_tms_data Object", tmsRatesDataobj)
+            // Presist the data into Response table
+            // await this.ExpRateTmsDataRepository.create(tmsRatesDataobj);
             var conMessage
             const token = GenericUtil.generateRandomHash();
             // Fetch UNPROCESSED data from exp_rates_response_data table
@@ -549,15 +568,17 @@ export class DownStreamService {
 
                 console.log("tmsRatesReponseItem-------->",tmsRatesReponseItem)
 
-                var msgType = process.env.DATAGEN_TMS_RATE_RESP_MSG
-                var data = tmsRatesReponseItem.dataValues.message
+                let msgType = process.env.DATAGEN_TMS_RATE_RESP_MSG
+                let data = tmsRatesReponseItem.dataValues.message
                 let sequence_timestamp = tmsRatesReponseItem.dataValues.sequence_timestamp
+                let customer_reference = tmsRatesReponseItem.dataValues.customer_reference
                 console.log("Message------>",data)
 
                 //Construct final Lobster POST message
                 if (tmsRatesReponseItem.statusCode == 200) {
                     var successMessage = {
                         "msgType" : msgType,
+                        "customer_reference":customer_reference,
                         "data" : data
                     };
         
@@ -566,6 +587,7 @@ export class DownStreamService {
                 }else{
                     var errorMessage = {
                         "msgType" : msgType,
+                        "customer_reference":customer_reference,
                         "data" : data
                     };
         
@@ -589,7 +611,7 @@ export class DownStreamService {
                         'Content-Type': 'text/plain'
                     },
                     // body: JSON.stringify(conMessage.tdata)
-                    body: conMessage.tdata
+                    body: JSON.stringify(conMessage.tdata)
                 };
 
                 
@@ -603,7 +625,9 @@ export class DownStreamService {
 
                     this.logger.log("response----->", response.body)
                     // var expResponse = await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": response.body, "token":token, "req_file_path": filePath, "req_file_uuid": fileName }); //, "request": JSON.stringify(options)
-                    
+                    const whereObj = { "sequence_timestamp":sequence_timestamp}
+                    this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj)
+                    var expResponse =    await this.ExpRateResponseDataRepository.update(whereObj,{ "statusCode": response.body, "status": "PROCESSED"});
                     // const whereObj = { "sequence_timestamp":sequence_timestamp}
                     // const updateObj = { "status": "PROCESSED"}
                     // this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
@@ -613,10 +637,8 @@ export class DownStreamService {
 
                 });
 
-                const whereObj = { "sequence_timestamp":sequence_timestamp}
-                const updateObj = { "status": "PROCESSED"}
-                this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
-                var expResponse =    await this.ExpRateResponseDataRepository.update(whereObj,updateObj);
+                
+                
 
             } 
             return token

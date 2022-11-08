@@ -22,14 +22,14 @@ export class LobsterTransformationService {
                 console.log("Message in Lobster Transformation---->",message)
                 let tdata
                 let baseMap
-                let parseMessage = JSON.parse(message.data)
+                // let parseMessage = JSON.parse(message.data)
                 console.log("message.msgType----->",message.msgType)
                  if(message.msgType === process.env.DATAGEN_TMS_RATE_RESP_MSG){
                     let rateTranRes = await this.lobMsgTransformationRates(message)
                     console.log("rateTranRes",rateTranRes)
                     tdata = transform(message,rateTranRes);
                     
-                 }else{
+                 }else if(message.msgType === process.env.DATAGEN_TMS_RESP_MSG){
                     baseMap = {
                         item: {
                             "header": "content",
@@ -81,13 +81,13 @@ export class LobsterTransformationService {
                             }
                         ]
                     };
+                    console.log("baseMap",baseMap)
                     tdata = transform(message, baseMap);
                  }
                 
                 
 
-                //console.log("baseMap",baseMap)
-
+                
                 
                 console.log("tdata----->\n\n",tdata)
 
@@ -163,6 +163,8 @@ export class LobsterTransformationService {
             try{
                 let baseMap
                 let parseMessage = JSON.parse(message.data)
+                let jobNr = message.customer_reference
+                console.log("jobNr--------->",jobNr)
                 baseMap = {
                     item: {
                         "header": "content",
@@ -180,7 +182,7 @@ export class LobsterTransformationService {
                                         "datacreationDate": todayUTC//"2022-06-29 06:21:57 UTC+02:00"
                                     },
                                     "businessKeys": {
-                                        "PrincipalreferenceNumber": ""
+                                        "jobNr": jobNr
                                     }
                                 }
                                 console.log("HEADER--->", _header)

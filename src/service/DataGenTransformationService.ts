@@ -151,7 +151,7 @@ export class DataGenTransformationService implements BaseService {
     
                     //Update the status in the response table of LLP 
                     // this.logger.log("BEFORE UPDATE RES TABLE",tmsRatesReponseItem["customer_order_number"])
-                    const whereObj = { "customer_order_number":tmsRatesReponseItem["customer_order_number"]}
+                    const whereObj = { "customer_reference":tmsRatesReponseItem["customer_reference"]}
                     const updateObj = { "status": "PROCESSED", "vcid": vcId }
                     this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
                     await this.ExpRateResponseDataRepository.update(whereObj,updateObj);

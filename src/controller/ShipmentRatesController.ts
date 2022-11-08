@@ -43,7 +43,7 @@ export class ShipmentRatesController implements Controller {
         router.post('/tmsRatesResponse',  async (req:any, res) => {
             try {
                 this.logger.log(`=============================================START-LLP - TMS RATES DOWNSTREAM=======================================`)
-                this.logger.log("BLESS REQUEST",req)
+                // this.logger.log("BLESS REQUEST",req)
                 this.logger.log(`BLESS REQUEST BODY is ${JSON.stringify(req.body.message)}`);
                 // this.logger.log("S3 data----->",req.body.body)
                 //Calling Downstream service from LLP to TMS
