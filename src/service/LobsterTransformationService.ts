@@ -30,57 +30,102 @@ export class LobsterTransformationService {
                     tdata = transform(message,rateTranRes);
                     
                  }else if(message.msgType === process.env.DATAGEN_TMS_RESP_MSG){
-                    baseMap = {
-                        item: {
-                            "header": "content",
-                            "body": "content"
-                        },
-                        operate: [
-                            {
-                                run: function (val: any) {
-                                    var today = new Date();
-                                    var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss") + ' UTC' + moment.utc(today).format("Z")
-                                    var _header = {
-                                        "Transmission": {
-                                            "toEntity": "Kalmar",
-                                            "fromEntity": "EXP",
-                                            "datacreationDate": todayUTC//"2022-06-29 06:21:57 UTC+02:00"
-                                        },
-                                        "businessKeys": {
-                                            "accountNumber": message.content.accountNumber,
-                                            "HAWB": message.content.HAWB,
-                                            "PrincipalreferenceNumber": message.content.PrincipalreferenceNumber,
-                                            "estimatedDeliveryDate": message.content.estimatedDeliveryDate,
-                                            "trackingUrl":message.content.trackingUrl
-                                        }
-                                    }
-                                    console.log("HEADER--->", _header)
-                                    return _header;
-                                },
-                                on: "header"
+                    console.log("Pickup Flag",message.content.pickUp)
+                    if(message.content.pickUp == "PICKUP"){
+                        baseMap = {
+                            item: {
+                                "header": "content",
+                                "body": "content"
                             },
-                            {
-                                run: function (val: any) {
-                                    var body
-                                    if (isError) {
-    
-                                        body = {
-                                            "Error": [message.error]
-    
+                            operate: [
+                                {
+                                    run: function (val: any) {
+                                        var today = new Date();
+                                        var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss") + ' UTC' + moment.utc(today).format("Z")
+                                        var _header = {
+                                            "Transmission": {
+                                                "toEntity": "Kalmar",
+                                                "fromEntity": "EXP",
+                                                "datacreationDate": todayUTC//"2022-06-29 06:21:57 UTC+02:00"
+                                            },
+                                            "businessKeys": {
+                                                "accountNumber": message.content.accountNumber,
+                                                "HAWB": message.content.HAWB,
+                                                "PrincipalreferenceNumber": message.content.PrincipalreferenceNumber,
+                                                "estimatedDeliveryDate": message.content.estimatedDeliveryDate,
+                                                "trackingUrl":message.content.trackingUrl,
+                                                "Updatepickup":message.content.Updatepickup
+                                            }
                                         }
-                                    } else {
-                                        body = {
+                                        console.log("HEADER--->", _header)
+                                        return _header;
+                                    },
+                                    on: "header"
+                                },
+                                {
+                                    run: function (val: any) {
+                                        var body = {
                                             "documents": message.content.documents
                                         }
-                                    }
-    
-    
-                                    return body;
+                                        return body;
+                                    },
+                                    on: "body"
+                                }
+                            ]
+                        };
+                    }else{
+                        baseMap = {
+                            item: {
+                                "header": "content",
+                                "body": "content"
+                            },
+                            operate: [
+                                {
+                                    run: function (val: any) {
+                                        var today = new Date();
+                                        var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss") + ' UTC' + moment.utc(today).format("Z")
+                                        var _header = {
+                                            "Transmission": {
+                                                "toEntity": "Kalmar",
+                                                "fromEntity": "EXP",
+                                                "datacreationDate": todayUTC//"2022-06-29 06:21:57 UTC+02:00"
+                                            },
+                                            "businessKeys": {
+                                                "accountNumber": message.content.accountNumber,
+                                                "HAWB": message.content.HAWB,
+                                                "PrincipalreferenceNumber": message.content.PrincipalreferenceNumber,
+                                                "estimatedDeliveryDate": message.content.estimatedDeliveryDate,
+                                                "trackingUrl":message.content.trackingUrl
+                                            }
+                                        }
+                                        console.log("HEADER--->", _header)
+                                        return _header;
+                                    },
+                                    on: "header"
                                 },
-                                on: "body"
-                            }
-                        ]
-                    };
+                                {
+                                    run: function (val: any) {
+                                        var body
+                                        if (isError) {
+        
+                                            body = {
+                                                "Error": [message.error]
+        
+                                            }
+                                        } else {
+                                            body = {
+                                                "documents": message.content.documents
+                                            }
+                                        }
+        
+        
+                                        return body;
+                                    },
+                                    on: "body"
+                                }
+                            ]
+                        };
+                    }
                     console.log("baseMap",baseMap)
                     tdata = transform(message, baseMap);
                  }

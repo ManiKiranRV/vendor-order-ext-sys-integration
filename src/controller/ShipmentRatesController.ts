@@ -40,7 +40,7 @@ export class ShipmentRatesController implements Controller {
     
         //DOWNSTREAM LLP-TMS(EXP Rates Request Data) & LLP-CLIENT2(TMS Rates Response)//  
 
-        router.post('/tmsRatesResponse',  async (req:any, res) => {
+        router.post('/tmsRatesResponse', this.verifyJwtTokenService.verifyToken, async (req:any, res) => {
             try {
                 this.logger.log(`=============================================START-LLP - TMS RATES DOWNSTREAM=======================================`)
                 // this.logger.log("BLESS REQUEST",req)
@@ -67,7 +67,7 @@ export class ShipmentRatesController implements Controller {
 
         //DOWNSTREAM CLIENT2-LOBSTER for Rates
         
-        router.post('/client-lobster-tms-rates-resp',  async (req:any, res) => {
+        router.post('/client-lobster-tms-rates-resp', this.verifyJwtTokenService.verifyToken, async (req:any, res) => {
             try {
 
                 this.logger.log(`=============================================START-C2 To Lobster DOWNSTREAM=======================================`)

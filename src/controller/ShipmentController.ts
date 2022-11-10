@@ -68,7 +68,8 @@ export class ShipmentController implements Controller {
                 // this.logger.log("BLESS REQUEST--->",JSON.parse(req.body))
                 this.logger.log(`BLESS REQUEST BODY is ${JSON.parse(req.body.message)}`);
                 //Calling Downstream service from LLP to TMS
-                var downstreamToTmsSystem = await this.DownStreamService.downStreamToTmsSystem(JSON.parse(req.body.message).transformedMessage,res)
+                // var downstreamToTmsSystem = await this.DownStreamService.downStreamToTmsSystem(JSON.parse(req.body.message).transformedMessage,res)
+                var downstreamToTmsSystem = await this.DownStreamService.downStreamToTmsSystem(JSON.parse(req.body.message),res)
 
                 //var response = await this.LlpClien2Service.clientTmsResponse();
 

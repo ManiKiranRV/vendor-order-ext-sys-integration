@@ -156,17 +156,25 @@ export class DownStreamService {
         DownStream Service to send EXP Message to TMS System(From LLP Node) & Persisting the TMS Response
     */
     async downStreamToTmsSystem(req:any,res:any): Promise<any> {
+        let data:any
         let message:any
         let customerOrderNumber:any
+        let plannedPickupDateAndTime:any
+        let pickUpFlag:any
+        let insertFalg:any
         try {
             this.logger.log("Request---------->/n/n",req)
-
-            message =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
+            data = req.transformedMessage
+            message =  JSON.parse(Buffer.from(data, 'base64').toString('utf-8')).body
             this.logger.log("Data after converting base64---->/n/n",message)
+            customerOrderNumber = message["customerReferences"][0].value
             //console.log("Adding additional field------>",message["customerReferences"][0].value+"-"+message["consignorRef"])
             message["customerReferences"][0].value = message["customerReferences"][0].value+"-"+message["consignorRef"]
             this.logger.log("Data after adding additional Details---->/n/n",message)
-            customerOrderNumber = message.principalRef+"";
+            // customerOrderNumber = message.principalRef+"";/
+            plannedPickupDateAndTime = message.plannedPickupDateAndTime
+            console.log("plannedPickupDateAndTime--->",plannedPickupDateAndTime)
+            pickUpFlag = message.pickup.isRequested
             const token = GenericUtil.generateRandomHash();
             //Creating the Data Object from exp_tms_data table and Persisting the Data
             var tmsDataobj = {
@@ -174,6 +182,7 @@ export class DownStreamService {
                 shipment_Tracking_Number: "",
                 message: message,
                 customer_order_number: customerOrderNumber,
+                uuid:req.id,
                 token:token
             }
             //this.logger.log("Object", tmsDataobj)
@@ -188,6 +197,8 @@ export class DownStreamService {
             delete message["vcid"];
             delete message["principalRef"];
             delete message["shipper_account_number"];
+            // delete message["plannedShippingDateAndTime"]
+            delete message["plannedPickupDateAndTime"]
             delete message["trailToken"];
             delete message["consignorRef"]
             this.logger.log("Message after deleteing-------->/n/n",message);
@@ -211,41 +222,173 @@ export class DownStreamService {
             this.logger.log(`filePath is -----------------------------> ${filePath}`);
             this.logger.log(`fileName is -----------------------------> ${fileName}`);
 
-            //this.logger.log("OPTIONS---->\n\n",options)
+            this.logger.log("OPTIONS---->\n\n",options)
             console.log("Timestamp before sending to TMS System--->",todayUTC);
             await request(options, async (error: any, response: any) => {
                 if (error) throw new Error(error);
                 console.log("Timestamp after getting response from TMS System--->",todayUTC);
-                var expres = {
-                    statusCode: response.statusCode,
-                    message: response.body,
-                    shipmentTrackingNumber: JSON.parse(response.body).shipmentTrackingNumber,
-                    status: "UNPROCESSED",
-                    customer_order_number:customerOrderNumber,
-                    req_file_path:filePath,
-                    req_file_uuid:fileName
+                this.logger.log("Response from TMS System--->",JSON.parse(response.body))
+                this.logger.log("TMS Response Status COde---->",response.statusCode)
+                let expres:any
+                let dispatchConfirmationNumber:any
+                // If response is success then 
+                if (response.statusCode == 200 || response.statusCode == 201){
+                    //Check pickup flag = true in TMS Request
+                    this.logger.log("plannedPickupDateAndTime & Flag--->",plannedPickupDateAndTime,pickUpFlag)
+                    if(pickUpFlag == true){
+                        expres = {
+                            statusCode: response.statusCode,
+                            message: response.body,
+                            shipmentTrackingNumber: JSON.parse(response.body).shipmentTrackingNumber,
+                            status: "UNPROCESSED",
+                            customer_order_number:customerOrderNumber,
+                            req_file_path:filePath,
+                            req_file_uuid:fileName,
+                            msgTyp:"PICKUP"
+                        }
+                        console.log("If data is success and flag is true response object")
+                        this.logger.log("expres----->\n\n",expres)
+                        
+                        //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
+                        await this.ExpResponseDataRepository.create(expres)
+                        dispatchConfirmationNumber = JSON.parse(response.body).dispatchConfirmationNumber
+                        this.logger.log("dispatchConfirmationNumber---->",dispatchConfirmationNumber)
+                        var pickupData = {
+                            "plannedPickupDateAndTime":plannedPickupDateAndTime,
+			                "originalShipperAccountNumber":message.accounts[0].number,
+                            "accounts":message.accounts,
+                            "customerDetails":message.customerDetails
+                        }
+                        this.logger.log("pickupData-------->",pickupData)
+                        var pickupOptions = {
+                            'method': 'PATCH',
+                            'url': process.env.POST_URL_PICKUP+dispatchConfirmationNumber,
+                            'headers': {
+                                'Authorization': 'Basic ZGhsYmxlc3NibG9DSDpDJDJhTyExbkMhMmVWQDhr',
+                                'Content-Type': 'application/json',
+                                'Cookie': 'BIGipServer~WSB~pl_wsb-express-cbj.dhl.com_443=293349575.64288.0000'
+                            },
+                            body : JSON.stringify(pickupData)
+                        };
+                        this.logger.log("pickupOptions------>",pickupOptions)
+                        await request(pickupOptions, async (error: any, response: any) => {
+                            if (error) throw new Error(error);
+                            this.logger.log("Response from TMS System--->",JSON.parse(response.body))
+                            this.logger.log("TMS Response Status COde---->",response.statusCode)
+                            this.logger.log("customerOrderNumber inside pickup response---->",customerOrderNumber)
+                            var updatePickupRes = {
+                                statusCode: response.statusCode,
+                                pickupResponse: response.body,
+                            }
+                            let whereObj = { "customer_order_number":customerOrderNumber}
+                            this.logger.log("PICKUP OBJECT for exp_resp_data table",updatePickupRes)
+                            //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
+                            await this.ExpResponseDataRepository.update(whereObj,updatePickupRes)
+
+                            //Update Core Tables
+                            // await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+
+                            //Update exp_tms_data with shipment_Tracking_Number
+                            // let whereObj = { "customer_order_number":customerOrderNumber}
+                            await this.ExpTmsDataRepository.update(whereObj, {
+                                shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
+                                status: "PROCESSED"
+                            })
+
+                            // Datagen service Sends TMS-Resp from LLP to Client2
+                            const updateObj = { status: "PROCESSED" }
+                            await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
+                
+                        })
+                    }
+                    else{
+                        expres = {
+                            statusCode: response.statusCode,
+                            message: response.body,
+                            shipmentTrackingNumber: JSON.parse(response.body).shipmentTrackingNumber,
+                            status: "UNPROCESSED",
+                            customer_order_number:customerOrderNumber,
+                            req_file_path:filePath,
+                            req_file_uuid:fileName,
+                            msgTyp:"BOOKING"
+                        }
+                        console.log("If data is success and flag is false response object")
+                        this.logger.log("expres----->\n\n",expres)
+                        
+                        //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
+                        await this.ExpResponseDataRepository.create(expres)
+
+                        //Update Core Tables
+                        await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+
+                        //Update exp_tms_data with shipment_Tracking_Number
+                        let whereObj = { "customer_order_number":customerOrderNumber}
+                        await this.ExpTmsDataRepository.update(whereObj, {
+                            shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
+                            status: "PROCESSED"
+                        })
+
+                        // Datagen service Sends TMS-Resp from LLP to Client2
+                        const updateObj = { status: "PROCESSED" }
+                        await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
+                
+                    }
+                }else{
+                    // If response is error then
+                    expres = {
+                        statusCode: response.statusCode,
+                        message: response.body,
+                        shipmentTrackingNumber: JSON.parse(response.body).shipmentTrackingNumber,
+                        status: "UNPROCESSED",
+                        customer_order_number:customerOrderNumber,
+                        req_file_path:filePath,
+                        req_file_uuid:fileName,
+                        msgTyp:"BOOKING"
+                    }
+                    this.logger.log("expres----->\n\n",expres)
+
+                    //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
+                    await this.ExpResponseDataRepository.create(expres)
+
+                    //Update Core Tables
+                    await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+
+                    //Update exp_tms_data with shipment_Tracking_Number
+                    let whereObj = { "customer_order_number":customerOrderNumber}
+                    await this.ExpTmsDataRepository.update(whereObj, {
+                        shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
+                        status: "PROCESSED"
+                    })
+
+                    // Datagen service Sends TMS-Resp from LLP to Client2
+                    const updateObj = { status: "PROCESSED" }
+                    await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
+                
+                    
                 }
+                
+                
 
-                this.logger.log("expres----->\n\n",expres)
-                //this.logger.log("Response-------->\n\n",Buffer.from(JSON.stringify({"body":expres})).toString("base64"))
+                // this.logger.log("expres----->\n\n",expres)
+                // //this.logger.log("Response-------->\n\n",Buffer.from(JSON.stringify({"body":expres})).toString("base64"))
 
-                //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
-                await this.ExpResponseDataRepository.create(expres)
+                // //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
+                // await this.ExpResponseDataRepository.create(expres)
 
-                //Update Core Tables
-                await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+                // //Update Core Tables
+                // await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
 
-                //Update exp_tms_data with shipment_Tracking_Number
-                let whereObj = { "customer_order_number":customerOrderNumber}
-                //this.logger.log("WhereOBJ---->\n\n",whereObj)
-                await this.ExpTmsDataRepository.update(whereObj, {
-                    shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
-                    status: "PROCESSED"
-                })
+                // //Update exp_tms_data with shipment_Tracking_Number
+                // let whereObj = { "customer_order_number":customerOrderNumber}
+                // //this.logger.log("WhereOBJ---->\n\n",whereObj)
+                // await this.ExpTmsDataRepository.update(whereObj, {
+                //     shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
+                //     status: "PROCESSED"
+                // })
 
-                // Datagen service Sends TMS-Resp from LLP to Client2
-                const updateObj = { status: "PROCESSED" }
-                await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
+                // // Datagen service Sends TMS-Resp from LLP to Client2
+                // const updateObj = { status: "PROCESSED" }
+                // await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
                 // this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
                 //await this.ExpResponseDataRepository.update( whereObj, updateObj );
                 // this.logger.log("updateStatus----------->",updateStatus)
@@ -276,111 +419,228 @@ export class DownStreamService {
             console.log("Timestamp at Client2 side after Datagen happen--->",todayUTC);
             baseMessage =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
             this.logger.log("Data after converting base64---->/n/n",baseMessage)
-            var conMessage
+            let conMessage
+            let expres
+            let successMessage:any
+            let errorMessage:any
+            let options:any
+            let customer_order_number:any
             const token = GenericUtil.generateRandomHash();
-            var expres = {
-                statusCode: baseMessage.statusCode,
-                message: baseMessage.message,
-                shipmentTrackingNumber: baseMessage.shipmentTrackingNumber,
-                status: "UNPROCESSED",
-                customer_order_number:baseMessage.customer_order_number
-            }
-            //Update Core Tables
-
-            var updateDocument = await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
-
-            //Derive accountNumber to be sent to LOSTER system
-            this.logger.log("baseMessage.customer_order_number-------->\n\n",baseMessage.customer_order_number)
-            let vendorOrderItem = (await this.VendorBoookingRepository.get({ "customer_order_number": baseMessage.customer_order_number }));
+            console.log("baseMessage.msgTyp--->",baseMessage.msgTyp)
+            if(baseMessage.msgTyp == "PICKUP"){
+                // let whereObj:any = []
+                // whereObj["status"]="UNPROCESSED" 
+                // whereObj["msgTyp"]="PICKUP"
+                // console.log("whereObj inside PICKUP condition",whereObj)
+                // var tmsResponseList = await this.ExpResponseDataRepository.get(whereObj)  
+                // console.log("Fetch data in downStreamToLobsterSystemRates------->",tmsResponseList)
+                let addressList = await this.AddressRepository.get({ "address_type": "CONSIGNOR", "customer_order_number": baseMessage.customer_order_number });
+                let accountNumber;
+                this.logger.log("Account List",addressList)
+                this.logger.log("Account Number is from List",addressList[0]["address_id"])
+                // this.logger.log("Estimated Date---->",JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate)
+                if (addressList.length > 0) {
+                    accountNumber = addressList[0]["address_id"];
+                } else {
+                    accountNumber = "";
+                }
+                // for (let tmsReponseItem of tmsResponseList){
+    
+                    // console.log("tmsReponseItem-------->",tmsReponseItem)
+    
+                    let msgType = process.env.DATAGEN_TMS_RESP_MSG
+                    let data = baseMessage.message
+                    customer_order_number = baseMessage.customer_order_number
+                    console.log("Message------>",data)
+                    
+                    //Construct final Lobster POST message
+                    if (baseMessage.statusCode == 200) {
+                        successMessage = { 
+                            "pickUp":baseMessage.msgTyp, 
+                            "msgType":msgType,                      
+                            "content": {                            
+                                "accountNumber": accountNumber,
+                                "HAWB": baseMessage.shipmentTrackingNumber,
+                                "PrincipalreferenceNumber": baseMessage.customer_order_number,
+                                "documents": JSON.parse(baseMessage.message).documents,
+                                "trackingUrl":  JSON.parse(baseMessage.message).trackingUrl,
+                                "estimatedDeliveryDate":  JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate,
+                                "Updatepickup":  "Success"
+                            }
+                        };
             
-            if (vendorOrderItem.length > 0) {
-                var id = vendorOrderItem[0]["id"]
-            }else {
-                //Save Error Message to exp_response_data table
-                await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": "ERROR", "error_reason": `No Vendor Booking Found with customer_order_number=${baseMessage["customer_order_number"]}` });
-                //continue;
-            }
-
-            let addressList = await this.AddressRepository.get({ "address_type": "CONSIGNOR", "customer_order_number": baseMessage.customer_order_number });
-            let accountNumber;
-            this.logger.log("Account List",addressList)
-            this.logger.log("Account Number is from List",addressList[0]["address_id"])
-            // this.logger.log("Estimated Date---->",JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate)
-            if (addressList.length > 0) {
-                accountNumber = addressList[0]["address_id"];
-            } else {
-                accountNumber = "";
-            }
-            //this.logger.log(`Account Number is ${accountNumber}`)
-              this.logger.log("Tracking URL--->", JSON.parse(baseMessage.message).trackingUrl) 
-              let msgType = process.env.DATAGEN_TMS_RESP_MSG    
-            //Construct final Lobster POST message
-            if (baseMessage.statusCode == 201) {
-                var successMessage = {
-                    "msgType":msgType,
-                    "content": {
-                        "accountNumber": accountNumber,
-                        "HAWB": baseMessage.shipmentTrackingNumber,
-                        "PrincipalreferenceNumber": baseMessage.customer_order_number,
-                        "documents": JSON.parse(baseMessage.message).documents,
-                        "estimatedDeliveryDate":  JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate,
-                        "trackingUrl":  JSON.parse(baseMessage.message).trackingUrl
+                        this.logger.log("message----->\n\n",successMessage)
+                        conMessage = await this.LobsterTransformationService.lobData(successMessage);
+                    }else{
+                        console.log("Error Details--->",JSON.parse(baseMessage.pickupResponse).detail)
+                        var errorBody = JSON.parse(baseMessage.pickupResponse).detail
+                        errorMessage = {
+                            "msgType":msgType,
+                            "content": {   
+                                "pickUp":baseMessage.msgTyp,                          
+                                "accountNumber": accountNumber,
+                                "HAWB": baseMessage.shipmentTrackingNumber,
+                                "PrincipalreferenceNumber": baseMessage.customer_order_number,
+                                "documents": JSON.parse(baseMessage.message).documents,
+                                "trackingUrl":  JSON.parse(baseMessage.message).trackingUrl,
+                                "estimatedDeliveryDate":JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate,
+                                "Updatepickup":  "Error:"+errorBody
+                            }    
+                        };
+            
+                        this.logger.log("Error message----->\n\n",errorMessage)
+                        conMessage = await this.LobsterTransformationService.lobData(errorMessage);
                     }
+    
+                    this.logger.log("conMessage---->", conMessage)
+                    const fileName: string = GenericUtil.generateHash(JSON.stringify(conMessage.tdata));
+                    const filePath = process.env.REQ_TO_LOBSTER_FILE_PATH+ fileName + '.txt'
+                    this.fileUtil.writeToFile(filePath, JSON.stringify(conMessage.tdata));
+                    this.logger.log(`filePath is ${filePath}`);
+                    options = {
+                        'method': 'POST',
+                        'url': process.env.LOBSTER_POST_URL,
+                        'headers': {
+                            'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
+                            'Content-Type': 'text/plain'
+                        },
+                        // body: JSON.stringify(conMessage.tdata)
+                        body: JSON.stringify(conMessage.tdata)
+                    };
+    
+                    
+    
+                    this.logger.log(`Lobster Options is ${options}`);
+                    console.log("Timestamp before sending request to Lobster system--->",todayUTC);
+                    var result = await request(options, async (error: any, response: any) => {
+                        if (error) throw new Error(error);
+                        console.log("Timestamp after getting response from Lobster system--->",todayUTC);
+                        //Save response from Lobster system to exp_response table
+    
+                        this.logger.log("response----->", response.body)
+                        // var expResponse = await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": response.body, "token":token, "req_file_path": filePath, "req_file_uuid": fileName }); //, "request": JSON.stringify(options)
+                        const whereObj = { "customer_order_number":customer_order_number}
+                        this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj)
+                        var expResponse =    await this.ExpResponseDataRepository.update(whereObj,{ "statusCode": response.body, "status": "PROCESSED", "req_file_path": filePath, "req_file_uuid": fileName});
+                        // const whereObj = { "sequence_timestamp":sequence_timestamp}
+                        // const updateObj = { "status": "PROCESSED"}
+                        // this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
+                        // var expResponse =    await this.ExpResponseDataRepository.update(whereObj,updateObj);
+                        
+                        //this.logger.log("Response---->", expResponse)
+    
+                    });
+    
+                    
+                    
+    
+                // }                 
+            }else{
+                expres = {
+                    statusCode: baseMessage.statusCode,
+                    message: baseMessage.message,
+                    shipmentTrackingNumber: baseMessage.shipmentTrackingNumber,
+                    status: "UNPROCESSED",
+                    customer_order_number:baseMessage.customer_order_number
+                }
+                //Update Core Tables
+    
+                var updateDocument = await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+    
+                //Derive accountNumber to be sent to LOSTER system
+                this.logger.log("baseMessage.customer_order_number-------->\n\n",baseMessage.customer_order_number)
+                let vendorOrderItem = (await this.VendorBoookingRepository.get({ "customer_order_number": baseMessage.customer_order_number }));
+                
+                if (vendorOrderItem.length > 0) {
+                    var id = vendorOrderItem[0]["id"]
+                }else {
+                    //Save Error Message to exp_response_data table
+                    await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": "ERROR", "error_reason": `No Vendor Booking Found with customer_order_number=${baseMessage["customer_order_number"]}` });
+                    //continue;
+                }
+    
+                let addressList = await this.AddressRepository.get({ "address_type": "CONSIGNOR", "customer_order_number": baseMessage.customer_order_number });
+                let accountNumber;
+                this.logger.log("Account List",addressList)
+                this.logger.log("Account Number is from List",addressList[0]["address_id"])
+                // this.logger.log("Estimated Date---->",JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate)
+                if (addressList.length > 0) {
+                    accountNumber = addressList[0]["address_id"];
+                } else {
+                    accountNumber = "";
+                }
+                //this.logger.log(`Account Number is ${accountNumber}`)
+                  this.logger.log("Tracking URL--->", JSON.parse(baseMessage.message).trackingUrl) 
+                  let msgType = process.env.DATAGEN_TMS_RESP_MSG    
+                //Construct final Lobster POST message
+                if (baseMessage.statusCode == 201) {
+                    successMessage = {  
+                        "msgType":msgType,                      
+                        "content": {                            
+                            "accountNumber": accountNumber,
+                            "HAWB": baseMessage.shipmentTrackingNumber,
+                            "PrincipalreferenceNumber": baseMessage.customer_order_number,
+                            "documents": JSON.parse(baseMessage.message).documents,
+                            "estimatedDeliveryDate":  JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate,
+                            "trackingUrl":  JSON.parse(baseMessage.message).trackingUrl
+                        }
+                    };
+        
+                    this.logger.log("message----->\n\n",successMessage)
+                    conMessage = await this.LobsterTransformationService.lobData(successMessage);
+                } else {
+                    //Removing extraneous fields in the error message
+                    var errorBody = JSON.parse(baseMessage.message)
+                    delete errorBody["instance"];
+                    delete errorBody["message"];
+                    errorMessage = {
+                        "msgType":msgType,
+                        "content": {                            
+                            "accountNumber": accountNumber,
+                            "HAWB": baseMessage.shipmentTrackingNumber,
+                            "PrincipalreferenceNumber": baseMessage.customer_order_number,
+                            "documents": JSON.parse(baseMessage.message).documents,
+                            "estimatedDeliveryDate":"null",
+                            "trackingUrl":"null"
+                        },
+                        "error": errorBody
+                    };
+    
+                    this.logger.log("errorMessage--->",errorMessage)
+                    conMessage = await this.LobsterTransformationService.lobData(errorMessage, true);
+                }
+    
+                this.logger.log("conMessage---->", conMessage)
+                const fileName: string = GenericUtil.generateHash(JSON.stringify(conMessage.tdata));
+                const filePath = process.env.REQ_TO_LOBSTER_FILE_PATH+ fileName + '.txt'
+                this.fileUtil.writeToFile(filePath, JSON.stringify(conMessage.tdata));
+                // this.logger.log(`filePath is ${filePath}`);
+                options = {
+                    'method': 'POST',
+                    'url': process.env.LOBSTER_POST_URL,
+                    'headers': {
+                        'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
+                        'Content-Type': 'text/plain'
+                    },
+                    body: JSON.stringify(conMessage.tdata)
                 };
     
-                this.logger.log("message----->\n\n",successMessage)
-                conMessage = await this.LobsterTransformationService.lobData(successMessage);
-            } else {
-                //Removing extraneous fields in the error message
-                var errorBody = JSON.parse(baseMessage.message)
-                delete errorBody["instance"];
-                delete errorBody["message"];
-                var errorMessage = {
-                    "content": {
-                        "msgType":msgType,
-                        "accountNumber": accountNumber,
-                        "HAWB": baseMessage.shipmentTrackingNumber,
-                        "PrincipalreferenceNumber": baseMessage.customer_order_number,
-                        "documents": JSON.parse(baseMessage.message).documents,
-                        "estimatedDeliveryDate":"null",
-                        "trackingUrl":"null"
-                    },
-                    "error": errorBody
-                };
-
-                this.logger.log("errorMessage--->",errorMessage)
-                conMessage = await this.LobsterTransformationService.lobData(errorMessage, true);
+                
+    
+                // this.logger.log(`Lobster Options is ${JSON.stringify(options)}`);
+                console.log("Timestamp before sending request to Lobster system--->",todayUTC);
+                var result = await request(options, async (error: any, response: any) => {
+                    if (error) throw new Error(error);
+                    console.log("Timestamp after getting response from Lobster system--->",todayUTC);
+                    //Save response from Lobster system to exp_response table
+    
+                    this.logger.log("response----->", response.body)
+                    var expResponse = await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": response.body, "token":token, "req_file_path": filePath, "req_file_uuid": fileName }); //, "request": JSON.stringify(options)
+                    //this.logger.log("Response---->", expResponse)
+    
+                });
             }
 
-            this.logger.log("conMessage---->", conMessage)
-            const fileName: string = GenericUtil.generateHash(JSON.stringify(conMessage.tdata));
-            const filePath = process.env.REQ_TO_LOBSTER_FILE_PATH+ fileName + '.txt'
-            this.fileUtil.writeToFile(filePath, JSON.stringify(conMessage.tdata));
-            // this.logger.log(`filePath is ${filePath}`);
-            var options = {
-                'method': 'POST',
-                'url': process.env.LOBSTER_POST_URL,
-                'headers': {
-                    'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
-                    'Content-Type': 'text/plain'
-                },
-                body: JSON.stringify(conMessage.tdata)
-            };
-
-            
-
-            // this.logger.log(`Lobster Options is ${JSON.stringify(options)}`);
-            console.log("Timestamp before sending request to Lobster system--->",todayUTC);
-            var result = await request(options, async (error: any, response: any) => {
-                if (error) throw new Error(error);
-                console.log("Timestamp after getting response from Lobster system--->",todayUTC);
-                //Save response from Lobster system to exp_response table
-
-                this.logger.log("response----->", response.body)
-                var expResponse = await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": response.body, "token":token, "req_file_path": filePath, "req_file_uuid": fileName }); //, "request": JSON.stringify(options)
-                //this.logger.log("Response---->", expResponse)
-
-            });
             return token
             //}
         } catch (error) {
@@ -398,7 +658,6 @@ export class DownStreamService {
     async downStreamToTmsSystemRates(req:any,res:any): Promise<any> {
 
         let message:any
-        let customer_order_number:any
         let shipper_account_number:any
         let sequence_timestamp:any
 		let shipper_postalCode:any
@@ -419,7 +678,6 @@ export class DownStreamService {
             // console.log("Data inside downStreamToTmsSystemRates----> ",message)
             
             token = GenericUtil.generateRandomHash(); 
-            // customer_order_number = message.sequence_timestamp
             shipper_account_number = message.shipper_account_number
             sequence_timestamp = message.sequence_timestamp
             shipper_postalCode = message.shipper_postalCode
@@ -595,14 +853,11 @@ export class DownStreamService {
                     conMessage = await this.LobsterTransformationService.lobData(errorMessage);
                 }
 
-                
-                
-
                 this.logger.log("conMessage---->", conMessage)
-                // const fileName: string = GenericUtil.generateHash(JSON.stringify(conMessage.tdata));
-                // const filePath = process.env.REQ_TO_LOBSTER_RATES_FILE_PATH1+ fileName + '.txt'
-                // this.fileUtil.writeToFile(filePath, JSON.stringify(conMessage.tdata));
-                // this.logger.log(`filePath is ${filePath}`);
+                const fileName: string = GenericUtil.generateHash(JSON.stringify(conMessage.tdata));
+                const filePath = process.env.REQ_TO_LOBSTER_RATES_FILE_PATH+ fileName + '.txt'
+                this.fileUtil.writeToFile(filePath, JSON.stringify(conMessage.tdata));
+                this.logger.log(`filePath is ${filePath}`);
                 var options = {
                     'method': 'POST',
                     'url': process.env.LOBSTER_POST_URL,
@@ -627,7 +882,7 @@ export class DownStreamService {
                     // var expResponse = await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": response.body, "token":token, "req_file_path": filePath, "req_file_uuid": fileName }); //, "request": JSON.stringify(options)
                     const whereObj = { "sequence_timestamp":sequence_timestamp}
                     this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj)
-                    var expResponse =    await this.ExpRateResponseDataRepository.update(whereObj,{ "statusCode": response.body, "status": "PROCESSED"});
+                    var expResponse =    await this.ExpRateResponseDataRepository.update(whereObj,{ "statusCode": response.body, "status": "PROCESSED", "req_file_path": filePath, "req_file_uuid": fileName});
                     // const whereObj = { "sequence_timestamp":sequence_timestamp}
                     // const updateObj = { "status": "PROCESSED"}
                     // this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
