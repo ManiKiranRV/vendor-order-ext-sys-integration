@@ -36,7 +36,7 @@ export class UpdateCoreTablesService {
             console.log("req.customer_order_number",req.statusCode, req.customer_order_number,req.shipmentTrackingNumber)
             var vendorBookingObj
             //Update VendorBooking Table based on Error/Success status
-            if(req.statusCode == 201){
+            if(req.statusCode == 201 || req.statusCode == 200){
                 
                 vendorBookingObj = {
                     "order_status": process.env.VEN_BOOKING_CON_STATUS,

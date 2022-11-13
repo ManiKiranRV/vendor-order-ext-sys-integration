@@ -17,6 +17,10 @@ import { GenericUtil } from "../util/GenericUtil";
 
 var request = require('request');
 
+//For Timestamp
+import * as moment from 'moment';
+var today = new Date();
+// var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z")
 export class ShipmentRatesController implements Controller {
     private logger: Logger = DI.get(Logger)
     private ExpTmsService: ExpTmsService = DI.get(ExpTmsService)
@@ -43,7 +47,7 @@ export class ShipmentRatesController implements Controller {
         router.post('/tmsRatesResponse', this.verifyJwtTokenService.verifyToken, async (req:any, res) => {
             try {
                 this.logger.log(`=============================================START-LLP - TMS RATES DOWNSTREAM=======================================`)
-                // this.logger.log("BLESS REQUEST",req)
+                console.log("Timestamp when we received the data from BLESS to LLP Downstream API --->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
                 this.logger.log(`BLESS REQUEST BODY is ${JSON.stringify(req.body.message)}`);
                 // this.logger.log("S3 data----->",req.body.body)
                 //Calling Downstream service from LLP to TMS
@@ -51,9 +55,6 @@ export class ShipmentRatesController implements Controller {
                 var downstreamToTmsSystemRates = await this.DownStreamService.downStreamToTmsSystemRates(JSON.parse(req.body.message).transformedMessage,res)
 
                 // var downstreamToTmsSystemRates = await this.DownStreamService.downStreamToTmsSystemRates(req.body[0].body,res)
-
-
-                //var response = await this.LlpClien2Service.clientTmsResponse();
 
                 res.json({ token:downstreamToTmsSystemRates });
                 this.logger.log(`=============================================END-LLP To TMS RATES DOWNSTREAM=======================================`)
@@ -71,6 +72,7 @@ export class ShipmentRatesController implements Controller {
             try {
 
                 this.logger.log(`=============================================START-C2 To Lobster DOWNSTREAM=======================================`)
+                console.log("Timestamp when we received the data from BLESS to CLIENT2 Downstream API --->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
                 // this.logger.log(`BLESS REQUEST BODY is ${JSON.parse(req.body.message)}`);
 
                 // Uncomment when you get data from BLESS

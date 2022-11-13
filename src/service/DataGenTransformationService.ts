@@ -10,6 +10,11 @@ import { MessagingService } from "./MessagingService"
 import { VendorBookingRepository } from "../data/repository/VendorBookingRepository";
 
 import { ExpRateResponseDataRepository } from "../data/repository/ExpRateResponseDataRepository";
+
+//For Timestamp
+import * as moment from 'moment';
+var today = new Date();
+// var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z")
 export class DataGenTransformationService implements BaseService {
 
     private logger: Logger;
@@ -40,17 +45,15 @@ export class DataGenTransformationService implements BaseService {
             fianlPublishMessage = await this.expTmsLlpClient2(msgType)
         }
         
-        console.log("fianlPublishMessage--------->", fianlPublishMessage)
+        this.logger.log("fianlPublishMessage that is going into Publish Message--------->", fianlPublishMessage)
         //Sending the Final Datagen messages Array to Message Service
        await this.MessagingService.publishMessageToDataGen(fianlPublishMessage);
     }
 
     //Transformation service to build TMS RESPONSE data which is intended to send from LLP to CLIENT2
     async expTmsLlpClient2(msgType: any): Promise<any> {
-
-        
-        //console.log("Unprocessed responses--->",tmsResponseList)
-        console.log("msgType------->", msgType)
+  
+        this.logger.log("Checking for msgType------->", msgType)
 
         //BLESS Datagen variables
         let messagePrimary: any = process.env.DATAGEN_TMS_RESP_PRIMARY_RECEIVER;
@@ -100,12 +103,12 @@ export class DataGenTransformationService implements BaseService {
                     publishMessage['payloads'] = [objJsonB64];
     
                     fianlPublishMessage.push(publishMessage);
-    
+                    console.log("Timestamp before Datagen in LLP---->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
                     //Update the status in the response table of LLP 
                     // this.logger.log("BEFORE UPDATE RES TABLE",tmsReponseItem["customer_order_number"])
                     const whereObj = { "customer_order_number":tmsReponseItem["customer_order_number"]}
-                    const updateObj = { status: "PROCESSED" }
-                    this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
+                    const updateObj = { status: "PROCESSED", "parent_uuid": vcId }
+                    this.logger.log("Updating the Response Table after constructing the datagen object---->",whereObj,updateObj)
                     await this.ExpResponseDataRepository.update(whereObj,updateObj);
                 }
             }else if(msgType === process.env.DATAGEN_TMS_RATE_RESP_MSG){
@@ -113,7 +116,7 @@ export class DataGenTransformationService implements BaseService {
                 var tmsRatesResponseList = await this.ExpRateResponseDataRepository.get({ 'status': "UNPROCESSED" })
                 for (let tmsRatesReponseItem of tmsRatesResponseList) {
 
-                    this.logger.log("customer_order_number-------->",tmsRatesReponseItem["customer_order_number"])
+                    this.logger.log("customer_order_number inside Rate Datagen -------->",tmsRatesReponseItem["customer_order_number"])
                     
                     let objJsonStr = JSON.parse(JSON.stringify(tmsRatesReponseItem));
                     //Adding Bless Identity Fields
@@ -148,12 +151,12 @@ export class DataGenTransformationService implements BaseService {
                     publishMessage['payloads'] = [objJsonB64];
     
                     fianlPublishMessage.push(publishMessage);
-    
+                    console.log("Timestamp before Datagen in LLP---->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
                     //Update the status in the response table of LLP 
                     // this.logger.log("BEFORE UPDATE RES TABLE",tmsRatesReponseItem["customer_order_number"])
                     const whereObj = { "customer_reference":tmsRatesReponseItem["customer_reference"]}
                     const updateObj = { "status": "PROCESSED", "vcid": vcId }
-                    this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
+                    this.logger.log("Updating the RatesResponse Table after constructing the datagen object---->",whereObj,updateObj)
                     await this.ExpRateResponseDataRepository.update(whereObj,updateObj);
                 }
             }

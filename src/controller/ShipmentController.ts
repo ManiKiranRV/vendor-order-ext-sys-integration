@@ -17,6 +17,11 @@ import { GenericUtil } from "../util/GenericUtil";
 
 var request = require('request');
 
+//For Timestamp
+import * as moment from 'moment';
+var today = new Date();
+// var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z")
+
 export class ShipmentController implements Controller {
     private logger: Logger = DI.get(Logger)
     private ExpTmsService: ExpTmsService = DI.get(ExpTmsService)
@@ -66,6 +71,7 @@ export class ShipmentController implements Controller {
             try {
                 this.logger.log(`=============================================START-LLP -TMS DOWNSTREAM=======================================`)
                 // this.logger.log("BLESS REQUEST--->",JSON.parse(req.body))
+                console.log("Timestamp when we received the data from BLESS to LLP Downstream API --->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
                 this.logger.log(`BLESS REQUEST BODY is ${JSON.parse(req.body.message)}`);
                 //Calling Downstream service from LLP to TMS
                 // var downstreamToTmsSystem = await this.DownStreamService.downStreamToTmsSystem(JSON.parse(req.body.message).transformedMessage,res)
@@ -89,6 +95,7 @@ export class ShipmentController implements Controller {
             try {
 
                 this.logger.log(`=============================================START-C2 To Lobster DOWNSTREAM=======================================`)
+                console.log("Timestamp when we received the data from BLESS to CLIENT2 Downstream API --->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
                 this.logger.log(`BLESS REQUEST BODY is ${JSON.parse(req.body.message)}`);
 
                 var lobMessage = await this.DownStreamService.downStreamToLobsterSystem(JSON.parse(req.body.message).transformedMessage,res);

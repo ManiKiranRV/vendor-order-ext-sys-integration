@@ -19,18 +19,17 @@ export class LobsterTransformationService {
         return new Promise(async (resolve, reject) => {
             try {
                 //console.log('Request Body inside LobsterTransformationService', req)    
-                console.log("Message in Lobster Transformation---->",message)
+                this.logger.log("Message in Lobster Transformation---->",message)
                 let tdata
                 let baseMap
                 // let parseMessage = JSON.parse(message.data)
-                console.log("message.msgType----->",message.msgType)
+                this.logger.log("message.msgType----->",message.msgType)
                  if(message.msgType === process.env.DATAGEN_TMS_RATE_RESP_MSG){
                     let rateTranRes = await this.lobMsgTransformationRates(message)
-                    console.log("rateTranRes",rateTranRes)
                     tdata = transform(message,rateTranRes);
                     
                  }else if(message.msgType === process.env.DATAGEN_TMS_RESP_MSG){
-                    console.log("Pickup Flag",message.content.pickUp)
+                    this.logger.log("Pickup Flag",message.content.pickUp)
                     if(message.content.pickUp == "PICKUP"){
                         baseMap = {
                             item: {
@@ -126,7 +125,7 @@ export class LobsterTransformationService {
                             ]
                         };
                     }
-                    console.log("baseMap",baseMap)
+                    this.logger.log("baseMap",baseMap)
                     tdata = transform(message, baseMap);
                  }
                 
@@ -134,7 +133,7 @@ export class LobsterTransformationService {
 
                 
                 
-                console.log("tdata----->\n\n",tdata)
+                this.logger.log("tdata----->\n\n",tdata)
 
                 resolve({ tdata })
 
@@ -209,7 +208,7 @@ export class LobsterTransformationService {
                 let baseMap
                 let parseMessage = JSON.parse(message.data)
                 let jobNr = message.customer_reference
-                console.log("jobNr--------->",jobNr)
+                this.logger.log("jobNr--------->",jobNr)
                 baseMap = {
                     item: {
                         "header": "content",
@@ -230,7 +229,6 @@ export class LobsterTransformationService {
                                         "jobNr": jobNr
                                     }
                                 }
-                                console.log("HEADER--->", _header)
                                 return _header;
                             },
                             on: "header"
@@ -250,16 +248,12 @@ export class LobsterTransformationService {
                                 //         "documents": message.content.documents
                                 //     }
                                 // }
-
-                                console.log("BODY----->>>",body)
                                 return body;
                             },
                             on: "body"
                         }
                     ]
                 };
-                
-                console.log("baseMap")
                 resolve(baseMap)
 
             }catch (e) {
