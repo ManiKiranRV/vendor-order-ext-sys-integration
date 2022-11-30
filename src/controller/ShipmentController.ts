@@ -71,7 +71,7 @@ export class ShipmentController implements Controller {
             try {
                 this.logger.log(`=============================================START-LLP -TMS DOWNSTREAM=======================================`)
                 // this.logger.log("BLESS REQUEST--->",JSON.parse(req.body))
-                console.log("Timestamp when we received the data from BLESS to LLP Downstream API --->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
+                console.log("Timestamp when we received the data from BLESS to LLP Downstream API --->",Date());
                 this.logger.log(`BLESS REQUEST BODY is ${JSON.parse(req.body.message)}`);
                 //Calling Downstream service from LLP to TMS
                 // var downstreamToTmsSystem = await this.DownStreamService.downStreamToTmsSystem(JSON.parse(req.body.message).transformedMessage,res)
@@ -95,7 +95,7 @@ export class ShipmentController implements Controller {
             try {
 
                 this.logger.log(`=============================================START-C2 To Lobster DOWNSTREAM=======================================`)
-                console.log("Timestamp when we received the data from BLESS to CLIENT2 Downstream API --->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
+                console.log("Timestamp when we received the data from BLESS to CLIENT2 Downstream API --->",Date());
                 this.logger.log(`BLESS REQUEST BODY is ${JSON.parse(req.body.message)}`);
 
                 var lobMessage = await this.DownStreamService.downStreamToLobsterSystem(JSON.parse(req.body.message).transformedMessage,res);

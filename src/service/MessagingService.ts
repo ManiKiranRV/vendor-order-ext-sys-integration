@@ -44,7 +44,7 @@ export class MessagingService implements BaseService {
                     }
                 ]
             });
-            console.log("Timestamp After Datagen in LLP---->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
+            console.log("Timestamp After Datagen in LLP---->",Date());
             this.logger.log(`BLESS TOKEN is ${JSON.stringify(blessToken)}`);
             this.logger.log("================================STOP-DATAGEN MESSAGE PUBLISH==================");
         }

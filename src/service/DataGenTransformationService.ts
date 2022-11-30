@@ -103,7 +103,7 @@ export class DataGenTransformationService implements BaseService {
                     publishMessage['payloads'] = [objJsonB64];
     
                     fianlPublishMessage.push(publishMessage);
-                    console.log("Timestamp before Datagen in LLP---->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
+                    console.log("Timestamp before Datagen in LLP---->",Date());
                     //Update the status in the response table of LLP 
                     // this.logger.log("BEFORE UPDATE RES TABLE",tmsReponseItem["customer_order_number"])
                     const whereObj = { "customer_order_number":tmsReponseItem["customer_order_number"]}
@@ -151,7 +151,7 @@ export class DataGenTransformationService implements BaseService {
                     publishMessage['payloads'] = [objJsonB64];
     
                     fianlPublishMessage.push(publishMessage);
-                    console.log("Timestamp before Datagen in LLP---->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
+                    console.log("Timestamp before Datagen in LLP---->",Date());
                     //Update the status in the response table of LLP 
                     // this.logger.log("BEFORE UPDATE RES TABLE",tmsRatesReponseItem["customer_order_number"])
                     const whereObj = { "customer_reference":tmsRatesReponseItem["customer_reference"]}

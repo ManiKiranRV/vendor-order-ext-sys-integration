@@ -230,7 +230,10 @@ export class DownStreamService {
                 if (response.statusCode == 200 || response.statusCode == 201){
                     //Check pickup flag = true in TMS Request
                     this.logger.log("plannedPickupDateAndTime & Pickup Flag--->",plannedPickupDateAndTime,pickUpFlag)
+                    let todayDate = moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z")
+                    console.log("todayDate--->",todayDate)
                     if(pickUpFlag == true){
+                        //&& plannedPickupDateAndTime != todayDate
                         expres = {
                             statusCode: response.statusCode,
                             message: response.body,
@@ -265,10 +268,10 @@ export class DownStreamService {
                             body : JSON.stringify(pickupData)
                         };
                         this.logger.log("pickupOptions------>",pickupOptions)
-                        console.log("Timestamp for PickUp before sending request to TMS System--->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
+                        console.log("Timestamp for PickUp before sending request to TMS System--->",Date());
                         await request(pickupOptions, async (error: any, response: any) => {
                             if (error) throw new Error(error);
-                            console.log("Timestamp for PickUp after getting the response from TMS System--->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
+                            console.log("Timestamp for PickUp after getting the response from TMS System--->",Date());
                             this.logger.log("Response for PickUp from TMS System & Status code--->",JSON.parse(response.body),response.statusCode)
                             this.logger.log("customerOrderNumber inside pickup response---->",customerOrderNumber)
                             var updatePickupRes = {
@@ -516,10 +519,10 @@ export class DownStreamService {
                 
 
                 this.logger.log(`Lobster Optionsvfor PickUp is ${options}`);
-                console.log("Timestamp before sending Pickup request to Lobster system--->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
+                console.log("Timestamp before sending Pickup request to Lobster system--->",Date());
                 var result = await request(options, async (error: any, response: any) => {
                     if (error) throw new Error(error);
-                    console.log("Timestamp after getting Pickup response from Lobster system--->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
+                    console.log("Timestamp after getting Pickup response from Lobster system--->",Date());
                     //Save response from Lobster system to exp_response table
 
                     this.logger.log("response----->", response.body)
@@ -620,10 +623,10 @@ export class DownStreamService {
                 
     
                 // this.logger.log(`Lobster Options is ${JSON.stringify(options)}`);
-                console.log("Timestamp before sending Booking request to Lobster system--->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
+                console.log("Timestamp before sending Booking request to Lobster system--->",Date());
                 var result = await request(options, async (error: any, response: any) => {
                     if (error) throw new Error(error);
-                    console.log("Timestamp after getting Booking response from Lobster system--->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
+                    console.log("Timestamp after getting Booking response from Lobster system--->",Date());
                     //Save response from Lobster system to exp_response table
     
                     this.logger.log("response----->", response.body)
@@ -721,10 +724,10 @@ export class DownStreamService {
             this.logger.log("filePath & fileName ----------------------------->",filePath, fileName);
 
             this.logger.log("OPTIONS that we are sending to TMS System---->\n\n",options)
-            console.log("Timestamp for RatesRequest before sending the request to TMS System--->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
+            console.log("Timestamp for RatesRequest before sending the request to TMS System--->",Date());
             await request(options, async (error: any, response: any) => {
                 if (error) throw new Error(error);
-                console.log("Timestamp for RatesRequest after getting response from TMS System--->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
+                console.log("Timestamp for RatesRequest after getting response from TMS System--->",Date());
                 this.logger.log("Response from TMS----->",response.body)
                 var expRatesRes = {
                     message: response.body,
@@ -854,10 +857,10 @@ export class DownStreamService {
                 
 
                 this.logger.log(`Lobster Options is ${options}`);
-                console.log("Timestamp before sending  Rates request to Lobster system--->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
+                console.log("Timestamp before sending  Rates request to Lobster system--->",Date());
                 var result = await request(options, async (error: any, response: any) => {
                     if (error) throw new Error(error);
-                    console.log("Timestamp after getting Rates response from Lobster system--->",moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z"));
+                    console.log("Timestamp after getting Rates response from Lobster system--->",Date());
                     //Save response from Lobster system to exp_response table
 
                     this.logger.log("Response for Rates from Lobster----->", response.body)
