@@ -100,7 +100,7 @@ export class LobsterService {
                         'method': 'POST',
                         'url': process.env.LOBSTER_POST_URL,
                         'headers': {
-                            'Authorization': 'Basic QkxFU1M6OTV6MU07b3RG',
+                            'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
                             'Content-Type': 'text/plain'
                         },
                         body: JSON.stringify(conMessage.tdata)
@@ -144,7 +144,7 @@ export class LobsterService {
                     'method': 'POST',
                     'url': process.env.LOBSTER_POST_URL,
                     'headers': {
-                        'Authorization': 'Basic QkxFU1M6OTV6MU07b3RG',
+                        'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
                         'Content-Type': 'text/plain'
                     },
                     body: JSON.stringify(transformedEventsData)

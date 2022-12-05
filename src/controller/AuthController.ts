@@ -24,7 +24,7 @@ export class AuthController implements Controller {
 
         router.get('/generate-token', async (req: Request, res: Response, next: NextFunction) => {
             try {
-                let token = await this.authService.generateJWTToken({"user":"downstreamuser","password": "BL3s5$123"});               
+                let token = await this.authService.generateJWTToken({"user":"uat-downstreamuser","password": "bless123$"});               
                 console.log(`TOken in controller is ${token}`)
                 res.json(token);
             } catch (error) {

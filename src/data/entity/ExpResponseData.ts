@@ -3,9 +3,11 @@ import { DataTypes, Model, Optional } from 'sequelize';
 
 export interface ExpResponseDataAttributes {
   id: number;
-  message: object;
+  message?: object;
   shipmentTrackingNumber?: string;
   customer_order_number?: string;
+  pickupResponse?: object;
+  msgTyp?: string;
   token?: string;
   statusCode?: string;
   status?: string;
@@ -20,14 +22,16 @@ export interface ExpResponseDataAttributes {
 
 export type ExpResponseDataPk = "id";
 export type ExpResponseDataId = ExpResponseData[ExpResponseDataPk];
-export type ExpResponseDataOptionalAttributes = "id" | "shipmentTrackingNumber" | "customer_order_number" | "token" | "statusCode" | "status" | "error_reason" | "req_file_path" | "req_file_uuid" | "parent_uuid" | "createdAt" | "updatedAt" | "deletedAt";
+export type ExpResponseDataOptionalAttributes = "id" | "message" | "shipmentTrackingNumber" | "customer_order_number" | "pickupResponse" | "msgTyp" | "token" | "statusCode" | "status" | "error_reason" | "req_file_path" | "req_file_uuid" | "parent_uuid" | "createdAt" | "updatedAt" | "deletedAt";
 export type ExpResponseDataCreationAttributes = Optional<ExpResponseDataAttributes, ExpResponseDataOptionalAttributes>;
 
 export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpResponseDataCreationAttributes> implements ExpResponseDataAttributes {
   id!: number;
-  message!: object;
+  message?: object;
   shipmentTrackingNumber?: string;
   customer_order_number?: string;
+  pickupResponse?: object;
+  msgTyp?: string;
   token?: string;
   statusCode?: string;
   status?: string;
@@ -50,17 +54,25 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
     },
     message: {
       type: DataTypes.JSON,
-      allowNull: false
+      allowNull: true
     },
     shipmentTrackingNumber: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
-    token: {
+    customer_order_number: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    customer_order_number: {
+    pickupResponse: {
+      type: DataTypes.JSON,
+      allowNull: true
+    },
+    msgTyp: {
+      type: DataTypes.STRING(45),
+      allowNull: true
+    },
+    token: {
       type: DataTypes.STRING(255),
       allowNull: true
     },

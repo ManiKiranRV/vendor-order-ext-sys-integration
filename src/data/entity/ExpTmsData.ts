@@ -3,12 +3,12 @@ import { DataTypes, Model, Optional } from 'sequelize';
 
 export interface ExpTmsDataAttributes {
   id: number;
-  message?: object;
-  shipment_Tracking_Number?: string;
-  status?: string;
+  message: object;
+  shipment_Tracking_Number: string;
+  status: string;
   token?: string;
-  uuid?: string;
   customer_order_number?: string;
+  uuid?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -16,17 +16,17 @@ export interface ExpTmsDataAttributes {
 
 export type ExpTmsDataPk = "id";
 export type ExpTmsDataId = ExpTmsData[ExpTmsDataPk];
-export type ExpTmsDataOptionalAttributes = "id" | "message" | "shipment_Tracking_Number" | "status" | "token" | "uuid" | "customer_order_number" | "createdAt" | "updatedAt" | "deletedAt";
+export type ExpTmsDataOptionalAttributes = "id" | "token" | "customer_order_number" | "uuid" | "createdAt" | "updatedAt" | "deletedAt";
 export type ExpTmsDataCreationAttributes = Optional<ExpTmsDataAttributes, ExpTmsDataOptionalAttributes>;
 
 export class ExpTmsData extends Model<ExpTmsDataAttributes, ExpTmsDataCreationAttributes> implements ExpTmsDataAttributes {
   id!: number;
-  message?: object;
-  shipment_Tracking_Number?: string;
-  status?: string;
+  message!: object;
+  shipment_Tracking_Number!: string;
+  status!: string;
   token?: string;
-  uuid?: string;
   customer_order_number?: string;
+  uuid?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -42,26 +42,26 @@ export class ExpTmsData extends Model<ExpTmsDataAttributes, ExpTmsDataCreationAt
     },
     message: {
       type: DataTypes.JSON,
-      allowNull: true
+      allowNull: false
     },
     shipment_Tracking_Number: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: false
     },
     status: {
       type: DataTypes.STRING(100),
-      allowNull: true
+      allowNull: false
     },
     token: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
-    uuid: {
-      type: DataTypes.STRING(1000),
-      allowNull: true
-    },
     customer_order_number: {
       type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    uuid: {
+      type: DataTypes.STRING(1000),
       allowNull: true
     }
   }, {

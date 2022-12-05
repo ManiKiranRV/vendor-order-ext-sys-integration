@@ -108,28 +108,6 @@ export class DownStreamController implements Controller {
             }
         });
 
-
-        /*
-            **Downstream Wrapper for Commercial Invoice which handles the TMS Response and persist response in LLP system.
-            
-        */ 
-
-            router.post('/uploadInvoice',async (req:any, res) => {
-                try {
-                    this.logger.log(`=============================================START-COMMERCIAL INVOICE TMS To LLP DOWNSTREAM=======================================`)
-    
-                    //Calling Downstream service for Commercial Invoice from LLP to TMS
-                    var downstreamToTmsSystemInvoice = await this.DownStreamService.downStreamToTmsSystemInvoice(req,res)
-    
-                    res.json({ token:downstreamToTmsSystemInvoice });
-                    this.logger.log(`=============================================END-COMMERCIAL INVOICE TMS To LLP DOWNSTREAM=======================================`)
-                    
-                } catch (error) {
-                    let response: any = { status: { code: 'FAILURE', message: error } }
-                    res.json(response);
-    
-                }
-            });
         
         return router;
     }

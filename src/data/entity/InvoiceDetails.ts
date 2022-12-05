@@ -4,6 +4,7 @@ import { DataTypes, Model, Optional } from 'sequelize';
 export interface InvoiceDetailsAttributes {
   id: number;
   customerordernumber?: string;
+  sequence_timestamp?: string;
   mwab?: string;
   hawb?: string;
   customerreference?: string;
@@ -28,12 +29,13 @@ export interface InvoiceDetailsAttributes {
 
 export type InvoiceDetailsPk = "id";
 export type InvoiceDetailsId = InvoiceDetails[InvoiceDetailsPk];
-export type InvoiceDetailsOptionalAttributes = "id" | "customerordernumber" | "mwab" | "hawb" | "customerreference" | "typecode" | "uploadstatus" | "invoicenumber" | "invoicedate" | "declaredvalue" | "declaredvaluecurrency" | "incoterm" | "description" | "responseerrorcode" | "responseerrortitle" | "responseerrordetail" | "responsetimestamp" | "createdAt" | "updatedAt" | "deletedAt" | "additionalcharge" | "additionalchargetype";
+export type InvoiceDetailsOptionalAttributes = "id" | "customerordernumber" | "sequence_timestamp" | "mwab" | "hawb" | "customerreference" | "typecode" | "uploadstatus" | "invoicenumber" | "invoicedate" | "declaredvalue" | "declaredvaluecurrency" | "incoterm" | "description" | "responseerrorcode" | "responseerrortitle" | "responseerrordetail" | "responsetimestamp" | "createdAt" | "updatedAt" | "deletedAt" | "additionalcharge" | "additionalchargetype";
 export type InvoiceDetailsCreationAttributes = Optional<InvoiceDetailsAttributes, InvoiceDetailsOptionalAttributes>;
 
 export class InvoiceDetails extends Model<InvoiceDetailsAttributes, InvoiceDetailsCreationAttributes> implements InvoiceDetailsAttributes {
   id!: number;
   customerordernumber?: string;
+  sequence_timestamp?: string;
   mwab?: string;
   hawb?: string;
   customerreference?: string;
@@ -66,6 +68,10 @@ export class InvoiceDetails extends Model<InvoiceDetailsAttributes, InvoiceDetai
     },
     customerordernumber: {
       type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    sequence_timestamp: {
+      type: DataTypes.STRING(45),
       allowNull: true
     },
     mwab: {
@@ -121,7 +127,7 @@ export class InvoiceDetails extends Model<InvoiceDetailsAttributes, InvoiceDetai
       allowNull: true
     },
     responseerrordetail: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     responsetimestamp: {
