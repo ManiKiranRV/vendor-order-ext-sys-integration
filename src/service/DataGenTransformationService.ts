@@ -54,8 +54,8 @@ export class DataGenTransformationService implements BaseService {
         //Sending data to Lobster directly without datagen publish
 
         // await this.DownStreamService.downStreamToLobsterSystem(fianlPublishMessage.payloads);
-        this.logger.log("Final message Payload that is returning", fianlPublishMessage[0].payloads[0])
-        return fianlPublishMessage[0].payloads[0]
+        this.logger.log("Final message Payload that is returning", fianlPublishMessage)
+        return fianlPublishMessage
     }
 
     //Transformation service to build TMS RESPONSE data which is intended to send from LLP to CLIENT2
@@ -86,12 +86,12 @@ export class DataGenTransformationService implements BaseService {
                     // const delay = ms => new Promise(res => setTimeout(res, ms));
                     
                     // Re-try mechanism
-                    if(vendBkngItem.length == 0){
-                        this.logger.log("Entered into if-condition if lenght is 0")
+                    // if(vendBkngItem.length == 0){
+                    //     this.logger.log("Entered into if-condition if lenght is 0")
                         
-                        await GenericUtil.delay(2000);
-                        vendBkngItem = await this.vendorBookingRepository.get({ "customer_order_number": tmsReponseItem["customer_order_number"] })
-                    }
+                    //     await GenericUtil.delay(2000);
+                    //     vendBkngItem = await this.vendorBookingRepository.get({ "customer_order_number": tmsReponseItem["customer_order_number"] })
+                    // }
                     if (vendBkngItem.length > 0) {
 
                         let objJsonStr = JSON.parse(JSON.stringify(tmsReponseItem));

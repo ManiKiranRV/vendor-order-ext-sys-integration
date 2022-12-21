@@ -364,7 +364,12 @@ export class DownStreamService {
                     // const updateObj = { status: "PROCESSED" }
                     finalmessage = await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
                     this.logger.log("Message after datagen transformation happened",finalmessage)
-                    await this.downStreamToLobsterSystem(finalmessage)
+                    for (let finalMessageItem of finalmessage){
+                        this.logger.log("finalmessage---->",finalMessageItem.payloads[0])
+                        await this.downStreamToLobsterSystem(finalMessageItem.payloads[0])
+                    }
+                    
+                    // await this.downStreamToLobsterSystem(finalmessage)
                     
                 }
                
@@ -523,13 +528,13 @@ export class DownStreamService {
                 this.logger.log("customer_order_number for Booking Request -------->\n\n",baseMessage.customer_order_number)
                 let vendorOrderItem = (await this.VendorBookingRepository.get({ "customer_order_number": baseMessage.customer_order_number }));
                 
-                if(vendorOrderItem.length == 0){
-                    this.logger.log("Entered into if-condition if lenght is 0")
+                // if(vendorOrderItem.length == 0){
+                //     this.logger.log("Entered into if-condition if lenght is 0")
 
-                    await GenericUtil.delay(2000);
-                    vendorOrderItem = (await this.VendorBookingRepository.get({ "customer_order_number": baseMessage.customer_order_number }));
+                //     await GenericUtil.delay(2000);
+                //     vendorOrderItem = (await this.VendorBookingRepository.get({ "customer_order_number": baseMessage.customer_order_number }));
                 
-                }
+                // }
 
                 if (vendorOrderItem.length > 0) {
                     var id = vendorOrderItem[0]["id"]
