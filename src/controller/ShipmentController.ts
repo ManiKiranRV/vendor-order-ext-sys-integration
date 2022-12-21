@@ -34,7 +34,7 @@ export class ShipmentController implements Controller {
     private verifyJwtTokenService: VerifyJwtTokenService;
 
 
-    constructor(){
+    constructor() {
         this.authService = DI.get(AuthService);
         this.verifyJwtTokenService = DI.get(VerifyJwtTokenService);
 
@@ -45,18 +45,18 @@ export class ShipmentController implements Controller {
 
         //LLP-TMS//
 
-        router.post('/expResponse',async (req, res) => {
+        router.post('/expResponse', async (req, res) => {
             try {
 
                 var responseData, response;
                 //console.log("Request Body inside ShipmentController",req.body)
-                
+
                 responseData = await this.ExpTmsService.ExpDhl()
                 // console.log("Response in ShipmentController",responseData)
 
                 // response = await this.ExpResponseDataService.expResData(responseData, res)
-                res.json({ status: { code: 'SUCCESS', message: "Created Successfully" }});
-                
+                res.json({ status: { code: 'SUCCESS', message: "Created Successfully" } });
+
             } catch (error) {
                 let response: any = { status: { code: 'FAILURE', message: error } }
                 res.json(response);
@@ -64,24 +64,24 @@ export class ShipmentController implements Controller {
             }
         });
 
-    
+
         //DOWNSTREAM LLP-TMS(EXP Request Data) & LLP-CLIENT2(TMS Response)//  
 
-        router.post('/tmsResponse', this.verifyJwtTokenService.verifyToken, async (req:any, res) => {
+        router.post('/tmsResponse', this.verifyJwtTokenService.verifyToken, async (req: any, res) => {
             try {
                 this.logger.log(`=============================================START-LLP -TMS DOWNSTREAM=======================================`)
                 // this.logger.log("BLESS REQUEST--->",JSON.parse(req.body))
-                console.log("Timestamp when we received the data from BLESS to LLP Downstream API --->",Date());
+                console.log("Timestamp when we received the data from BLESS to LLP Downstream API --->", Date());
                 this.logger.log(`BLESS REQUEST BODY is ${JSON.parse(req.body.message)}`);
                 //Calling Downstream service from LLP to TMS
                 // var downstreamToTmsSystem = await this.DownStreamService.downStreamToTmsSystem(JSON.parse(req.body.message).transformedMessage,res)
-                var downstreamToTmsSystem = await this.DownStreamService.downStreamToTmsSystem(JSON.parse(req.body.message),res)
+                var downstreamToTmsSystem = await this.DownStreamService.downStreamToTmsSystem(JSON.parse(req.body.message), res)
 
                 //var response = await this.LlpClien2Service.clientTmsResponse();
 
-                res.json({ token:downstreamToTmsSystem });
+                res.json({ token: downstreamToTmsSystem });
                 this.logger.log(`=============================================END-TMS To LLP DOWNSTREAM=======================================`)
-                
+
             } catch (error) {
                 let response: any = { status: { code: 'FAILURE', message: error } }
                 res.json(response);
@@ -90,67 +90,68 @@ export class ShipmentController implements Controller {
         });
 
         //DOWNSTREAM CLIENT2-LOBSTER//
-        
-        router.post('/client-lobster-tms-resp', this.verifyJwtTokenService.verifyToken, async (req:any, res) => {
+
+        router.post('/client-lobster-tms-resp', this.verifyJwtTokenService.verifyToken, async (req: any, res) => {
             try {
 
                 this.logger.log(`=============================================START-C2 To Lobster DOWNSTREAM=======================================`)
-                console.log("Timestamp when we received the data from BLESS to CLIENT2 Downstream API --->",Date());
+                console.log("Timestamp when we received the data from BLESS to CLIENT2 Downstream API --->", Date());
                 this.logger.log(`BLESS REQUEST BODY is ${JSON.parse(req.body.message)}`);
 
-                var lobMessage = await this.DownStreamService.downStreamToLobsterSystem(JSON.parse(req.body.message).transformedMessage,res);
-                res.json({token:lobMessage });
-                
-                this.logger.log(`=============================================END-C2 To Lobster DOWNSTREAM=======================================`)              
-                
+                // var lobMessage = await this.DownStreamService.downStreamToLobsterSystem(JSON.parse(req.body.message).transformedMessage,res);
+                var lobMessage = GenericUtil.generateRandomHash();
+                res.json({ token: lobMessage });
+
+                this.logger.log(`=============================================END-C2 To Lobster DOWNSTREAM=======================================`)
+
             } catch (error) {
                 let response: any = { status: { code: 'FAILURE', message: error } }
                 res.json(response);
 
             }
-        });         
+        });
 
-        router.post('/lobsterData',async (req, res) => {
+        router.post('/lobsterData', async (req, res) => {
             try {
 
                 var lobMessage;
 
                 lobMessage = await this.LobsterService.postTmsResponseToLobster();
 
-                res.json({lobdata: lobMessage });
-                
+                res.json({ lobdata: lobMessage });
+
             } catch (error) {
                 let response: any = { status: { code: 'FAILURE', message: error } }
                 res.json(response);
 
             }
-        }); 
-        
-        
+        });
+
+
         //Post Events Data to Lobster
-        router.post('/events-to-lobster',async (req, res) => {
+        router.post('/events-to-lobster', async (req, res) => {
             try {
                 let result = await this.LobsterService.postEventsToLobster();
-                res.json({result});                
+                res.json({ result });
             } catch (error) {
                 let response: any = { status: { code: 'FAILURE', message: error } }
                 res.json(response);
             }
-        }); 
-        
+        });
+
         //DATAGEN
 
-        router.post('/datagen',async (req, res) => {
+        router.post('/datagen', async (req, res) => {
             try {
                 var pubMessage;
                 //pubMessage = await this.DataGenTransformationService.dataGenTransformation("VND_ORD_LLP_TMS_DATAGEN");
-                res.json({data: pubMessage });                
+                res.json({ data: pubMessage });
             } catch (error) {
                 let response: any = { status: { code: 'FAILURE', message: error } }
                 res.json(response);
 
             }
-        }); 
+        });
 
         // To get TMS DATA
         router.post('/expTmsData', async (req, res) => {
@@ -159,9 +160,9 @@ export class ShipmentController implements Controller {
                 var result;
                 //console.log("Request Body inside ShipmentController",req.body)
 
-                result = await this.ExpTmsService.expTmsData(req.body,res)
-               // console.log("Response in ShipmentController",result)
-                
+                result = await this.ExpTmsService.expTmsData(req.body, res)
+                // console.log("Response in ShipmentController",result)
+
                 res.json({ status: { code: 'SUCCESS', message: "Created Successfully" }, data: result });
 
             } catch (error) {
@@ -169,7 +170,7 @@ export class ShipmentController implements Controller {
                 res.json(response);
 
             }
-        });         
+        });
 
         return router;
     }

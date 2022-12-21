@@ -162,6 +162,7 @@ export class DownStreamService {
         let plannedPickupDateAndTime:any
         let pickUpFlag:any
         let insertFalg:any
+        let finalmessage:any
         try {
             // this.logger.log("Request---------->/n/n",req)
             data = req.transformedMessage
@@ -295,8 +296,9 @@ export class DownStreamService {
 
                             // Datagen service Sends TMS-Resp from LLP to Client2
                             const updateObj = { status: "PROCESSED" }
-                            await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
-                
+                            finalmessage = await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
+                            this.logger.log("Message after datagen transformation happened",finalmessage)
+                            await this.downStreamToLobsterSystem(finalmessage)
                         })
                     }
                     else{
@@ -327,8 +329,9 @@ export class DownStreamService {
 
                         // Datagen service Sends TMS-Resp from LLP to Client2
                         const updateObj = { status: "PROCESSED" }
-                        await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
-                
+                        finalmessage = await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
+                        this.logger.log("Message after datagen transformation happened",finalmessage)
+                        await this.downStreamToLobsterSystem(finalmessage)
                     }
                 }else{
                     // If response is error then
@@ -358,43 +361,15 @@ export class DownStreamService {
                     })
 
                     // Datagen service Sends TMS-Resp from LLP to Client2
-                    const updateObj = { status: "PROCESSED" }
-                    await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
-                
+                    // const updateObj = { status: "PROCESSED" }
+                    finalmessage = await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
+                    this.logger.log("Message after datagen transformation happened",finalmessage)
+                    await this.downStreamToLobsterSystem(finalmessage)
                     
                 }
-                
-                
-
-                // this.logger.log("expres----->\n\n",expres)
-                // //this.logger.log("Response-------->\n\n",Buffer.from(JSON.stringify({"body":expres})).toString("base64"))
-
-                // //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
-                // await this.ExpResponseDataRepository.create(expres)
-
-                // //Update Core Tables
-                // await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
-
-                // //Update exp_tms_data with shipment_Tracking_Number
-                // let whereObj = { "customer_order_number":customerOrderNumber}
-                // //this.logger.log("WhereOBJ---->\n\n",whereObj)
-                // await this.ExpTmsDataRepository.update(whereObj, {
-                //     shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
-                //     status: "PROCESSED"
-                // })
-
-                // // Datagen service Sends TMS-Resp from LLP to Client2
-                // const updateObj = { status: "PROCESSED" }
-                // await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
-                // this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj)
-                //await this.ExpResponseDataRepository.update( whereObj, updateObj );
-                // this.logger.log("updateStatus----------->",updateStatus)
+               
             });
 
-            // let whereObj = { "customer_order_number":customerOrderNumber}
-            // let updateObj = { status: "PROCESSED" }
-            // this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj,updateObj);
-            // await this.ExpResponseDataRepository.update(whereObj,updateObj);
             return token
 
         } catch (error) {
@@ -410,7 +385,7 @@ export class DownStreamService {
     /*
         DownStream Service to send TMS Response to LOBSTER System & Persisting the LOBSTER Response
     */
-    async downStreamToLobsterSystem(req:any,res:any): Promise<any> {
+    async downStreamToLobsterSystem(req:any,res?:any): Promise<any> {
         let baseMessage:any
         try {
             baseMessage =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
@@ -447,7 +422,7 @@ export class DownStreamService {
                 console.log("vendorBookingObj--->",vendorBookingObj)
                 var vendorBookingObjErr = await this.VendorBookingRepository.update(whereObj,vendorBookingObj)
 
-                let addressList = await this.AddressRepository.get({ "address_type": "CONSIGNOR", "customer_order_number": baseMessage.customer_order_number });
+                let addressList = await this.AddressRepository.get({ "address_type": "SHIPPER", "customer_order_number": baseMessage.customer_order_number });
                 let accountNumber;
                 this.logger.log("Account Number is from List",addressList[0]["address_id"])
                 // this.logger.log("Estimated Date---->",JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate)
@@ -509,7 +484,7 @@ export class DownStreamService {
                     'method': 'POST',
                     'url': process.env.LOBSTER_POST_URL,
                     'headers': {
-                        'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
+                        'Authorization': 'Basic QkxFU1M6YU81YjFXVQ==',
                         'Content-Type': 'text/plain'
                     },
                     // body: JSON.stringify(conMessage.tdata)
@@ -548,6 +523,14 @@ export class DownStreamService {
                 this.logger.log("customer_order_number for Booking Request -------->\n\n",baseMessage.customer_order_number)
                 let vendorOrderItem = (await this.VendorBookingRepository.get({ "customer_order_number": baseMessage.customer_order_number }));
                 
+                if(vendorOrderItem.length == 0){
+                    this.logger.log("Entered into if-condition if lenght is 0")
+
+                    await GenericUtil.delay(2000);
+                    vendorOrderItem = (await this.VendorBookingRepository.get({ "customer_order_number": baseMessage.customer_order_number }));
+                
+                }
+
                 if (vendorOrderItem.length > 0) {
                     var id = vendorOrderItem[0]["id"]
                 }else {
@@ -556,7 +539,7 @@ export class DownStreamService {
                     //continue;
                 }
     
-                let addressList = await this.AddressRepository.get({ "address_type": "CONSIGNOR", "customer_order_number": baseMessage.customer_order_number });
+                let addressList = await this.AddressRepository.get({ "address_type": "SHIPPER", "customer_order_number": baseMessage.customer_order_number });
                 let accountNumber;
                 this.logger.log("Account Number is from List",addressList[0]["address_id"])
                 // this.logger.log("Estimated Date---->",JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate)
@@ -614,7 +597,7 @@ export class DownStreamService {
                     'method': 'POST',
                     'url': process.env.LOBSTER_POST_URL,
                     'headers': {
-                        'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
+                        'Authorization': 'Basic QkxFU1M6YU81YjFXVQ==',
                         'Content-Type': 'text/plain'
                     },
                     body: JSON.stringify(conMessage.tdata)
@@ -660,6 +643,7 @@ export class DownStreamService {
         let customer_reference:any        
         let token:any
         let vcid:any
+        let finalmessage:any
         try {
             // this.logger.log("Request---------->/n/n",req)
 
@@ -762,8 +746,9 @@ export class DownStreamService {
                 })
 
                 // Datagen service Sends TMS-Resp from LLP to Client2
-                await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RATE_RESP_MSG!);
-
+                finalmessage = await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RATE_RESP_MSG!);
+                this.logger.log("Message after datagen transformation happened",finalmessage)
+                await this.downStreamToLobsterSystemRates(finalmessage)
             });
 
             return token
@@ -782,7 +767,7 @@ export class DownStreamService {
     /*
         DownStream Service to send TMS Rates Response to LOBSTER System & Persisting the LOBSTER Response
     */
-    async downStreamToLobsterSystemRates(req:any,res:any): Promise<any> {
+    async downStreamToLobsterSystemRates(req:any,res?:any): Promise<any> {
         let baseMessage:any
         try {
             // baseMessage =  JSON.parse(Buffer.from(req, 'base64').toString('utf-8')).body
@@ -847,7 +832,7 @@ export class DownStreamService {
                     'method': 'POST',
                     'url': process.env.LOBSTER_POST_URL,
                     'headers': {
-                        'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
+                        'Authorization': 'Basic QkxFU1M6YU81YjFXVQ==',
                         'Content-Type': 'text/plain'
                     },
                     // body: JSON.stringify(conMessage.tdata)

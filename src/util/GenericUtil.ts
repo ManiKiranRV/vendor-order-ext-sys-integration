@@ -58,4 +58,9 @@ export class GenericUtil {
         }
     }
 
+    static async delay(ms: number) {
+        console.log("Waiting for 2 sec")
+        return new Promise( resolve => setTimeout(resolve, ms) );
+    }
+
 }

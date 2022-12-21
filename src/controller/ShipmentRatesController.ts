@@ -78,8 +78,8 @@ export class ShipmentRatesController implements Controller {
                 // Uncomment when you get data from BLESS
                 // var downstreamToLobSystemRates = await this.DownStreamService.downStreamToLobsterSystemRates(JSON.parse(req.body.message).transformedMessage,res);
                 
-                var downstreamToLobSystemRates = await this.DownStreamService.downStreamToLobsterSystemRates(req,res);
-
+                // var downstreamToLobSystemRates = await this.DownStreamService.downStreamToLobsterSystemRates(req,res);
+                var downstreamToLobSystemRates = GenericUtil.generateRandomHash();
                 res.json({token:downstreamToLobSystemRates });
                 
                 this.logger.log(`=============================================END-C2 To Lobster DOWNSTREAM=======================================`)              
