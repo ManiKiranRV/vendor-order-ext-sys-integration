@@ -284,6 +284,26 @@ export class DownStreamService {
                             //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
                             await this.ExpResponseDataRepository.update(whereObj,updatePickupRes)
 
+                            // // Update Core Tables
+                            // this.logger.log("Exp response that is sending to update core tables inside Pickup---->",expres)
+                            // await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+
+                            // //Update exp_tms_data with shipment_Tracking_Number
+                            // await this.ExpTmsDataRepository.update(whereObj, {
+                            //     shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
+                            //     status: "PROCESSED"
+                            // })
+
+                            // Datagen service Sends TMS-Resp from LLP to Client2
+                            const updateObj = { status: "PROCESSED" }
+                            finalmessage = await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
+                            this.logger.log("Message after datagen transformation happened",finalmessage)
+                            
+                            for (let finalMessageItem of finalmessage){
+                                this.logger.log("finalmessage---->",finalMessageItem.payloads[0])
+                                await this.downStreamToLobsterSystem(finalMessageItem.payloads[0])
+                            }
+                            
                             // Update Core Tables
                             this.logger.log("Exp response that is sending to update core tables inside Pickup---->",expres)
                             await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
@@ -293,12 +313,6 @@ export class DownStreamService {
                                 shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
                                 status: "PROCESSED"
                             })
-
-                            // Datagen service Sends TMS-Resp from LLP to Client2
-                            const updateObj = { status: "PROCESSED" }
-                            finalmessage = await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
-                            this.logger.log("Message after datagen transformation happened",finalmessage)
-                            await this.downStreamToLobsterSystem(finalmessage)
                         })
                     }
                     else{
@@ -317,6 +331,25 @@ export class DownStreamService {
                         //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
                         await this.ExpResponseDataRepository.create(expres)
 
+                        // //Update Core Tables
+                        // await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+
+                        // //Update exp_tms_data with shipment_Tracking_Number
+                        // let whereObj = { "customer_order_number":customerOrderNumber}
+                        // await this.ExpTmsDataRepository.update(whereObj, {
+                        //     shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
+                        //     status: "PROCESSED"
+                        // })
+
+                        // Datagen service Sends TMS-Resp from LLP to Client2
+                        const updateObj = { status: "PROCESSED" }
+                        finalmessage = await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
+                        this.logger.log("Message after datagen transformation happened",finalmessage)
+                        for (let finalMessageItem of finalmessage){
+                            this.logger.log("finalmessage---->",finalMessageItem.payloads[0])
+                            await this.downStreamToLobsterSystem(finalMessageItem.payloads[0])
+                        }
+
                         //Update Core Tables
                         await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
 
@@ -326,12 +359,6 @@ export class DownStreamService {
                             shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
                             status: "PROCESSED"
                         })
-
-                        // Datagen service Sends TMS-Resp from LLP to Client2
-                        const updateObj = { status: "PROCESSED" }
-                        finalmessage = await this.DataGenTransformationService.dataGenTransformation(process.env.DATAGEN_TMS_RESP_MSG!);
-                        this.logger.log("Message after datagen transformation happened",finalmessage)
-                        await this.downStreamToLobsterSystem(finalmessage)
                     }
                 }else{
                     // If response is error then
@@ -350,15 +377,15 @@ export class DownStreamService {
                     //Save expResponse in `exp_response_data` table along with shipment_Tracking_Number
                     await this.ExpResponseDataRepository.create(expres)
 
-                    //Update Core Tables
-                    await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+                    // //Update Core Tables
+                    // await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
 
-                    //Update exp_tms_data with shipment_Tracking_Number
-                    let whereObj = { "customer_order_number":customerOrderNumber}
-                    await this.ExpTmsDataRepository.update(whereObj, {
-                        shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
-                        status: "PROCESSED"
-                    })
+                    // //Update exp_tms_data with shipment_Tracking_Number
+                    // let whereObj = { "customer_order_number":customerOrderNumber}
+                    // await this.ExpTmsDataRepository.update(whereObj, {
+                    //     shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
+                    //     status: "PROCESSED"
+                    // })
 
                     // Datagen service Sends TMS-Resp from LLP to Client2
                     // const updateObj = { status: "PROCESSED" }
@@ -369,7 +396,16 @@ export class DownStreamService {
                         await this.downStreamToLobsterSystem(finalMessageItem.payloads[0])
                     }
                     
-                    // await this.downStreamToLobsterSystem(finalmessage)
+                    
+                    //Update Core Tables
+                    await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+
+                    //Update exp_tms_data with shipment_Tracking_Number
+                    let whereObj = { "customer_order_number":customerOrderNumber}
+                    await this.ExpTmsDataRepository.update(whereObj, {
+                        shipment_Tracking_Number: JSON.parse(response.body).shipmentTrackingNumber,
+                        status: "PROCESSED"
+                    })
                     
                 }
                
@@ -499,10 +535,10 @@ export class DownStreamService {
                 
 
                 this.logger.log(`Lobster Optionsvfor PickUp is ${options}`);
-                console.log("Timestamp before sending Pickup request to Lobster system--->",Date());
+                console.log("Timestamp before sending Pickup request to Lobster system--->",Date(),customer_order_number);
                 var result = await request(options, async (error: any, response: any) => {
                     if (error) throw new Error(error);
-                    console.log("Timestamp after getting Pickup response from Lobster system--->",Date());
+                    console.log("Timestamp after getting Pickup response from Lobster system--->",Date(),customer_order_number);
                     //Save response from Lobster system to exp_response table
 
                     this.logger.log("response----->", response.body)
@@ -611,10 +647,10 @@ export class DownStreamService {
                 
     
                 // this.logger.log(`Lobster Options is ${JSON.stringify(options)}`);
-                console.log("Timestamp before sending Booking request to Lobster system--->",Date());
+                console.log("Timestamp before sending Booking request to Lobster system--->",Date(),baseMessage.customer_order_number);
                 var result = await request(options, async (error: any, response: any) => {
                     if (error) throw new Error(error);
-                    console.log("Timestamp after getting Booking response from Lobster system--->",Date());
+                    console.log("Timestamp after getting Booking response from Lobster system--->",Date(),baseMessage.customer_order_number);
                     //Save response from Lobster system to exp_response table
     
                     this.logger.log("response----->", response.body)
