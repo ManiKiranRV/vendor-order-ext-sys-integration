@@ -8,7 +8,7 @@ import { ExpResponseDataRepository } from "../data/repository/ExpResponseDataRep
 //import { MawbMainRepository } from '../data/repository/MawbMainRepository';
 import { MessagingService } from "./MessagingService"
 import { VendorBookingRepository } from "../data/repository/VendorBookingRepository";
-
+import { ExpTmsDataRepository } from "../data/repository/ExpTmsDataRepository";
 import { ExpRateResponseDataRepository } from "../data/repository/ExpRateResponseDataRepository";
 // import { DownStreamService } from "./DownStreamService";
 import { GenericUtil } from "../util/GenericUtil";
@@ -26,6 +26,7 @@ export class DataGenTransformationService implements BaseService {
     private MessagingService: MessagingService;
     private vendorBookingRepository: VendorBookingRepository;
     private ExpRateResponseDataRepository: ExpRateResponseDataRepository;
+    private ExpTmsDataRepository :ExpTmsDataRepository;
     // private DownStreamService:DownStreamService;
 
     constructor() {
@@ -36,6 +37,7 @@ export class DataGenTransformationService implements BaseService {
         this.MessagingService = DI.get(MessagingService);
         this.vendorBookingRepository = DI.get(VendorBookingRepository);
         this.ExpRateResponseDataRepository = DI.get(ExpRateResponseDataRepository);
+        this.ExpTmsDataRepository = DI.get(ExpTmsDataRepository)
         // this.DownStreamService = DI.get(DownStreamService)
     }
 
@@ -82,7 +84,10 @@ export class DataGenTransformationService implements BaseService {
 
                     //await this.ExpResponseDataRepository.update({ "customer_order_number":tmsReponseItem["customer_order_number"] }, { "status": "IN-PROGRESS" });
 
-                    vendBkngItem = await this.vendorBookingRepository.get({ "customer_order_number": tmsReponseItem["customer_order_number"] })
+                    vendBkngItem = await this.ExpTmsDataRepository.get({ "customer_order_number": tmsReponseItem["customer_order_number"] })
+                    this.logger.log("vendBkngItem--->",vendBkngItem)
+                    this.logger.log("Message---->",vendBkngItem[0].message.plannedShippingDateAndTime)
+                    
                     // const delay = ms => new Promise(res => setTimeout(res, ms));
                     
                     // Re-try mechanism
@@ -98,10 +103,10 @@ export class DataGenTransformationService implements BaseService {
                         //Adding Bless Identity Fields
                         objJsonStr['msgType'] = msgType;
                         objJsonStr["CustomerOrderNumber"] = vendBkngItem[0]["customer_order_number"];
-                        objJsonStr["PlannedShippingDateTime"] = vendBkngItem[0]["planned_shipping_date_and_time"];
-                        objJsonStr["ShipmentCreationDateTime"] = vendBkngItem[0]["shipment_creation_date_time"];
+                        objJsonStr["PlannedShippingDateTime"] = vendBkngItem[0].message.plannedShippingDateAndTime;
+                        objJsonStr["ShipmentCreationDateTime"] = vendBkngItem[0].message.plannedShippingDateAndTime;
 
-                        //console.log("objJsonStr------->", objJsonStr)
+                        console.log("objJsonStr------->", objJsonStr)
                         //Converting the response[i] to base64 formate
 
                         objJsonB64 = Buffer.from(JSON.stringify({ "body": objJsonStr })).toString("base64");
