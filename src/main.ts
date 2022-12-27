@@ -11,13 +11,14 @@ import session, { MemoryStore } from 'express-session';
 import { DownStreamController } from './controller/DownStreamController';
 import { AuthController } from './controller/AuthController';
 import {ShipmentRatesController} from './controller/ShipmentRatesController'
+import { LobsterService } from './service/LobsterService';
 const multer  = require('multer');
 
 var upload = multer();
 
 const expressApp: express.Application = express(); 
 var bodyParser = require('body-parser');            
-//var cron = require('cron');
+var cron = require('cron');
 expressApp.use(bodyParser.json({limit:'500mb'})); 
 expressApp.use(bodyParser.urlencoded({extended:true, limit:'500mb'})); 
 expressApp.use(upload.array());
@@ -32,9 +33,11 @@ dotenv.config();
 class Main {
     private logger: Logger;
     private dbConnection: DBConnection;
+    private lobsterService: LobsterService
     constructor() { 
         this.logger = DI.get(Logger);
         this.dbConnection = DI.get(DBConnection);
+        this.lobsterService = DI.get(LobsterService)
     }
 
     initializeApplication() {
@@ -74,6 +77,15 @@ class Main {
     private startServer() {
         expressApp.listen(process.env.PORT, () => {
             this.logger.log('Application Server Started',process.env.PORT);
+            var eventsToLobsterCron = cron.job(process.env.EVENTS_DURATION, async () => {
+                await this.lobsterService.postEventsToLobster();
+                this.logger.log('cron Execution Success for sending EVENTS to LOBSTER');
+            });
+            if(process.env.EVENTS_TO_LOBSTER_CRON =="ON"){
+                eventsToLobsterCron.start(); 
+            }else if(process.env.EVENTS_TO_LOBSTER_CRON =="OFF"){
+                eventsToLobsterCron.stop();
+            }
         });
         
     }
