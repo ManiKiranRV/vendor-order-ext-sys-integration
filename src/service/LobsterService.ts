@@ -144,7 +144,7 @@ export class LobsterService {
                     'method': 'POST',
                     'url': process.env.LOBSTER_POST_URL,
                     'headers': {
-                        'Authorization': 'Basic QkxFU1NfVEVTVDpUMCNmIWI4PTVR',
+                        'Authorization': 'Basic QkxFU1M6YU81YjFXVQ==',
                         'Content-Type': 'text/plain'
                     },
                     body: JSON.stringify(transformedEventsData)
@@ -154,6 +154,7 @@ export class LobsterService {
                 await request(options, async (error: any, response: any) => {
                     if (error) throw new Error(error);
                     //Update processing_status of events table to SENT
+                    this.logger.log(`Event response from lobster for hawb: ${evenntsDataToLobsterItem["hawb"]} ----->`, response.body)
                     // this.logger.log("DATA after getting response---->",eventsUpdateWhereObj, eventsUpdateObj)
                     // var resultEvent = await this.eventsRepository.update(eventsUpdateWhereObj, eventsUpdateObj);
                 });
