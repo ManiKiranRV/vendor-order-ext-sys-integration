@@ -465,11 +465,13 @@ export class DownStreamService {
 
                 let addressList = await this.AddressRepository.get({ "address_type": "SHIPPER", "customer_order_number": baseMessage.customer_order_number });
                 let accountNumber;
-                this.logger.log("Account Number is from List",addressList[0]["address_id"])
+                
                 // this.logger.log("Estimated Date---->",JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate)
                 if (addressList.length > 0) {
+                    this.logger.log("Account Number is from List",addressList[0]["address_id"])
                     accountNumber = addressList[0]["address_id"];
                 } else {
+                    this.logger.log("Account Number is from List is empty")
                     accountNumber = "";
                 }
     
@@ -582,11 +584,13 @@ export class DownStreamService {
     
                 let addressList = await this.AddressRepository.get({ "address_type": "SHIPPER", "customer_order_number": baseMessage.customer_order_number });
                 let accountNumber;
-                this.logger.log("Account Number is from List",addressList[0]["address_id"])
+                
                 // this.logger.log("Estimated Date---->",JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate)
                 if (addressList.length > 0) {
+                    this.logger.log("Account Number is from List",addressList[0]["address_id"])
                     accountNumber = addressList[0]["address_id"];
                 } else {
+                    this.logger.log("Account Number is from List is empty")
                     accountNumber = "";
                 }
                 //   this.logger.log("Tracking URL--->", JSON.parse(baseMessage.message).trackingUrl) 
