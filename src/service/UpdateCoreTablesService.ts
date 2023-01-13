@@ -27,13 +27,13 @@ export class UpdateCoreTablesService {
         try{
 
         
-            //console.log("Request Body in updateTmsResCoreTables---->",req)
+            //this.logger.log("Request Body in updateTmsResCoreTables---->",req)
             var jsonObj = JSON.parse(req.message)
-            console.log("Test----->",JSON.parse(req.message))
+            this.logger.log("Test----->",JSON.parse(req.message))
             var today = new Date();
             var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss") + ' UTC'+moment.utc(today).format("Z")
             var whereObj = { "customer_order_number":req.customer_order_number }
-            console.log("req.customer_order_number",req.statusCode, req.customer_order_number,req.shipmentTrackingNumber)
+            this.logger.log("req.customer_order_number",req.statusCode, req.customer_order_number,req.shipmentTrackingNumber)
             var vendorBookingObj
             //Update VendorBooking Table based on Error/Success status
             if(req.statusCode == 201 || req.statusCode == 200){
@@ -43,7 +43,7 @@ export class UpdateCoreTablesService {
                     "hawb":req.shipmentTrackingNumber,
                     "response_time_stamp":todayUTC
                 }
-                console.log("vendorBookingObj--->",vendorBookingObj)
+                this.logger.log("vendorBookingObj--->",vendorBookingObj)
                 var vendorBookingObjSuc = await this.vendorBoookingRepository.update(whereObj,vendorBookingObj)
 
                 //Update Documents Table
@@ -54,7 +54,7 @@ export class UpdateCoreTablesService {
                     typecode: jsonObj.documents[0].typeCode,
                     label: jsonObj.documents[0].content
                 }
-                console.log("DOCUMENT---->",documentsObj)
+                this.logger.log("DOCUMENT---->",documentsObj)
 
                     await this.documentRepository.create(documentsObj)
                 
@@ -68,11 +68,11 @@ export class UpdateCoreTablesService {
                     "response_error_detail":(jsonObj.additionalDetails != undefined)?jsonObj.detail+","+"["+jsonObj.additionalDetails+"]":jsonObj.detail,
                     "response_time_stamp":todayUTC
                 }
-                console.log("vendorBookingObj--->",vendorBookingObj)
+                this.logger.log("vendorBookingObj--->",vendorBookingObj)
                 var vendorBookingObjErr = await this.vendorBoookingRepository.update(whereObj,vendorBookingObj)
             }
         }catch(error){
-            console.log("Error in Updatetables---->",error)
+            this.logger.log("Error in Updatetables---->",error)
             throw error
         }
 

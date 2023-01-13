@@ -62,7 +62,7 @@ export class LobsterService {
                     } else {
                         accountNumber = "";
                     }
-                    console.log(`Account Number is ${accountNumber}`)
+                    this.logger.log(`Account Number is ${accountNumber}`)
 
                     var message = {
                         "content": {
@@ -94,7 +94,7 @@ export class LobsterService {
                         conMessage = await this.lobsterTransformationService.lobData(errorMessage, true);
                     }
 
-                    console.log("conMessage", conMessage)
+                    this.logger.log("conMessage", conMessage)
 
                     var options = {
                         'method': 'POST',
@@ -111,9 +111,9 @@ export class LobsterService {
                         if (error) throw new Error(error);
                         //Save response from Lobster system to exp_response table
 
-                        console.log("response----->", response.body)
+                        this.logger.log("response----->", response.body)
                         var expResponse = await this.expResponseDataRepository.update({ "id": tmsReponseItem.id }, { "status": response.body, "request": JSON.stringify(options) });
-                        //console.log("Response---->", expResponse)
+                        //this.logger.log("Response---->", expResponse)
 
                     });
                     resolve({ 'status': "Success" })

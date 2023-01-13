@@ -47,7 +47,7 @@ export class ShipmentRatesController implements Controller {
         router.post('/tmsRatesResponse', this.verifyJwtTokenService.verifyToken, async (req:any, res) => {
             try {
                 this.logger.log(`=============================================START-LLP - TMS RATES DOWNSTREAM=======================================`)
-                console.log("Timestamp when we received the data from BLESS to LLP Downstream API --->",Date());
+                this.logger.log("Timestamp when we received the data from BLESS to LLP Downstream API --->",Date());
                 this.logger.log(`BLESS REQUEST BODY is ${JSON.stringify(req.body.message)}`);
                 // this.logger.log("S3 data----->",req.body.body)
                 //Calling Downstream service from LLP to TMS
@@ -72,7 +72,7 @@ export class ShipmentRatesController implements Controller {
             try {
 
                 this.logger.log(`=============================================START-C2 To Lobster DOWNSTREAM=======================================`)
-                console.log("Timestamp when we received the data from BLESS to CLIENT2 Downstream API --->",Date());
+                this.logger.log("Timestamp when we received the data from BLESS to CLIENT2 Downstream API --->",Date());
                 // this.logger.log(`BLESS REQUEST BODY is ${JSON.parse(req.body.message)}`);
 
                 // Uncomment when you get data from BLESS
@@ -138,10 +138,10 @@ export class ShipmentRatesController implements Controller {
             try {
 
                 var result;
-                //console.log("Request Body inside ShipmentController",req.body)
+                //this.logger.log("Request Body inside ShipmentController",req.body)
 
                 result = await this.ExpTmsService.expTmsData(req.body,res)
-               // console.log("Response in ShipmentController",result)
+               // this.logger.log("Response in ShipmentController",result)
                 
                 res.json({ status: { code: 'SUCCESS', message: "Created Successfully" }, data: result });
 

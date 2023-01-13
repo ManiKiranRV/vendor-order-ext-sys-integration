@@ -51,7 +51,7 @@ class Main {
 
     private registerControllers() {
         const baseUrl = process.env.BASE_URL
-        console.log("baseUrl",baseUrl)
+        this.logger.log("baseUrl",baseUrl)
             this.initializeRepositories();
             expressApp.use(session({
                 secret: 'mySecret',

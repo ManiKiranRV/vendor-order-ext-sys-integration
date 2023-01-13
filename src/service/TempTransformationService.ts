@@ -16,7 +16,7 @@ export class LobsterService {
     async lobData(req: any, res?: any, isError?:boolean): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
-                //console.log('Request Body inside LobsterService', req)    
+                //this.logger.log('Request Body inside LobsterService', req)    
                 var message = req
                 var baseMap = {
                     item : {
@@ -67,11 +67,11 @@ export class LobsterService {
                     ]
                 };
                     
-                //console.log("baseMap",baseMap)
+                //this.logger.log("baseMap",baseMap)
     
                 var tdata = transform(message, baseMap);
 
-                //console.log("tdata",tdata)
+                //this.logger.log("tdata",tdata)
                          
                 resolve({ tdata })
 

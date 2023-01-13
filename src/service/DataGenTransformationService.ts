@@ -106,15 +106,15 @@ export class DataGenTransformationService implements BaseService {
                         objJsonStr["PlannedShippingDateTime"] = vendBkngItem[0].message.plannedShippingDateAndTime;
                         objJsonStr["ShipmentCreationDateTime"] = vendBkngItem[0].message.plannedShippingDateAndTime;
 
-                        console.log("objJsonStr------->", objJsonStr)
+                        this.logger.log("objJsonStr------->", objJsonStr)
                         //Converting the response[i] to base64 formate
 
                         objJsonB64 = Buffer.from(JSON.stringify({ "body": objJsonStr })).toString("base64");
-                        //console.log("objJsonB64------->", objJsonB64)
+                        //this.logger.log("objJsonB64------->", objJsonB64)
                         let publishMessage: any = {};
                         var vcId = await this.utilityService.genVcid(issuer, messagePrimary, BLESS_datagen_appId);
 
-                        //console.log("vcId----->", vcId)
+                        //this.logger.log("vcId----->", vcId)
                         publishMessage['receivers'] = {};
                         publishMessage['id'] = vcId;
                         publishMessage['msgType'] = process.env.DATAGEN_TMS_RESP_MSG
@@ -128,7 +128,7 @@ export class DataGenTransformationService implements BaseService {
                         publishMessage['payloads'] = [objJsonB64];
 
                         fianlPublishMessage.push(publishMessage);
-                        console.log("Timestamp before Datagen in LLP---->", Date());
+                        this.logger.log("Timestamp before Datagen in LLP---->", Date());
                         //Update the status in the response table of LLP 
                         // this.logger.log("BEFORE UPDATE RES TABLE",tmsReponseItem["customer_order_number"])
                         const whereObj = { "customer_order_number": tmsReponseItem["customer_order_number"] }
@@ -158,17 +158,17 @@ export class DataGenTransformationService implements BaseService {
                         objJsonStr["receiver_postalCode"] = tmsRatesReponseItem["receiver_postalCode"],
                         // objJsonStr["customer_order_number"] = tmsRatesReponseItem["customer_order_number"];
 
-                        console.log("objJsonStr------->", objJsonStr)
+                        this.logger.log("objJsonStr------->", objJsonStr)
 
                     //Converting the response[i] to base64 format
 
                     objJsonB64 = Buffer.from(JSON.stringify({ "body": objJsonStr })).toString("base64");
-                    console.log("objJsonB64------->", objJsonB64)
+                    this.logger.log("objJsonB64------->", objJsonB64)
                     let publishMessage: any = {};
                     let vcId = await this.utilityService.genVcid(issuer, messagePrimary, BLESS_datagen_appId);
 
                     // let vcId = tmsRatesReponseItem["vcid"]
-                    //console.log("vcId----->", vcId)
+                    //this.logger.log("vcId----->", vcId)
                     publishMessage['receivers'] = {};
                     publishMessage['id'] = vcId;
                     publishMessage['msgType'] = process.env.DATAGEN_TMS_RATE_RESP_MSG
@@ -182,7 +182,7 @@ export class DataGenTransformationService implements BaseService {
                     publishMessage['payloads'] = [objJsonB64];
 
                     fianlPublishMessage.push(publishMessage);
-                    console.log("Timestamp before Datagen in LLP---->", Date());
+                    this.logger.log("Timestamp before Datagen in LLP---->", Date());
                     //Update the status in the response table of LLP 
                     // this.logger.log("BEFORE UPDATE RES TABLE",tmsRatesReponseItem["customer_order_number"])
                     const whereObj = { "customer_reference": tmsRatesReponseItem["customer_reference"] }
@@ -192,7 +192,7 @@ export class DataGenTransformationService implements BaseService {
                 }
             }
 
-            //console.log("fianlPublishMessage------->", fianlPublishMessage)
+            //this.logger.log("fianlPublishMessage------->", fianlPublishMessage)
             return fianlPublishMessage
         }
         catch (error) {

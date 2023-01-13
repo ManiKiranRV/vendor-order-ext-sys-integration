@@ -18,7 +18,7 @@ export class LobsterTransformationService {
     async lobData(message: any, isError?: boolean): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
-                //console.log('Request Body inside LobsterTransformationService', req)    
+                //this.logger.log('Request Body inside LobsterTransformationService', req)    
                 this.logger.log("Message in Lobster Transformation---->",message)
                 let tdata
                 let baseMap
@@ -56,7 +56,7 @@ export class LobsterTransformationService {
                                                 "Updatepickup":message.content.Updatepickup
                                             }
                                         }
-                                        console.log("HEADER--->", _header)
+                                        this.logger.log("HEADER--->", _header)
                                         return _header;
                                     },
                                     on: "header"
@@ -97,7 +97,7 @@ export class LobsterTransformationService {
                                                 "trackingUrl":message.content.trackingUrl
                                             }
                                         }
-                                        console.log("HEADER--->", _header)
+                                        this.logger.log("HEADER--->", _header)
                                         return _header;
                                     },
                                     on: "header"
