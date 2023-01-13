@@ -23,7 +23,7 @@ Ex2: `const logger = DI.get<Logger>(Logger);`
 
 ##### Note: Don't use DI for Response and Request Classes
 
-### Don't use `console.log()`
+### Don't use `this.logger.log()`
 Use below Logger utility functions to write any information in console or log files
 
 Ex1: `logger.log();`

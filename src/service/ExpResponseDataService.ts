@@ -20,7 +20,7 @@ export class ExpResponseDataService {
     async expResData(req: any, res?: any): Promise<any> {
         return new Promise(async (resolve, reject) => {
             try {
-                console.log('Request Body inside ExpResponseDataService', req)
+                this.logger.log('Request Body inside ExpResponseDataService', req)
 
                 var status = req.res.statusCode
                 var data = req.res.data
@@ -36,9 +36,9 @@ export class ExpResponseDataService {
                     }
                     
                 }                
-                console.log("Object",obj)
+                this.logger.log("Object",obj)
                 var result = await this.ExpResponseDataRepository.create(obj); 
-                console.log("Result",result)                           
+                this.logger.log("Result",result)                           
                 resolve({ res: result })
 
             } catch (e) {
@@ -53,12 +53,12 @@ export class ExpResponseDataService {
         return new Promise(async (resolve, reject) => {
             let whereObj: any = {};
             try {
-                console.log('Request Body inside ExpResponseDataService', req)
+                this.logger.log('Request Body inside ExpResponseDataService', req)
                 whereObj['shipmentTrackingNumber'] = req;
                 whereObj['status'] = "UNPROCESSED";
                 let responseData: any = await this.ExpResponseDataRepository.get(whereObj);
                 
-                //console.log("Result",responseData)                           
+                //this.logger.log("Result",responseData)                           
                 resolve(responseData)
 
             } catch (e) {

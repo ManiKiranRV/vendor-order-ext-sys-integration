@@ -50,16 +50,16 @@ export class GenericUtil {
 
     static generateHash(data: any) {
         try {
-            console.log("generatehash--->", Md5.hashStr((data).toString()))
+            this.logger.log("generatehash--->", Md5.hashStr((data).toString()))
             return Md5.hashStr((data).toString());
         } catch (error) {
-            console.log(`Error=========`)
+            this.logger.log(`Error=========`)
             throw error;
         }
     }
 
     static async delay(ms: number) {
-        console.log("Waiting for 2 sec")
+        this.logger.log("Waiting for 2 sec")
         return new Promise( resolve => setTimeout(resolve, ms) );
     }
 

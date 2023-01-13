@@ -25,18 +25,18 @@ export class LlpClien2Service {
 
     async clientTmsResponse(): Promise<any> {
 
-        console.log("Inside ClientTMS")
+        this.logger.log("Inside ClientTMS")
         return new Promise(async (resolve, reject) => {
             try {
 
-                console.log("Test")
+                this.logger.log("Test")
 
                 var tmsResponseList = await this.ExpResponseDataRepository.get({'status':"UNPROCESSED"})
-                console.log("tmsResponseList--->",tmsResponseList)
+                this.logger.log("tmsResponseList--->",tmsResponseList)
                 for (let tmsReponseItem of tmsResponseList) {
                     //Loop through tmsDataList variable and get individual message i.e tmsDataItem["message"]
                     var message = {"tmsResponse":tmsReponseItem}
-                    console.log("Message", message)
+                    this.logger.log("Message", message)
                     var options = {
                         'method': 'POST',
                         'url': process.env.CLIENT2_URL,
