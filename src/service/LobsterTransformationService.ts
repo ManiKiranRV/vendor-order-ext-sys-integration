@@ -56,7 +56,7 @@ export class LobsterTransformationService {
                                                 "Updatepickup":message.content.Updatepickup
                                             }
                                         }
-                                        this.logger.log("HEADER--->", _header)
+                                        console.log("HEADER--->", _header)
                                         return _header;
                                     },
                                     on: "header"
@@ -97,7 +97,7 @@ export class LobsterTransformationService {
                                                 "trackingUrl":message.content.trackingUrl
                                             }
                                         }
-                                        this.logger.log("HEADER--->", _header)
+                                        console.log("HEADER--->", _header)
                                         return _header;
                                     },
                                     on: "header"

@@ -13,13 +13,13 @@ export class AuthService implements BaseService {
   }
 
   async generateJWTToken(user: any): Promise<any> {
-    this.logger.log(`GENRATING TOKEN`);
+    console.log(`GENRATING TOKEN`);
     let key: any = process.env.KEY;
 
     let token: any = jwt.sign(user, key, {
       expiresIn: '365d'
     });
-    this.logger.log(`Token is ${token}`);
+    console.log(`Token is ${token}`);
     return token;
 
     resolve(new Promise(async (resolve, reject) => {
@@ -36,12 +36,12 @@ export class AuthService implements BaseService {
   static async verifyToken(req: Request, res: Response, next: NextFunction) {
 
     let bearerHeader: any = req.headers['authorization'];
-    this.logger.log('auth', bearerHeader)
+    console.log('auth', bearerHeader)
     let token: any = '';
     if (bearerHeader != undefined) {
       token = bearerHeader.split(" ")[1];
     }
-    this.logger.log('verifying jwt', token)
+    console.log('verifying jwt', token)
     if (!token) {
       return res.status(403).send({
         auth: false, message: 'No token provided.'

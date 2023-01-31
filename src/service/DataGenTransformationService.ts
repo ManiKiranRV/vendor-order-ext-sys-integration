@@ -82,7 +82,7 @@ export class DataGenTransformationService implements BaseService {
                     //let tmsReponseItem = tmsResponseList[0]
                     this.logger.log("customer_order_number-------->", tmsReponseItem["customer_order_number"])
 
-                    //await this.ExpResponseDataRepository.update({ "customer_order_number":tmsReponseItem["customer_order_number"] }, { "status": "IN-PROGRESS" });
+                    await this.ExpResponseDataRepository.update({ "customer_order_number":tmsReponseItem["customer_order_number"] }, { "status": "IN_PROGRESS" });
 
                     vendBkngItem = await this.ExpTmsDataRepository.get({ "customer_order_number": tmsReponseItem["customer_order_number"] })
                     this.logger.log("vendBkngItem--->",vendBkngItem)

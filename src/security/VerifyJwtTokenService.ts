@@ -19,12 +19,12 @@ export class VerifyJwtTokenService implements BaseService {
   async verifyToken(req: Request, res: Response, next: NextFunction) {
 
     let bearerHeader: any = req.headers['authorization'];
-    this.logger.log('auth', bearerHeader)
+    console.log('auth', bearerHeader)
     let token: any = bearerHeader;
     // if (bearerHeader != undefined) {
     //   token = bearerHeader.split(" ")[1];
     // }
-    this.logger.log('verifying jwt', token)
+    console.log('verifying jwt', token)
     if (!token) {
       return res.status(403).send({
         auth: false, message: 'No token provided.'
@@ -35,7 +35,7 @@ export class VerifyJwtTokenService implements BaseService {
 
     jwt.verify(token, key, (err: any, authData: any) => {
       if (err) {
-        this.logger.log("Invalid Token")
+        console.log("Invalid Token")
         return res.status(403).send({
           auth: false,
           message: 'Invalid Token'
