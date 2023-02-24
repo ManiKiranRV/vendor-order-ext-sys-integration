@@ -306,7 +306,7 @@ export class DownStreamService {
                             
                             // Update Core Tables
                             this.logger.log("Exp response that is sending to update core tables inside Pickup---->",expres)
-                            await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+                            // await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
 
                             //Update exp_tms_data with shipment_Tracking_Number
                             await this.ExpTmsDataRepository.update(whereObj, {
@@ -351,7 +351,7 @@ export class DownStreamService {
                         }
 
                         //Update Core Tables
-                        await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+                        // await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
 
                         //Update exp_tms_data with shipment_Tracking_Number
                         let whereObj = { "customer_order_number":customerOrderNumber}
@@ -398,7 +398,7 @@ export class DownStreamService {
                     
                     
                     //Update Core Tables
-                    await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
+                    // await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
 
                     //Update exp_tms_data with shipment_Tracking_Number
                     let whereObj = { "customer_order_number":customerOrderNumber}

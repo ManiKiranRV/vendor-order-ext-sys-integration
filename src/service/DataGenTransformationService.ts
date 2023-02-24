@@ -76,14 +76,15 @@ export class DataGenTransformationService implements BaseService {
         try {
             if (msgType === process.env.DATAGEN_TMS_RESP_MSG) {
                 // Fetch UNPROCESSED data from exp_response_data table
-                var tmsResponseList = await this.ExpResponseDataRepository.get({ 'status': "UNPROCESSED" })
+                let x:any
+                let tmsResponseList:Array<any> = await this.ExpResponseDataRepository.get({ 'status': "UNPROCESSED" })
+                //Update the status in the response table of LLP to IN-PROGRESS. So that no other process picks the same record
+                let customerArray:any = await tmsResponseList.map(x=>x.customer_order_number)
+                this.logger.log("customerArray---------->\n\n",customerArray)
+                await this.ExpResponseDataRepository.update({ "customer_order_number":customerArray }, { "status": "IN_PROGRESS" });
                 for (let tmsReponseItem of tmsResponseList) {
                     //Update the status in the response table of LLP to IN-PROGRESS. So that no other process picks the same record
                     //let tmsReponseItem = tmsResponseList[0]
-                    this.logger.log("customer_order_number-------->", tmsReponseItem["customer_order_number"])
-
-                    await this.ExpResponseDataRepository.update({ "customer_order_number":tmsReponseItem["customer_order_number"] }, { "status": "IN_PROGRESS" });
-
                     vendBkngItem = await this.ExpTmsDataRepository.get({ "customer_order_number": tmsReponseItem["customer_order_number"] })
                     this.logger.log("vendBkngItem--->",vendBkngItem)
                     this.logger.log("Message---->",vendBkngItem[0].message.plannedShippingDateAndTime)
