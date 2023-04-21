@@ -11,6 +11,7 @@ import session, { MemoryStore } from 'express-session';
 import { DownStreamController } from './controller/DownStreamController';
 import { AuthController } from './controller/AuthController';
 import {ShipmentRatesController} from './controller/ShipmentRatesController'
+import { RetryController } from './controller/RetryController';
 import { LobsterService } from './service/LobsterService';
 const multer  = require('multer');
 
@@ -70,6 +71,7 @@ class Main {
             expressApp.use(`${baseUrl}/out/bless-downstream`,DI.get<DownStreamController>(DownStreamController).getRouter());
             expressApp.use(`${baseUrl}/vendor`,DI.get<ShipmentController>(ShipmentController).getRouter());
             expressApp.use(`${baseUrl}/vendorRates`,DI.get<ShipmentRatesController>(ShipmentRatesController).getRouter());
+            expressApp.use(`${baseUrl}/retry`, DI.get<RetryController>(RetryController).getRouter())
             expressApp.use(DI.get<ErrorHandler>(ErrorHandler).errorHandler);
     }
     
