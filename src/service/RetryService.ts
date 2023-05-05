@@ -52,32 +52,54 @@ export class RetryService {
                 // let today = new Date()
                 // var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss") + ' UTC'+moment.utc(today).format("Z")
                 let whereObj = { "customer_order_number": customerOrderNumber }
+                let ExpRespmessage = JSON.parse(expressMessage.message)
                 if(expressMessage.statusCode == 201 || expressMessage.statusCode == 200) {
-                    // Update VendorBooking Table
-                    let vendorBookingUpdateObj = {
-                        "order_status": process.env.VEN_BOOKING_CON_STATUS,
-                        "hawb": hawb,
-                        "response_time_stamp": responseTimestamp
+                    if (ExpRespmessage.status) {
+                        this.logger.log('status: ', ExpRespmessage.status)
+                        let vendorBookingErrorObj = {
+                            "order_status": process.env.VEN_BOOKING_ERR_STATUS,
+                            "response_error_code": ExpRespmessage.status,
+                            "response_error_title": ExpRespmessage.title,
+                            "response_error_detail": (expressMessage.message.additionalDetails != undefined) ? ExpRespmessage.detail + "," + "[" + ExpRespmessage.additionalDetails + "]" : ExpRespmessage.detail,
+                            "response_time_stamp": responseTimestamp
+                        }
+                        this.logger.log("vendorBookingObj--->", vendorBookingErrorObj)
+                        await this.vendorBookingRepository.update(whereObj, vendorBookingErrorObj)
+                        .then(async() => {
+                            await this.retryUpdate(parentId, retryCount, true)
+                        })
+                        // if fail to update, increase retry_count to 1
+                        .catch(async(e) => {
+                            this.logger.log('error: ', e)
+                            await this.retryUpdate(parentId, retryCount, false)
+                        })
                     }
-                    this.logger.log("vendorBookingObj ---> ", vendorBookingUpdateObj)
-                    await this.vendorBookingRepository.update(whereObj, vendorBookingUpdateObj)
-                    // update retry_status to success 
-                    .then(async() => {
-                        await this.retryUpdate(parentId, retryCount, true)
-                    })
-                    // if fail to update, increase retry_count to 1
-                    .catch(async(e) => {
-                        this.logger.log('error: ', e)
-                        await this.retryUpdate(parentId, retryCount, false)
-                    })
+                    else {
+                        // Update VendorBooking Table
+                        let vendorBookingUpdateObj = {
+                            "order_status": process.env.VEN_BOOKING_CON_STATUS,
+                            "hawb": hawb,
+                            "response_time_stamp": responseTimestamp
+                        }
+                        this.logger.log("vendorBookingObj ---> ", vendorBookingUpdateObj)
+                        await this.vendorBookingRepository.update(whereObj, vendorBookingUpdateObj)
+                        // update retry_status to success 
+                        .then(async() => {
+                            await this.retryUpdate(parentId, retryCount, true)
+                        })
+                        // if fail to update, increase retry_count to 1
+                        .catch(async(e) => {
+                            this.logger.log('error: ', e)
+                            await this.retryUpdate(parentId, retryCount, false)
+                        })
+                    }
                 }
                 else {
-                    let jsonObj = expressMessage.message
                     let vendorBookingErrorObj = {
                         "order_status": process.env.VEN_BOOKING_ERR_STATUS,
-                        "response_error_code": jsonObj.status,
-                        "response_error_title": jsonObj.title,
-                        "response_error_detail": (expressMessage.message.additionalDetails != undefined) ? jsonObj.detail + "," + "[" + jsonObj.additionalDetails + "]" : jsonObj.detail,
+                        "response_error_code": ExpRespmessage.status,
+                        "response_error_title": ExpRespmessage.title,
+                        "response_error_detail": (ExpRespmessage.additionalDetails != undefined) ? ExpRespmessage.detail + "," + "[" + ExpRespmessage.additionalDetails + "]" : ExpRespmessage.detail,
                         "response_time_stamp": responseTimestamp
                     }
                     this.logger.log("vendorBookingObj--->", vendorBookingErrorObj)
