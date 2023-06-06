@@ -47,16 +47,37 @@ export class UpdateCoreTablesService {
                 var vendorBookingObjSuc = await this.vendorBoookingRepository.update(whereObj,vendorBookingObj)
 
                 //Update Documents Table
+                // let docList :any
+                this.logger.log("jsonObj.documents---->",jsonObj.documents)
+                // let doc = jsonObj.documents
+                for(let docList of jsonObj.documents){
+                    // if document type is "lable"
+                    this.logger.log("docList.typeCode------>",docList.typeCode)
+                    if(docList.typeCode === "label"){
 
-                var documentsObj = {
-                    customerordernumber: req.customer_order_number,
-                    shiptrackingnum: req.shipmentTrackingNumber,
-                    typecode: jsonObj.documents[0].typeCode,
-                    label: jsonObj.documents[0].content
+                        var documentsObj = {
+                            customerordernumber: req.customer_order_number,
+                            shiptrackingnum: req.shipmentTrackingNumber,
+                            typecode: docList.typeCode,
+                            label: docList.content
+                        }
+                        this.logger.log("DOCUMENT---->",documentsObj)
+        
+                        await this.documentRepository.create(documentsObj)
+                    }
+                    // if document type is "invoice"
+                    else if(docList.typeCode === "invoice"){
+                        var invoideDocumentsObj = {
+                            customerordernumber: req.customer_order_number,
+                            shiptrackingnum: req.shipmentTrackingNumber,
+                            typecode: docList.typeCode,
+                            label: docList.content
+                        }
+                        this.logger.log("INVOICE DOCUMENT OBJ---->",invoideDocumentsObj)
+        
+                        await this.documentRepository.create(invoideDocumentsObj)
+                    }
                 }
-                this.logger.log("DOCUMENT---->",documentsObj)
-
-                    await this.documentRepository.create(documentsObj)
                 
 
             }else{
@@ -68,7 +89,7 @@ export class UpdateCoreTablesService {
                     "response_error_detail":(jsonObj.additionalDetails != undefined)?jsonObj.detail+","+"["+jsonObj.additionalDetails+"]":jsonObj.detail,
                     "response_time_stamp":todayUTC
                 }
-                this.logger.log("vendorBookingObj--->",vendorBookingObj)
+                this.logger.log("vendorBookingObj in error--->",vendorBookingObj)
                 var vendorBookingObjErr = await this.vendorBoookingRepository.update(whereObj,vendorBookingObj)
             }
         }catch(error){
