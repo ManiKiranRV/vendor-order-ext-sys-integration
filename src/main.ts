@@ -91,14 +91,14 @@ class Main {
             }else if(process.env.EVENTS_TO_LOBSTER_CRON =="OFF"){
                 eventsToLobsterCron.stop();
             }
-            var retry = cron.job(process.env.RETRY_DURATION, async () => {
+            var retryCron = cron.job(process.env.RETRY_DURATION, async () => {
                 await this.retryService.vendorbookingRetryService();
                 this.logger.log('cron Execution Success for sending EVENTS to LOBSTER');
             });
             if(process.env.RETRY_CRON =="ON"){
-                eventsToLobsterCron.start(); 
+                retryCron.start(); 
             }else if(process.env.RETRY_CRON =="OFF"){
-                eventsToLobsterCron.stop();
+                retryCron.stop();
             }
         });
         
