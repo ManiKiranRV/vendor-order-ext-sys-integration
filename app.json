@@ -35,7 +35,9 @@
           "REQ_TO_TMS_RATES_FILE_PATH":"/u01/a01/module/vendor-order/out/request-files/tms-rates-req-files/success/",
           "REQ_TO_LOBSTER_RATES_FILE_PATH": "/u01/a01/vendor_order_kalmar/out/request-files/tms-rates-req-files/success/",
           "EVENTS_TO_LOBSTER_CRON":"ON",
-          "EVENTS_DURATION":"0 * * * *"
+          "EVENTS_DURATION":"0 * * * *",
+          "RETRY_CRON":"OFF",
+          "RETRY_DURATION":"0 * * * *"
         }
       }
     ]

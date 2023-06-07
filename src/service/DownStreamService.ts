@@ -448,7 +448,7 @@ export class DownStreamService {
                     message: baseMessage.message,
                     shipmentTrackingNumber: baseMessage.shipmentTrackingNumber,
                     status: "UNPROCESSED",
-                    customer_order_number:baseMessage.CustomerOrderNumber
+                    customer_order_number:baseMessage.customer_order_number
                 }
                 //Update Core Tables
     
@@ -456,7 +456,7 @@ export class DownStreamService {
 
                 // Updating the order_status field in Vendor Booking Table
                 var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss.SSSZ") + ' UTC' + moment.utc(today).format("Z")
-                var whereObj = { "customer_order_number":baseMessage.CustomerOrderNumber}
+                var whereObj = { "customer_order_number":baseMessage.customer_order_number}
                 var vendorBookingObj = {
                     "order_status": "CONFIRMED",
                     "hawb":baseMessage.shipmentTrackingNumber,
@@ -466,7 +466,7 @@ export class DownStreamService {
                 this.logger.log("vendorBookingObj--->",vendorBookingObj)
                 var vendorBookingObjErr = await this.VendorBookingRepository.update(whereObj,vendorBookingObj)
 
-                let addressList = await this.AddressRepository.get({ "address_type": "SHIPPER", "customer_order_number": baseMessage.CustomerOrderNumber });
+                let addressList = await this.AddressRepository.get({ "address_type": "SHIPPER", "customer_order_number": baseMessage.customer_order_number });
                 let accountNumber;
                 
                 // this.logger.log("Estimated Date---->",JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate)
@@ -480,7 +480,7 @@ export class DownStreamService {
     
                 let msgType = process.env.DATAGEN_TMS_RESP_MSG
                 let data = baseMessage.message
-                customer_order_number = baseMessage.CustomerOrderNumber
+                customer_order_number = baseMessage.customer_order_number
                 
                 //Construct final Lobster POST message
                 if (baseMessage.statusCode == 200) {
@@ -490,7 +490,7 @@ export class DownStreamService {
                         "content": {                            
                             "accountNumber": accountNumber,
                             "HAWB": baseMessage.shipmentTrackingNumber,
-                            "PrincipalreferenceNumber": baseMessage.CustomerOrderNumber,
+                            "PrincipalreferenceNumber": baseMessage.customer_order_number,
                             "documents": JSON.parse(baseMessage.message).documents,
                             "trackingUrl":  JSON.parse(baseMessage.message).trackingUrl,
                             "estimatedDeliveryDate":  JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate,
@@ -509,7 +509,7 @@ export class DownStreamService {
                             "pickUp":baseMessage.msgTyp,                          
                             "accountNumber": accountNumber,
                             "HAWB": baseMessage.shipmentTrackingNumber,
-                            "PrincipalreferenceNumber": baseMessage.CustomerOrderNumber,
+                            "PrincipalreferenceNumber": baseMessage.customer_order_number,
                             "documents": JSON.parse(baseMessage.message).documents,
                             "trackingUrl":  JSON.parse(baseMessage.message).trackingUrl,
                             "estimatedDeliveryDate":JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate,
@@ -559,21 +559,21 @@ export class DownStreamService {
                     message: baseMessage.message,
                     shipmentTrackingNumber: baseMessage.shipmentTrackingNumber,
                     status: "UNPROCESSED",
-                    customer_order_number:baseMessage.CustomerOrderNumber
+                    customer_order_number:baseMessage.customer_order_number
                 }
                 //Update Core Tables
     
                 var updateDocument = await this.UpdateCoreTablesService.updateTmsResCoreTables(expres)
     
                 //Derive accountNumber to be sent to LOSTER system
-                this.logger.log("customer_order_number for Booking Request -------->\n\n",baseMessage.CustomerOrderNumber)
-                let vendorOrderItem = (await this.VendorBookingRepository.get({ "customer_order_number": baseMessage.CustomerOrderNumber }));
+                this.logger.log("customer_order_number for Booking Request -------->\n\n",baseMessage.customer_order_number)
+                let vendorOrderItem = (await this.VendorBookingRepository.get({ "customer_order_number": baseMessage.customer_order_number }));
                 
                 // if(vendorOrderItem.length == 0){
                 //     this.logger.log("Entered into if-condition if lenght is 0")
 
                 //     await GenericUtil.delay(2000);
-                //     vendorOrderItem = (await this.VendorBookingRepository.get({ "customer_order_number": baseMessage.CustomerOrderNumber }));
+                //     vendorOrderItem = (await this.VendorBookingRepository.get({ "customer_order_number": baseMessage.customer_order_number }));
                 
                 // }
 
@@ -581,10 +581,10 @@ export class DownStreamService {
                     var id = vendorOrderItem[0]["id"]
                 }else {
                     //Save Error Message to exp_response_data table
-                    await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.CustomerOrderNumber }, { "status": "ERROR", "error_reason": `No Vendor Booking Found with customer_order_number=${baseMessage["customer_order_number"]}` });
+                    await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": "ERROR", "error_reason": `No Vendor Booking Found with customer_order_number=${baseMessage["customer_order_number"]}` });
                     //continue;
                     // Adding a record to retry table (to take up by RetryService)
-                    let exp_response_data: any = await this.ExpResponseDataRepository.get({ "customer_order_number": baseMessage.CustomerOrderNumber })
+                    let exp_response_data: any = await this.ExpResponseDataRepository.get({ "customer_order_number": baseMessage.customer_order_number })
                     let parentId = exp_response_data[0]['id']
                     let retry_obj = {
                         parent_id: parentId,
@@ -594,7 +594,7 @@ export class DownStreamService {
                     await this.retryRepository.create(retry_obj)
                 }
     
-                let addressList = await this.AddressRepository.get({ "address_type": "SHIPPER", "customer_order_number": baseMessage.CustomerOrderNumber });
+                let addressList = await this.AddressRepository.get({ "address_type": "SHIPPER", "customer_order_number": baseMessage.customer_order_number });
                 let accountNumber;
                 
                 // this.logger.log("Estimated Date---->",JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate)
@@ -614,7 +614,7 @@ export class DownStreamService {
                         "content": {                            
                             "accountNumber": accountNumber,
                             "HAWB": baseMessage.shipmentTrackingNumber,
-                            "PrincipalreferenceNumber": baseMessage.CustomerOrderNumber,
+                            "PrincipalreferenceNumber": baseMessage.customer_order_number,
                             "documents": JSON.parse(baseMessage.message).documents,
                             "estimatedDeliveryDate":  JSON.parse(baseMessage.message).estimatedDeliveryDate.estimatedDeliveryDate,
                             "trackingUrl":  JSON.parse(baseMessage.message).trackingUrl
@@ -633,7 +633,7 @@ export class DownStreamService {
                         "content": {                            
                             "accountNumber": accountNumber,
                             "HAWB": baseMessage.shipmentTrackingNumber,
-                            "PrincipalreferenceNumber": baseMessage.CustomerOrderNumber,
+                            "PrincipalreferenceNumber": baseMessage.customer_order_number,
                             "documents": JSON.parse(baseMessage.message).documents,
                             "estimatedDeliveryDate":"null",
                             "trackingUrl":"null"
@@ -663,14 +663,14 @@ export class DownStreamService {
                 
     
                 // this.logger.log(`Lobster Options is ${JSON.stringify(options)}`);
-                this.logger.log("Timestamp before sending Booking request to Lobster system--->",Date(),baseMessage.CustomerOrderNumber);
+                this.logger.log("Timestamp before sending Booking request to Lobster system--->",Date(),baseMessage.customer_order_number);
                 var result = await request(options, async (error: any, response: any) => {
                     if (error) throw new Error(error);
-                    this.logger.log("Timestamp after getting Booking response from Lobster system--->",Date(),baseMessage.CustomerOrderNumber);
+                    this.logger.log("Timestamp after getting Booking response from Lobster system--->",Date(),baseMessage.customer_order_number);
                     //Save response from Lobster system to exp_response table
     
                     this.logger.log("response----->", response.body)
-                    var expResponse = await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.CustomerOrderNumber }, { "statusCode": response.body, "token":token, "status": "PROCESSED", "req_file_path": filePath, "req_file_uuid": fileName }); //, "request": JSON.stringify(options)
+                    var expResponse = await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "statusCode": response.body, "token":token, "status": "PROCESSED", "req_file_path": filePath, "req_file_uuid": fileName }); //, "request": JSON.stringify(options)
                     //this.logger.log("Response---->", expResponse)
     
                 });
@@ -681,7 +681,7 @@ export class DownStreamService {
         } catch (error) {
             //Update processing_status of events table to ERROR
             this.logger.log("Error----->",error)
-            //await this.ExpResponseDataRepository.update({ "customer_order_number":baseMessage.CustomerOrderNumber }, { "status": "ERROR", "error_reason": error });
+            //await this.ExpResponseDataRepository.update({ "customer_order_number":baseMessage.customer_order_number }, { "status": "ERROR", "error_reason": error });
             resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: error } });
         }
     }  
@@ -906,7 +906,7 @@ export class DownStreamService {
                     //Save response from Lobster system to exp_response table
 
                     this.logger.log("Response for Rates from Lobster----->", response.body)
-                    // var expResponse = await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.CustomerOrderNumber }, { "status": response.body, "token":token, "req_file_path": filePath, "req_file_uuid": fileName }); //, "request": JSON.stringify(options)
+                    // var expResponse = await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": response.body, "token":token, "req_file_path": filePath, "req_file_uuid": fileName }); //, "request": JSON.stringify(options)
                     const whereObj = { "sequence_timestamp":sequence_timestamp}
                     this.logger.log("AFTER DATAGEN RES TABLES---->",whereObj)
                     var expResponse =    await this.ExpRateResponseDataRepository.update(whereObj,{ "statusCode": response.body, "status": "PROCESSED", "req_file_path": filePath, "req_file_uuid": fileName});
@@ -928,7 +928,7 @@ export class DownStreamService {
         } catch (error) {
             //Update processing_status of events table to ERROR
             this.logger.log("Error----->",error)
-            //await this.ExpResponseDataRepository.update({ "customer_order_number":baseMessage.CustomerOrderNumber }, { "status": "ERROR", "error_reason": error });
+            //await this.ExpResponseDataRepository.update({ "customer_order_number":baseMessage.customer_order_number }, { "status": "ERROR", "error_reason": error });
             resolve({ status: { code: 'FAILURE', message: "Error in FileFormat", error: error } });
         }
     }  

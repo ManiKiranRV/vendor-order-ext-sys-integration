@@ -13,6 +13,7 @@ import { AuthController } from './controller/AuthController';
 import {ShipmentRatesController} from './controller/ShipmentRatesController'
 import { RetryController } from './controller/RetryController';
 import { LobsterService } from './service/LobsterService';
+import { RetryService } from "./service/RetryService";
 const multer  = require('multer');
 
 var upload = multer();
@@ -35,10 +36,12 @@ class Main {
     private logger: Logger;
     private dbConnection: DBConnection;
     private lobsterService: LobsterService
+    private retryService: RetryService
     constructor() { 
         this.logger = DI.get(Logger);
         this.dbConnection = DI.get(DBConnection);
         this.lobsterService = DI.get(LobsterService)
+        this.retryService = DI.get(RetryService)
     }
 
     initializeApplication() {
@@ -87,6 +90,15 @@ class Main {
                 eventsToLobsterCron.start(); 
             }else if(process.env.EVENTS_TO_LOBSTER_CRON =="OFF"){
                 eventsToLobsterCron.stop();
+            }
+            var retryCron = cron.job(process.env.RETRY_DURATION, async () => {
+                await this.retryService.vendorbookingRetryService();
+                this.logger.log('cron Execution Success for sending EVENTS to LOBSTER');
+            });
+            if(process.env.RETRY_CRON =="ON"){
+                retryCron.start(); 
+            }else if(process.env.RETRY_CRON =="OFF"){
+                retryCron.stop();
             }
         });
         
