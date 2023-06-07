@@ -25,6 +25,7 @@ var fs = require('fs');
 
 //For Timestamp
 import * as moment from 'moment';
+import { RetryRepository } from "../data/repository/RetryRepository";
 var today = new Date();
 
 
@@ -43,6 +44,7 @@ export class DownStreamService {
 
     private ExpRateTmsDataRepository: ExpRateTmsDataRepository;
     private ExpRateResponseDataRepository: ExpRateResponseDataRepository;
+    private retryRepository: RetryRepository
 
     constructor() {
         this.logger = DI.get(Logger);
@@ -58,6 +60,7 @@ export class DownStreamService {
 
         this.ExpRateTmsDataRepository = DI.get(ExpRateTmsDataRepository);
         this.ExpRateResponseDataRepository = DI.get(ExpRateResponseDataRepository);
+        this.retryRepository = DI.get(RetryRepository);
     }
 
     async expBookingReqDownStreamHandler(message: any): Promise<any> {
@@ -580,6 +583,15 @@ export class DownStreamService {
                     //Save Error Message to exp_response_data table
                     await this.ExpResponseDataRepository.update({ "customer_order_number": baseMessage.customer_order_number }, { "status": "ERROR", "error_reason": `No Vendor Booking Found with customer_order_number=${baseMessage["customer_order_number"]}` });
                     //continue;
+                    // Adding a record to retry table (to take up by RetryService)
+                    let exp_response_data: any = await this.ExpResponseDataRepository.get({ "customer_order_number": baseMessage.customer_order_number })
+                    let parentId = exp_response_data[0]['id']
+                    let retry_obj = {
+                        parent_id: parentId,
+                        message_type: 'VENDOR_BOOKING',
+                        retry_count: 0,
+                    }
+                    await this.retryRepository.create(retry_obj)
                 }
     
                 let addressList = await this.AddressRepository.get({ "address_type": "SHIPPER", "customer_order_number": baseMessage.customer_order_number });

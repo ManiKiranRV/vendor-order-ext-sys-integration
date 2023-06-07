@@ -3,9 +3,9 @@ import { DataTypes, Model, Optional } from 'sequelize';
 
 export interface ExpTmsDataAttributes {
   id: number;
-  message: object;
-  shipment_Tracking_Number: string;
-  status: string;
+  message?: object;
+  shipment_Tracking_Number?: string;
+  status?: string;
   token?: string;
   customer_order_number?: string;
   uuid?: string;
@@ -16,14 +16,14 @@ export interface ExpTmsDataAttributes {
 
 export type ExpTmsDataPk = "id";
 export type ExpTmsDataId = ExpTmsData[ExpTmsDataPk];
-export type ExpTmsDataOptionalAttributes = "id" | "token" | "customer_order_number" | "uuid" | "createdAt" | "updatedAt" | "deletedAt";
+export type ExpTmsDataOptionalAttributes = "id" | "message" | "shipment_Tracking_Number" | "status" | "token" | "customer_order_number" | "uuid" | "createdAt" | "updatedAt" | "deletedAt";
 export type ExpTmsDataCreationAttributes = Optional<ExpTmsDataAttributes, ExpTmsDataOptionalAttributes>;
 
 export class ExpTmsData extends Model<ExpTmsDataAttributes, ExpTmsDataCreationAttributes> implements ExpTmsDataAttributes {
   id!: number;
-  message!: object;
-  shipment_Tracking_Number!: string;
-  status!: string;
+  message?: object;
+  shipment_Tracking_Number?: string;
+  status?: string;
   token?: string;
   customer_order_number?: string;
   uuid?: string;
@@ -42,15 +42,15 @@ export class ExpTmsData extends Model<ExpTmsDataAttributes, ExpTmsDataCreationAt
     },
     message: {
       type: DataTypes.JSON,
-      allowNull: false
+      allowNull: true
     },
     shipment_Tracking_Number: {
       type: DataTypes.STRING(100),
-      allowNull: false
+      allowNull: true
     },
     status: {
       type: DataTypes.STRING(100),
-      allowNull: false
+      allowNull: true
     },
     token: {
       type: DataTypes.STRING(255),

@@ -3,6 +3,7 @@ import { DataTypes, Model, Optional } from 'sequelize';
 
 export interface LineItemsAttributes {
   id: number;
+  parent_id?: number;
   customerordernumber?: string;
   serial_number?: string;
   description?: string;
@@ -23,11 +24,12 @@ export interface LineItemsAttributes {
 
 export type LineItemsPk = "id";
 export type LineItemsId = LineItems[LineItemsPk];
-export type LineItemsOptionalAttributes = "id" | "customerordernumber" | "serial_number" | "description" | "price" | "quantity_value" | "quantity_uom" | "commoditytype" | "commodityhscode" | "manufacturercountry" | "net_value" | "netvalue_uom" | "gross_value" | "grossvalue_uom" | "createdAt" | "updatedAt" | "deletedAt";
+export type LineItemsOptionalAttributes = "id" | "parent_id" | "customerordernumber" | "serial_number" | "description" | "price" | "quantity_value" | "quantity_uom" | "commoditytype" | "commodityhscode" | "manufacturercountry" | "net_value" | "netvalue_uom" | "gross_value" | "grossvalue_uom" | "createdAt" | "updatedAt" | "deletedAt";
 export type LineItemsCreationAttributes = Optional<LineItemsAttributes, LineItemsOptionalAttributes>;
 
 export class LineItems extends Model<LineItemsAttributes, LineItemsCreationAttributes> implements LineItemsAttributes {
   id!: number;
+  parent_id?: number;
   customerordernumber?: string;
   serial_number?: string;
   description?: string;
@@ -54,16 +56,20 @@ export class LineItems extends Model<LineItemsAttributes, LineItemsCreationAttri
       allowNull: false,
       primaryKey: true
     },
+    parent_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
+    },
     customerordernumber: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
     serial_number: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     description: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     price: {
@@ -75,19 +81,19 @@ export class LineItems extends Model<LineItemsAttributes, LineItemsCreationAttri
       allowNull: true
     },
     quantity_uom: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     commoditytype: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     commodityhscode: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     manufacturercountry: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     net_value: {
@@ -95,7 +101,7 @@ export class LineItems extends Model<LineItemsAttributes, LineItemsCreationAttri
       allowNull: true
     },
     netvalue_uom: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     gross_value: {
@@ -103,7 +109,7 @@ export class LineItems extends Model<LineItemsAttributes, LineItemsCreationAttri
       allowNull: true
     },
     grossvalue_uom: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     }
   }, {

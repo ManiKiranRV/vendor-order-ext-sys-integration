@@ -9,8 +9,8 @@ export interface DocumentsAttributes {
   typecode?: string;
   path?: string;
   name?: string;
-  label?: string;
   content?: string;
+  label?: string;
   upload_status?: string;
   responseerrorcode?: string;
   responseerrortitle?: string;
@@ -20,7 +20,7 @@ export interface DocumentsAttributes {
 
 export type DocumentsPk = "id";
 export type DocumentsId = Documents[DocumentsPk];
-export type DocumentsOptionalAttributes = "id" | "customerordernumber" | "sequence_timestamp" | "shiptrackingnum" | "typecode" | "path" | "name" | "label" | "content" | "upload_status" | "responseerrorcode" | "responseerrortitle" | "responseerrordetail" | "responsetimestamp";
+export type DocumentsOptionalAttributes = "id" | "customerordernumber" | "sequence_timestamp" | "shiptrackingnum" | "typecode" | "path" | "name" | "content" | "label" | "upload_status" | "responseerrorcode" | "responseerrortitle" | "responseerrordetail" | "responsetimestamp";
 export type DocumentsCreationAttributes = Optional<DocumentsAttributes, DocumentsOptionalAttributes>;
 
 export class Documents extends Model<DocumentsAttributes, DocumentsCreationAttributes> implements DocumentsAttributes {
@@ -31,8 +31,8 @@ export class Documents extends Model<DocumentsAttributes, DocumentsCreationAttri
   typecode?: string;
   path?: string;
   name?: string;
-  label?: string;
   content?: string;
+  label?: string;
   upload_status?: string;
   responseerrorcode?: string;
   responseerrortitle?: string;
@@ -72,11 +72,11 @@ export class Documents extends Model<DocumentsAttributes, DocumentsCreationAttri
       type: DataTypes.STRING(45),
       allowNull: true
     },
-    label: {
+    content: {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    content: {
+    label: {
       type: DataTypes.TEXT,
       allowNull: true
     },
@@ -93,7 +93,7 @@ export class Documents extends Model<DocumentsAttributes, DocumentsCreationAttri
       allowNull: true
     },
     responseerrordetail: {
-      type: DataTypes.TEXT,
+      type: DataTypes.STRING(45),
       allowNull: true
     },
     responsetimestamp: {
