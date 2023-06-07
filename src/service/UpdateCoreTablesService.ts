@@ -48,16 +48,37 @@ export class UpdateCoreTablesService {
 
                 //Update Documents Table
 
-                var documentsObj = {
-                    customerordernumber: req.customer_order_number,
-                    shiptrackingnum: req.shipmentTrackingNumber,
-                    typecode: jsonObj.documents[0].typeCode,
-                    label: jsonObj.documents[0].content
-                }
-                this.logger.log("DOCUMENT---->",documentsObj)
+                // let docList :any
+                this.logger.log("jsonObj.documents---->",jsonObj.documents)
+                // let doc = jsonObj.documents
+                for(let docList of jsonObj.documents){
+                    // if document type is "lable"
+                    this.logger.log("docList.typeCode------>",docList.typeCode)
+                    if(docList.typeCode === "label"){
 
-                    await this.documentRepository.create(documentsObj)
-                
+                        var documentsObj = {
+                            customerordernumber: req.customer_order_number,
+                            shiptrackingnum: req.shipmentTrackingNumber,
+                            typecode: docList.typeCode,
+                            label: docList.content
+                        }
+                        this.logger.log("DOCUMENT---->",documentsObj)
+
+                        await this.documentRepository.create(documentsObj)
+                    }
+                    // if document type is "invoice"
+                    else if(docList.typeCode === "invoice"){
+                        var invoideDocumentsObj = {
+                            customerordernumber: req.customer_order_number,
+                            shiptrackingnum: req.shipmentTrackingNumber,
+                            typecode: docList.typeCode,
+                            label: docList.content
+                        }
+                        this.logger.log("INVOICE DOCUMENT OBJ---->",invoideDocumentsObj)
+
+                        await this.documentRepository.create(invoideDocumentsObj)
+                    }
+                }
 
             }else{
 
