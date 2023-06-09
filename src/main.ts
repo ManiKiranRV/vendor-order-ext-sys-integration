@@ -93,7 +93,7 @@ class Main {
             }
             var retryCron = cron.job(process.env.RETRY_DURATION, async () => {
                 await this.retryService.vendorbookingRetryService();
-                this.logger.log('cron Execution Success for sending EVENTS to LOBSTER');
+                this.logger.log('Retry cron Execution Successfully');
             });
             if(process.env.RETRY_CRON =="ON"){
                 retryCron.start(); 
