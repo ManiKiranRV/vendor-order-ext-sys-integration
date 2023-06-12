@@ -71,11 +71,11 @@ export class InvoiceDetails extends Model<InvoiceDetailsAttributes, InvoiceDetai
       allowNull: true
     },
     sequence_timestamp: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     mwab: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     hawb: {
@@ -83,7 +83,7 @@ export class InvoiceDetails extends Model<InvoiceDetailsAttributes, InvoiceDetai
       allowNull: true
     },
     customerreference: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     typecode: {
@@ -95,7 +95,7 @@ export class InvoiceDetails extends Model<InvoiceDetailsAttributes, InvoiceDetai
       allowNull: true
     },
     invoicenumber: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     invoicedate: {
@@ -107,15 +107,15 @@ export class InvoiceDetails extends Model<InvoiceDetailsAttributes, InvoiceDetai
       allowNull: true
     },
     declaredvaluecurrency: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     incoterm: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     description: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     responseerrorcode: {
@@ -127,7 +127,7 @@ export class InvoiceDetails extends Model<InvoiceDetailsAttributes, InvoiceDetai
       allowNull: true
     },
     responseerrordetail: {
-      type: DataTypes.TEXT,
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     responsetimestamp: {
@@ -139,7 +139,7 @@ export class InvoiceDetails extends Model<InvoiceDetailsAttributes, InvoiceDetai
       allowNull: true
     },
     additionalchargetype: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     }
   }, {

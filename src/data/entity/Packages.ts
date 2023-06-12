@@ -63,7 +63,7 @@ export class Packages extends Model<PackagesAttributes, PackagesCreationAttribut
       allowNull: true
     },
     gross_weight_uom: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     length: {
@@ -71,7 +71,7 @@ export class Packages extends Model<PackagesAttributes, PackagesCreationAttribut
       allowNull: true
     },
     length_uom: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     width: {
@@ -79,7 +79,7 @@ export class Packages extends Model<PackagesAttributes, PackagesCreationAttribut
       allowNull: true
     },
     width_uom: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     height: {
@@ -87,7 +87,7 @@ export class Packages extends Model<PackagesAttributes, PackagesCreationAttribut
       allowNull: true
     },
     height_uom: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     description: {

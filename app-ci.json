@@ -1,0 +1,21 @@
+{
+    "apps": [
+      {
+        "name": "downstream-venord-klmr-ci",
+        "script": "./dist/app-ci.js",
+        "exec_mode": "cluster",
+        "instances": 1,
+        "env": {
+          "DB_HOST": "10.23.3.7",
+          "DB_USER": "vendor_ord",
+          "DB_PASS": "rvuser123$",
+          "DB_NAME": "vendor_ord",
+          "PORT": 6003,
+          "POST_URL_CI":"https://express.api.dhl.com/mydhlapi/test/invoices/upload-invoice-data"
+        }
+      }
+    ]
+
+  }
+  
+  

@@ -123,6 +123,13 @@ export class Events extends Model<EventsAttributes, EventsCreationAttributes> im
           { name: "event_date" },
         ]
       },
+      {
+        name: "idx_event_proc_status",
+        using: "BTREE",
+        fields: [
+          { name: "processing_status" },
+        ]
+      },
     ]
   });
   }

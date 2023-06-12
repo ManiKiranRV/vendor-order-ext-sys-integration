@@ -51,7 +51,7 @@ export class Retry extends Model<RetryAttributes, RetryCreationAttributes> imple
     retry_status: {
       type: DataTypes.STRING(225),
       allowNull: true
-    },
+    }
   }, {
     sequelize,
     tableName: 'retry',

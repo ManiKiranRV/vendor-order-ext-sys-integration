@@ -7,9 +7,11 @@
         "tsc": "tsc",
         "build": "npx webpack --config webpack.app.config.js --progress",
         "build-app": "npx webpack --config webpack.app.config.js --progress",
+        "build-app-ci": "npx webpack --config webpack.app-ci.config.js --progress",
         "build-consume-app": "npx webpack --config webpack.consume.config.js --progress",
         "compile": "webpack --progress --watch",
         "start": "tsc && node ./dist/main.js",
+        "startCI": "tsc && node ./dist/ci-main.js",
         "stop": "kill $(cat .pid)",
         "prod": "tsc && node ./dist/main.js",
         "test": "echo \"Error: no test specified\" && exit 1"

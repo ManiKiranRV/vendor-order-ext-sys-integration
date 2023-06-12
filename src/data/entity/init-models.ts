@@ -17,6 +17,8 @@ import { Events as _Events } from "./Events";
 import type { EventsAttributes, EventsCreationAttributes } from "./Events";
 import { EventsStage as _EventsStage } from "./EventsStage";
 import type { EventsStageAttributes, EventsStageCreationAttributes } from "./EventsStage";
+import { ExpCommercialInvoiceData as _ExpCommercialInvoiceData } from "./ExpCommercialInvoiceData";
+import type { ExpCommercialInvoiceDataAttributes, ExpCommercialInvoiceDataCreationAttributes } from "./ExpCommercialInvoiceData";
 import { ExpRateBlessData as _ExpRateBlessData } from "./ExpRateBlessData";
 import type { ExpRateBlessDataAttributes, ExpRateBlessDataCreationAttributes } from "./ExpRateBlessData";
 import { ExpRateResponseData as _ExpRateResponseData } from "./ExpRateResponseData";
@@ -35,6 +37,8 @@ import { OrganisationContact as _OrganisationContact } from "./OrganisationConta
 import type { OrganisationContactAttributes, OrganisationContactCreationAttributes } from "./OrganisationContact";
 import { Packages as _Packages } from "./Packages";
 import type { PackagesAttributes, PackagesCreationAttributes } from "./Packages";
+import { RegistrationNumbers as _RegistrationNumbers } from "./RegistrationNumbers";
+import type { RegistrationNumbersAttributes, RegistrationNumbersCreationAttributes } from "./RegistrationNumbers";
 import { Retry as _Retry } from "./Retry";
 import type { RetryAttributes, RetryCreationAttributes } from "./Retry";
 import { VendorBooking as _VendorBooking } from "./VendorBooking";
@@ -50,6 +54,7 @@ export {
   _Documents as Documents,
   _Events as Events,
   _EventsStage as EventsStage,
+  _ExpCommercialInvoiceData as ExpCommercialInvoiceData,
   _ExpRateBlessData as ExpRateBlessData,
   _ExpRateResponseData as ExpRateResponseData,
   _ExpRateTmsData as ExpRateTmsData,
@@ -59,6 +64,7 @@ export {
   _LineItems as LineItems,
   _OrganisationContact as OrganisationContact,
   _Packages as Packages,
+  _RegistrationNumbers as RegistrationNumbers,
   _Retry as Retry,
   _VendorBooking as VendorBooking,
 };
@@ -82,6 +88,8 @@ export type {
   EventsCreationAttributes,
   EventsStageAttributes,
   EventsStageCreationAttributes,
+  ExpCommercialInvoiceDataAttributes,
+  ExpCommercialInvoiceDataCreationAttributes,
   ExpRateBlessDataAttributes,
   ExpRateBlessDataCreationAttributes,
   ExpRateResponseDataAttributes,
@@ -100,6 +108,8 @@ export type {
   OrganisationContactCreationAttributes,
   PackagesAttributes,
   PackagesCreationAttributes,
+  RegistrationNumbersAttributes,
+  RegistrationNumbersCreationAttributes,
   RetryAttributes,
   RetryCreationAttributes,
   VendorBookingAttributes,
@@ -116,6 +126,7 @@ export function initModels(sequelize: Sequelize) {
   const Documents = _Documents.initModel(sequelize);
   const Events = _Events.initModel(sequelize);
   const EventsStage = _EventsStage.initModel(sequelize);
+  const ExpCommercialInvoiceData = _ExpCommercialInvoiceData.initModel(sequelize);
   const ExpRateBlessData = _ExpRateBlessData.initModel(sequelize);
   const ExpRateResponseData = _ExpRateResponseData.initModel(sequelize);
   const ExpRateTmsData = _ExpRateTmsData.initModel(sequelize);
@@ -125,6 +136,7 @@ export function initModels(sequelize: Sequelize) {
   const LineItems = _LineItems.initModel(sequelize);
   const OrganisationContact = _OrganisationContact.initModel(sequelize);
   const Packages = _Packages.initModel(sequelize);
+  const RegistrationNumbers = _RegistrationNumbers.initModel(sequelize);
   const Retry = _Retry.initModel(sequelize);
   const VendorBooking = _VendorBooking.initModel(sequelize);
 
@@ -139,6 +151,7 @@ export function initModels(sequelize: Sequelize) {
     Documents: Documents,
     Events: Events,
     EventsStage: EventsStage,
+    ExpCommercialInvoiceData: ExpCommercialInvoiceData,
     ExpRateBlessData: ExpRateBlessData,
     ExpRateResponseData: ExpRateResponseData,
     ExpRateTmsData: ExpRateTmsData,
@@ -148,6 +161,7 @@ export function initModels(sequelize: Sequelize) {
     LineItems: LineItems,
     OrganisationContact: OrganisationContact,
     Packages: Packages,
+    RegistrationNumbers: RegistrationNumbers,
     Retry: Retry,
     VendorBooking: VendorBooking,
   };

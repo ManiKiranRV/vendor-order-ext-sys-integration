@@ -5,8 +5,8 @@ export interface VendorBookingAttributes {
   id: number;
   customer_order_number?: string;
   sequence_timestamp?: string;
-  planned_shipping_date_and_time?: Date;
-  shipment_creation_date_time?: Date;
+  planned_shipping_date_and_time?: string;
+  shipment_creation_date_time?: string;
   order_status?: string;
   shipment_inco_terms?: string;
   commodity_code?: string;
@@ -35,8 +35,8 @@ export class VendorBooking extends Model<VendorBookingAttributes, VendorBookingC
   id!: number;
   customer_order_number?: string;
   sequence_timestamp?: string;
-  planned_shipping_date_and_time?: Date;
-  shipment_creation_date_time?: Date;
+  planned_shipping_date_and_time?: string;
+  shipment_creation_date_time?: string;
   order_status?: string;
   shipment_inco_terms?: string;
   commodity_code?: string;
@@ -73,11 +73,11 @@ export class VendorBooking extends Model<VendorBookingAttributes, VendorBookingC
       allowNull: true
     },
     planned_shipping_date_and_time: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     shipment_creation_date_time: {
-      type: DataTypes.DATE,
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     order_status: {
@@ -97,11 +97,11 @@ export class VendorBooking extends Model<VendorBookingAttributes, VendorBookingC
       allowNull: true
     },
     shipment_service_code: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     dangerous_goods: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     content_id: {
@@ -125,11 +125,11 @@ export class VendorBooking extends Model<VendorBookingAttributes, VendorBookingC
       allowNull: true
     },
     response_error_title: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     response_error_detail: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.TEXT,
       allowNull: true
     },
     response_time_stamp: {
