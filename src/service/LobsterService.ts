@@ -7,7 +7,7 @@ import { AddressRepository } from "../data/repository/AddressRepository";
 import { LobsterTransformationService } from "./LobsterTransformationService";
 import { EventsToLobsterRepository } from "../data/repository/EventsToLobsterRepository";
 import { EventsRepository } from "../data/repository/EventsRepository";
-
+import { Op } from "sequelize";
 var fs = require('fs');
 
 var request = require('request');
@@ -136,8 +136,10 @@ export class LobsterService {
         let eventsUpdateWhereObj: any;
         for (let evenntsDataToLobsterItem of evenntsDataToLobster) {
             try {
+                this.logger.log('events ', JSON.stringify(evenntsDataToLobster))
                 //Only Hawb should be enough as the events table will only contain the events that should be sent to LOBSTER System
-                eventsUpdateWhereObj = { "hawb": evenntsDataToLobsterItem["hawb"] };
+                // eventsUpdateWhereObj = { "hawb": evenntsDataToLobsterItem["hawb"] };
+                eventsUpdateWhereObj = { "hawb": evenntsDataToLobsterItem["hawb"], "processing_status": {[Op.ne]: "SENT"} };
                 eventsUpdateObj = { "processing_status": "SENT" }
                 transformedEventsData = await this.lobsterTransformationService.transformEvents(evenntsDataToLobsterItem);
                 options = {
