@@ -77,7 +77,7 @@ export class Events extends Model<EventsAttributes, EventsCreationAttributes> im
       allowNull: true
     },
     event_offset: {
-      type: DataTypes.STRING(45),
+      type: DataTypes.STRING(255),
       allowNull: true
     },
     processing_status: {
@@ -121,13 +121,6 @@ export class Events extends Model<EventsAttributes, EventsCreationAttributes> im
         using: "BTREE",
         fields: [
           { name: "event_date" },
-        ]
-      },
-      {
-        name: "idx_event_proc_status",
-        using: "BTREE",
-        fields: [
-          { name: "processing_status" },
         ]
       },
     ]

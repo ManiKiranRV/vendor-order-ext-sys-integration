@@ -114,6 +114,20 @@ export class ExpResponseData extends Model<ExpResponseDataAttributes, ExpRespons
           { name: "id" },
         ]
       },
+      {
+        name: "idx_exprsp_X1",
+        using: "BTREE",
+        fields: [
+          { name: "customer_order_number" },
+        ]
+      },
+      {
+        name: "idx_exprsp_X2",
+        using: "BTREE",
+        fields: [
+          { name: "status" },
+        ]
+      },
     ]
   });
   }

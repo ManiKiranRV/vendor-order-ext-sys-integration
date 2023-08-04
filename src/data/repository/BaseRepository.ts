@@ -104,5 +104,38 @@ export class BaseRepository implements Repository {
         });
     }
 
+    async getLatest(whereObj: any, attributes?: any[], transaction?: Transaction):Promise<any[]> {
+
+        return await new Promise((resolve, reject) => {
+            this.getModel().findOne({
+                where: whereObj,
+                order: [['updatedAt', 'DESC']],
+                transaction
+            }).then((get:any[]) => {
+                resolve(get);
+            }).catch((error: any) => {
+                this.logger.error(error);
+                reject(error);
+            });
+        })
+    }
+
+    async updateLatest(whereObj: any, updateObj: any, transaction?: Transaction):Promise<any> {
+
+        let latestRecord:any = await this.getModel().findOne({
+                where: whereObj,
+                order: [['updatedAt', 'DESC']],
+                transaction
+            })      
+        return await new Promise((resolve, reject) => {
+            latestRecord.update(updateObj, { where: whereObj, transaction }).then((update: [number, any[]]) => {
+            resolve(update[0]);
+        }).catch((error: any) => {
+            this.logger.error(error);
+            reject(error);
+        })
+    });
+        
+    }    
 
 }

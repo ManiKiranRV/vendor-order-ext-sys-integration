@@ -12,7 +12,7 @@ import { VerifyJwtTokenService } from "../security/VerifyJwtTokenService";
 
 
 import { DataGenTransformationService } from "../service/DataGenTransformationService";
-import { DownStreamService } from "../service/DownStreamServiceCI";
+import { DownStreamServiceCI } from "../service/DownStreamServiceCI";
 import { GenericUtil } from "../util/GenericUtil";
 
 var request = require('request');
@@ -28,7 +28,7 @@ export class CommercialInvoiceController implements Controller {
     private LlpClien2Service: LlpClien2Service = DI.get(LlpClien2Service);
     private LobsterService: LobsterService = DI.get(LobsterService);
     private DataGenTransformationService: DataGenTransformationService = DI.get(DataGenTransformationService);
-    private DownStreamService: DownStreamService = DI.get(DownStreamService);
+    private DownStreamServiceCI: DownStreamServiceCI = DI.get(DownStreamServiceCI);
     private authService: AuthService;
     private verifyJwtTokenService: VerifyJwtTokenService;
 
@@ -48,7 +48,8 @@ export class CommercialInvoiceController implements Controller {
             try {
                 this.logger.log(`=============================================START - LLP - TMS - LOBSTER COMMERCIAL INVOICE DOWNSTREAM UI =======================================`)
                 this.logger.log("Timestamp when we received the data from UI to LLP Downstream API --->",Date());
-                var downstreamToTmsSystemRates = await this.DownStreamService.downStreamToTmsSystemUpdatedCI(req.params.route,res)
+                let flag:any = "UI"
+                var downstreamToTmsSystemRates = await this.DownStreamServiceCI.downStreamToTmsSystemUpdatedCI(req.params.route,flag,res)
 
                 // var downstreamToTmsSystemRates = await this.DownStreamService.downStreamToTmsSystemRates(req.body[0].body,res)
 
@@ -69,10 +70,11 @@ export class CommercialInvoiceController implements Controller {
                 this.logger.log(`=============================================START - LLP - TMS - LOBSTER COMMERCIAL INVOICE DOWNSTREAM =======================================`)
                 this.logger.log("Timestamp when we received the data from BLESS to LLP Downstream API --->",Date());
                 this.logger.log(`BLESS REQUEST BODY is ${JSON.stringify(req.body.message)}`);
+                this.logger.log(`Transformed Message in controller ${(JSON.parse(req.body.message).transformedMessage)}`);
 
                 //Calling Downstream service from LLP to TMS
                 
-                var downstreamToTmsSystemCI = await this.DownStreamService.downStreamToTmsSystemCommercialInvoice(JSON.parse(req.body.message).transformedMessage,res)
+                var downstreamToTmsSystemCI = await this.DownStreamServiceCI.downStreamToTmsSystemCommercialInvoice(JSON.parse(req.body.message).transformedMessage,res)
 
 
                 res.json({ token:downstreamToTmsSystemCI });

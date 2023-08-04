@@ -4,6 +4,7 @@ import { DataTypes, Model, Optional } from 'sequelize';
 export interface InvoiceDetailsAttributes {
   id: number;
   customerordernumber?: string;
+  org?: string;
   sequence_timestamp?: string;
   mwab?: string;
   hawb?: string;
@@ -29,12 +30,13 @@ export interface InvoiceDetailsAttributes {
 
 export type InvoiceDetailsPk = "id";
 export type InvoiceDetailsId = InvoiceDetails[InvoiceDetailsPk];
-export type InvoiceDetailsOptionalAttributes = "id" | "customerordernumber" | "sequence_timestamp" | "mwab" | "hawb" | "customerreference" | "typecode" | "uploadstatus" | "invoicenumber" | "invoicedate" | "declaredvalue" | "declaredvaluecurrency" | "incoterm" | "description" | "responseerrorcode" | "responseerrortitle" | "responseerrordetail" | "responsetimestamp" | "createdAt" | "updatedAt" | "deletedAt" | "additionalcharge" | "additionalchargetype";
+export type InvoiceDetailsOptionalAttributes = "id" | "customerordernumber" | "org" | "sequence_timestamp" | "mwab" | "hawb" | "customerreference" | "typecode" | "uploadstatus" | "invoicenumber" | "invoicedate" | "declaredvalue" | "declaredvaluecurrency" | "incoterm" | "description" | "responseerrorcode" | "responseerrortitle" | "responseerrordetail" | "responsetimestamp" | "createdAt" | "updatedAt" | "deletedAt" | "additionalcharge" | "additionalchargetype";
 export type InvoiceDetailsCreationAttributes = Optional<InvoiceDetailsAttributes, InvoiceDetailsOptionalAttributes>;
 
 export class InvoiceDetails extends Model<InvoiceDetailsAttributes, InvoiceDetailsCreationAttributes> implements InvoiceDetailsAttributes {
   id!: number;
   customerordernumber?: string;
+  org?: string;
   sequence_timestamp?: string;
   mwab?: string;
   hawb?: string;
@@ -67,6 +69,10 @@ export class InvoiceDetails extends Model<InvoiceDetailsAttributes, InvoiceDetai
       primaryKey: true
     },
     customerordernumber: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    org: {
       type: DataTypes.STRING(255),
       allowNull: true
     },

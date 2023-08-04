@@ -114,6 +114,13 @@ export class Address extends Model<AddressAttributes, AddressCreationAttributes>
           { name: "id" },
         ]
       },
+      {
+        name: "idx_address_X1",
+        using: "BTREE",
+        fields: [
+          { name: "parent_id" },
+        ]
+      },
     ]
   });
   }

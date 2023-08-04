@@ -2,7 +2,7 @@ import moment from 'moment';
 import { Logger } from '../logger/Logger';
 import { DI } from '../di/DIContainer';
 import { Md5 } from 'ts-md5/dist/md5';
-
+import * as fs from 'fs';
 export class GenericUtil {
 
     private logger: Logger;
@@ -63,4 +63,52 @@ export class GenericUtil {
         return new Promise( resolve => setTimeout(resolve, ms) );
     }
 
+
+    validateJsonObject(jsonObj:any){
+        for (const key in jsonObj) {
+          if (jsonObj.hasOwnProperty(key)) {
+            const value = jsonObj[key];
+      
+            if (value === null || value === undefined) {
+              return `Error: Value for key '${key}' is empty or undefined.`;
+            }
+      
+            if (typeof value === 'string' && value.trim() === '') {
+              return `Error: Value for key '${key}' is an empty string.`;
+            }
+      
+            if (Array.isArray(value) && value.length === 0) {
+              return `Error: Value for key '${key}' is an empty array.`;
+            }
+      
+            if (typeof value === 'object') {
+              const nestedError:any = this.validateJsonObject(value);
+              if (nestedError) {
+                return nestedError;
+              }
+            }
+          }
+        }
+      
+        return null; // Return null if there are no errors
+    }
+
+    //Function to read the UOM Json file and return the JsonObject
+    async readJsonFile(filePath: string): Promise<any> {
+        return new Promise((resolve, reject) => {
+            fs.readFile(filePath, 'utf8', (err, data) => {
+            if (err) {
+                reject(err);
+                return;
+            }
+            try {
+                const jsonData = JSON.parse(data);
+                // console.log("uomData in the Json file------->",jsonData)
+                resolve(jsonData);
+            } catch (error) {
+                reject(error);
+            }
+            });
+        });
+    }
 }

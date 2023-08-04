@@ -11,11 +11,12 @@ export interface OrganisationContactAttributes {
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
+  companyName?: string;
 }
 
 export type OrganisationContactPk = "id";
 export type OrganisationContactId = OrganisationContact[OrganisationContactPk];
-export type OrganisationContactOptionalAttributes = "id" | "parent_id" | "address_id" | "phone" | "full_Name" | "email" | "createdAt" | "updatedAt" | "deletedAt";
+export type OrganisationContactOptionalAttributes = "id" | "parent_id" | "address_id" | "phone" | "full_Name" | "email" | "createdAt" | "updatedAt" | "deletedAt" | "companyName";
 export type OrganisationContactCreationAttributes = Optional<OrganisationContactAttributes, OrganisationContactOptionalAttributes>;
 
 export class OrganisationContact extends Model<OrganisationContactAttributes, OrganisationContactCreationAttributes> implements OrganisationContactAttributes {
@@ -28,6 +29,7 @@ export class OrganisationContact extends Model<OrganisationContactAttributes, Or
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
+  companyName?: string;
 
 
   static initModel(sequelize: Sequelize.Sequelize): typeof OrganisationContact {
@@ -55,6 +57,10 @@ export class OrganisationContact extends Model<OrganisationContactAttributes, Or
       allowNull: true
     },
     email: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    companyName: {
       type: DataTypes.STRING(255),
       allowNull: true
     }

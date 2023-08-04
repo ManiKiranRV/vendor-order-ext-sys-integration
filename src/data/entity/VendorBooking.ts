@@ -150,6 +150,13 @@ export class VendorBooking extends Model<VendorBookingAttributes, VendorBookingC
           { name: "id" },
         ]
       },
+      {
+        name: "idx_vndbkg_x1",
+        using: "BTREE",
+        fields: [
+          { name: "customer_order_number" },
+        ]
+      },
     ]
   });
   }

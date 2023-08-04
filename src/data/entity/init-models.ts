@@ -1,6 +1,8 @@
 import type { Sequelize } from "sequelize";
 import { AccountsMaster as _AccountsMaster } from "./AccountsMaster";
 import type { AccountsMasterAttributes, AccountsMasterCreationAttributes } from "./AccountsMaster";
+import { AdditionalCharges as _AdditionalCharges } from "./AdditionalCharges";
+import type { AdditionalChargesAttributes, AdditionalChargesCreationAttributes } from "./AdditionalCharges";
 import { Address as _Address } from "./Address";
 import type { AddressAttributes, AddressCreationAttributes } from "./Address";
 import { AppUsers as _AppUsers } from "./AppUsers";
@@ -46,6 +48,7 @@ import type { VendorBookingAttributes, VendorBookingCreationAttributes } from ".
 
 export {
   _AccountsMaster as AccountsMaster,
+  _AdditionalCharges as AdditionalCharges,
   _Address as Address,
   _AppUsers as AppUsers,
   _BvEventsToLobster as BvEventsToLobster,
@@ -72,6 +75,8 @@ export {
 export type {
   AccountsMasterAttributes,
   AccountsMasterCreationAttributes,
+  AdditionalChargesAttributes,
+  AdditionalChargesCreationAttributes,
   AddressAttributes,
   AddressCreationAttributes,
   AppUsersAttributes,
@@ -118,6 +123,7 @@ export type {
 
 export function initModels(sequelize: Sequelize) {
   const AccountsMaster = _AccountsMaster.initModel(sequelize);
+  const AdditionalCharges = _AdditionalCharges.initModel(sequelize);
   const Address = _Address.initModel(sequelize);
   const AppUsers = _AppUsers.initModel(sequelize);
   const BvEventsToLobster = _BvEventsToLobster.initModel(sequelize);
@@ -143,6 +149,7 @@ export function initModels(sequelize: Sequelize) {
 
   return {
     AccountsMaster: AccountsMaster,
+    AdditionalCharges: AdditionalCharges,
     Address: Address,
     AppUsers: AppUsers,
     BvEventsToLobster: BvEventsToLobster,

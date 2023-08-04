@@ -8,7 +8,9 @@ import session, { MemoryStore } from 'express-session';
 import { DBConnection } from "./config/DBConnection";
 import { AuthController } from './controller/AuthController';
 import { CommercialInvoiceController } from "./controller/CommercialInvoiceController";
+import { DownStreamServiceCI } from "./service/DownStreamServiceCI";
 const multer  = require('multer');
+var cron = require('cron');
 
 var upload = multer();
 const memoryStore = DI.get<MemoryStore>(MemoryStore);
@@ -24,10 +26,12 @@ expressApp.use(upload.array());
 export class ConsumeInvoiceMain {
     private logger: Logger;
     private dbConnection: DBConnection;
+    private DownStreamServiceCI:DownStreamServiceCI;
 
     constructor(){
         this.logger = DI.get(Logger);
         this.dbConnection = DI.get(DBConnection);
+        this.DownStreamServiceCI = DI.get(DownStreamServiceCI);
         // this.initializeRepositories();
     } 
 
@@ -64,6 +68,19 @@ export class ConsumeInvoiceMain {
     private startServer() {
         expressApp.listen(process.env.PORT, () => {
             this.logger.log('Application Server Started',process.env.PORT);
+            var comInvCron = cron.job(process.env.COM_INV_DURATION, async () => {
+                let req:any
+                let flag:any
+                let res:any
+                let result:any = await this.DownStreamServiceCI.downStreamToTmsSystemUpdatedCI(req,flag,res)
+                this.logger.log(result)
+                this.logger.log('Cron Execution Success for sending transformed data');
+            });
+            if(process.env.COM_INV_CRON =="ON"){
+                comInvCron.start(); 
+            }else if(process.env.COM_INV_CRON =="OFF"){
+                comInvCron.stop();
+            }
         });
         
     }

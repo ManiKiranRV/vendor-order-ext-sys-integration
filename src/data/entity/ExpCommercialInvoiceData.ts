@@ -4,12 +4,13 @@ import { DataTypes, Model, Optional } from 'sequelize';
 export interface ExpCommercialInvoiceDataAttributes {
   id: number;
   blessMessage?: string;
-  message?: object;
+  tms_req_message?: object;
   shipment_Tracking_Number?: string;
   customer_order_number?: string;
   tms_response?: string;
   error?: string;
   statusCode?: string;
+  tms_status?: string;
   status?: string;
   token?: string;
   req_file_path?: string;
@@ -21,18 +22,19 @@ export interface ExpCommercialInvoiceDataAttributes {
 
 export type ExpCommercialInvoiceDataPk = "id";
 export type ExpCommercialInvoiceDataId = ExpCommercialInvoiceData[ExpCommercialInvoiceDataPk];
-export type ExpCommercialInvoiceDataOptionalAttributes = "id" | "blessMessage" | "message" | "shipment_Tracking_Number" | "customer_order_number" | "tms_response" | "error" | "statusCode" | "status" | "token" | "req_file_path" | "req_file_uuid" | "createdAt" | "updatedAt" | "deletedAt";
+export type ExpCommercialInvoiceDataOptionalAttributes = "id" | "blessMessage" | "tms_req_message" | "shipment_Tracking_Number" | "customer_order_number" | "tms_response" | "error" | "statusCode" | "tms_status" | "status" | "token" | "req_file_path" | "req_file_uuid" | "createdAt" | "updatedAt" | "deletedAt";
 export type ExpCommercialInvoiceDataCreationAttributes = Optional<ExpCommercialInvoiceDataAttributes, ExpCommercialInvoiceDataOptionalAttributes>;
 
 export class ExpCommercialInvoiceData extends Model<ExpCommercialInvoiceDataAttributes, ExpCommercialInvoiceDataCreationAttributes> implements ExpCommercialInvoiceDataAttributes {
   id!: number;
   blessMessage?: string;
-  message?: object;
+  tms_req_message?: object;
   shipment_Tracking_Number?: string;
   customer_order_number?: string;
   tms_response?: string;
   error?: string;
   statusCode?: string;
+  tms_status?: string;
   status?: string;
   token?: string;
   req_file_path?: string;
@@ -54,7 +56,7 @@ export class ExpCommercialInvoiceData extends Model<ExpCommercialInvoiceDataAttr
       type: DataTypes.TEXT,
       allowNull: true
     },
-    message: {
+    tms_req_message: {
       type: DataTypes.JSON,
       allowNull: true
     },
@@ -75,6 +77,10 @@ export class ExpCommercialInvoiceData extends Model<ExpCommercialInvoiceDataAttr
       allowNull: true
     },
     statusCode: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    tms_status: {
       type: DataTypes.STRING(100),
       allowNull: true
     },
