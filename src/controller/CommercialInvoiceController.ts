@@ -14,6 +14,7 @@ import { VerifyJwtTokenService } from "../security/VerifyJwtTokenService";
 import { DataGenTransformationService } from "../service/DataGenTransformationService";
 import { DownStreamServiceCI } from "../service/DownStreamServiceCI";
 import { GenericUtil } from "../util/GenericUtil";
+import { DataGenTransCI } from "../service/DataGenTransCI";
 
 var request = require('request');
 
@@ -31,12 +32,13 @@ export class CommercialInvoiceController implements Controller {
     private DownStreamServiceCI: DownStreamServiceCI = DI.get(DownStreamServiceCI);
     private authService: AuthService;
     private verifyJwtTokenService: VerifyJwtTokenService;
+    private DataGenTransCI : DataGenTransCI;
 
 
     constructor(){
         this.authService = DI.get(AuthService);
         this.verifyJwtTokenService = DI.get(VerifyJwtTokenService);
-
+        this.DataGenTransCI = DI.get(DataGenTransCI);
     }
 
     getRouter(): Router {
@@ -87,6 +89,19 @@ export class CommercialInvoiceController implements Controller {
             }
         });       
 
+        //DATAGEN
+
+        router.post('/datagenCI', async (req, res) => {
+            try {
+                var pubMessage;
+                pubMessage = await this.DataGenTransCI.dataGenTransformation(process.env.DATAGEN_TMS_RESP_EXP_IBM_MSG!);
+                res.json({ data: pubMessage });
+            } catch (error) {
+                let response: any = { status: { code: 'FAILURE', message: error } }
+                res.json(response);
+
+            }
+        });        
 
         return router;
     }

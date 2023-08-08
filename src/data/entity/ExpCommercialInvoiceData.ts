@@ -12,9 +12,12 @@ export interface ExpCommercialInvoiceDataAttributes {
   statusCode?: string;
   tms_status?: string;
   status?: string;
+  exp_status?: string;
+  org?: string;
   token?: string;
   req_file_path?: string;
   req_file_uuid?: string;
+  vcid?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -22,7 +25,7 @@ export interface ExpCommercialInvoiceDataAttributes {
 
 export type ExpCommercialInvoiceDataPk = "id";
 export type ExpCommercialInvoiceDataId = ExpCommercialInvoiceData[ExpCommercialInvoiceDataPk];
-export type ExpCommercialInvoiceDataOptionalAttributes = "id" | "blessMessage" | "tms_req_message" | "shipment_Tracking_Number" | "customer_order_number" | "tms_response" | "error" | "statusCode" | "tms_status" | "status" | "token" | "req_file_path" | "req_file_uuid" | "createdAt" | "updatedAt" | "deletedAt";
+export type ExpCommercialInvoiceDataOptionalAttributes = "id" | "blessMessage" | "tms_req_message" | "shipment_Tracking_Number" | "customer_order_number" | "tms_response" | "error" | "statusCode" | "tms_status" | "status" | "exp_status" | "org" | "token" | "req_file_path" | "req_file_uuid" | "vcid" | "createdAt" | "updatedAt" | "deletedAt";
 export type ExpCommercialInvoiceDataCreationAttributes = Optional<ExpCommercialInvoiceDataAttributes, ExpCommercialInvoiceDataOptionalAttributes>;
 
 export class ExpCommercialInvoiceData extends Model<ExpCommercialInvoiceDataAttributes, ExpCommercialInvoiceDataCreationAttributes> implements ExpCommercialInvoiceDataAttributes {
@@ -36,9 +39,12 @@ export class ExpCommercialInvoiceData extends Model<ExpCommercialInvoiceDataAttr
   statusCode?: string;
   tms_status?: string;
   status?: string;
+  exp_status?: string;
+  org?: string;
   token?: string;
   req_file_path?: string;
   req_file_uuid?: string;
+  vcid?: string;
   createdAt?: Date;
   updatedAt?: Date;
   deletedAt?: Date;
@@ -88,6 +94,14 @@ export class ExpCommercialInvoiceData extends Model<ExpCommercialInvoiceDataAttr
       type: DataTypes.STRING(100),
       allowNull: true
     },
+    exp_status: {
+      type: DataTypes.STRING(100),
+      allowNull: true
+    },
+    org: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
     token: {
       type: DataTypes.STRING(255),
       allowNull: true
@@ -97,6 +111,10 @@ export class ExpCommercialInvoiceData extends Model<ExpCommercialInvoiceDataAttr
       allowNull: true
     },
     req_file_uuid: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    vcid: {
       type: DataTypes.STRING(255),
       allowNull: true
     }

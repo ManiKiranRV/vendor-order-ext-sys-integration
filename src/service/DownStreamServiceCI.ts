@@ -184,7 +184,7 @@ export class DownStreamServiceCI {
                         
                         let org = invoiceDetails[0].org
                         data ={
-                            "shipmentTrackingNumber" : tmsListItem.shipment_Tracking_Number !== (null || undefined) ? tmsListItem.shipment_Tracking_Number : "",
+                            "shipmentTrackingNumber" : invoiceDetails[0].hawb !== (null || undefined) ? invoiceDetails[0].hawb : "",
                             "line_item":lineItemObj !== (null || undefined) ? lineItemObj : "",
                             "org":org,
                             "invoice_date":invoiceDetails[0].invoicedate !== (null || undefined) ? invoiceDetails[0].invoicedate : "", //invoiceDetails[0].invoicedate
@@ -392,8 +392,9 @@ export class DownStreamServiceCI {
                 "customerordernumber":customer_order_number,
                 "shiptrackingnum":shipment_Tracking_Number,
                 "typecode":"TMS_Request",
+                "name":"TMS_Request",
                 "content":base64,
-                "lable":"TMS_Request"
+                "label":"TMS_Request"
             }
 
             this.logger.log("documentObj----->",documentObj)

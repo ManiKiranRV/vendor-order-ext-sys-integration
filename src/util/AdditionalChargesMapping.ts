@@ -20,25 +20,30 @@ export class AdditionalChargesMapping {
 
     //For Additional Charges Mapping
     async getAdditionalCharges(data:any,org:any){
-        let additionalCharges:any =[]
-        for (let chargeDetails of data){
-            
-            let chargeCode :any
-            //if org == IBM only need to change uom mapping
-            this.logger.log("ORG_NAME--->",org,process.env.ORG_NAME)
-            if(org === process.env.ORG_NAME){
-                chargeCode = await this.additionalChargTrans(chargeDetails.chargeDescription)
-            }else{
-                chargeCode = chargeDetails.chargeDescription
-            }
-            let obj={
-                    "value": chargeDetails.chargeAmount,//lineDetails.number,
-                    "typeCode":chargeCode
+        try{
+
+            let additionalCharges:any =[]
+            for (let chargeDetails of data){
+                
+                let chargeCode :any
+                //if org == IBM only need to change uom mapping
+                this.logger.log("ORG_NAME--->",org,process.env.ORG_NAME)
+                if(org === process.env.ORG_NAME){
+                    chargeCode = await this.additionalChargTrans(chargeDetails.chargeDescription)
+                }else{
+                    chargeCode = chargeDetails.chargeDescription
                 }
-                additionalCharges.push(obj)
+                let obj={
+                        "value": chargeDetails.chargeAmount,//lineDetails.number,
+                        "typeCode":chargeCode
+                    }
+                    additionalCharges.push(obj)
+            }
+            // this.logger.log("lineItem--->",lineItem)
+            return additionalCharges
+        }catch(error){
+            this.logger.log("Error",error)
         }
-        // this.logger.log("lineItem--->",lineItem)
-        return additionalCharges
     }
 
     //Mapping unitOfMeasurment from IBM to Express

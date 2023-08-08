@@ -47,46 +47,51 @@ export class CommercialInvoiceMapping {
 
     //For LineItems Mapping
     async lineItemsMapping(data:any,org:any){
-        let lineItem:any =[]
-        for (let lineDetails of data){
-            let randomStr:any
-            let commodity_typeCode:any = lineDetails.commodity_typeCode
-            if((lineDetails.commodity_typeCode === null) || (lineDetails.commodity_typeCode === "") || (lineDetails.commodity_typeCode === undefined)){
-                commodity_typeCode = "outbound"
-            }
-            let unitOfMeasurement :any
-            //if org == IBM only need to change uom mapping
-            this.logger.log("ORG_NAME--->",org,process.env.ORG_NAME)
-            if(org === process.env.ORG_NAME){
-                unitOfMeasurement = await this.uomValidation(lineDetails.quantity_uom)
-            }else{
-                unitOfMeasurement = lineDetails.quantity_uom
-            }
-            // this.logger.log("unitOfMeasurement---------->",unitOfMeasurement)
-            randomStr = Math.floor(Math.random() * 1001)
-            let obj={
-                    "number": randomStr,//lineDetails.number,
-                    "commodityCodes": [
-                        {
-                            "value": (parseFloat(lineDetails.commodity_value)).toString(),
-                            "typeCode": commodity_typeCode //(lineDetails.commodity_typeCode !== (null || "" || undefined) ? lineDetails.commodity_typeCode : "outbound")
-                        }
-                    ],
-                    "quantity": {
-                        "unitOfMeasurement": unitOfMeasurement, //lineDetails.quantity_uom - Need to add mappings,
-                        "value": parseFloat(lineDetails.quantity_value)
-                    },
-                    "price": parseFloat(lineDetails.price),
-                    "description": lineDetails.description,
-                    "weight": {
-                        "netValue": parseFloat(lineDetails.weight_netValue)
-                    },
-                    "manufacturerCountry": lineDetails.manufacturerCountry
+        try{
+
+            let lineItem:any =[]
+            for (let lineDetails of data){
+                let randomStr:any
+                let commodity_typeCode:any = lineDetails.commodity_typeCode
+                if((lineDetails.commodity_typeCode === null) || (lineDetails.commodity_typeCode === "") || (lineDetails.commodity_typeCode === undefined)){
+                    commodity_typeCode = "outbound"
                 }
-            lineItem.push(obj)
+                let unitOfMeasurement :any
+                //if org == IBM only need to change uom mapping
+                this.logger.log("ORG_NAME--->",org,process.env.ORG_NAME)
+                if(org === process.env.ORG_NAME){
+                    unitOfMeasurement = await this.uomValidation(lineDetails.quantity_uom)
+                }else{
+                    unitOfMeasurement = lineDetails.quantity_uom
+                }
+                // this.logger.log("unitOfMeasurement---------->",unitOfMeasurement)
+                randomStr = Math.floor(Math.random() * 1001)
+                let obj={
+                        "number": randomStr,//lineDetails.number,
+                        "commodityCodes": [
+                            {
+                                "value": (parseFloat(lineDetails.commodity_value)).toString(),
+                                "typeCode": commodity_typeCode //(lineDetails.commodity_typeCode !== (null || "" || undefined) ? lineDetails.commodity_typeCode : "outbound")
+                            }
+                        ],
+                        "quantity": {
+                            "unitOfMeasurement": unitOfMeasurement, //lineDetails.quantity_uom - Need to add mappings,
+                            "value": parseFloat(lineDetails.quantity_value)
+                        },
+                        "price": parseFloat(lineDetails.price),
+                        "description": lineDetails.description,
+                        "weight": {
+                            "netValue": parseFloat(lineDetails.weight_netValue)
+                        },
+                        "manufacturerCountry": lineDetails.manufacturerCountry
+                    }
+                lineItem.push(obj)
+            }
+            // this.logger.log("lineItem--->",lineItem)
+            return lineItem
+        }catch(error){
+            this.logger.log("Error",error)
         }
-        // this.logger.log("lineItem--->",lineItem)
-        return lineItem
     }
 
     //Mapping unitOfMeasurment from IBM to Express

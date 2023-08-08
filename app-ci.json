@@ -11,7 +11,12 @@
           "DB_PASS": "rvuser123$",
           "DB_NAME": "vendor_ord",
           "PORT": 6003,
-          "POST_URL_CI":"https://express.api.dhl.com/mydhlapi/test/invoices/upload-invoice-data"
+          "POST_URL_CI":"https://express.api.dhl.com/mydhlapi/test/invoices/upload-invoice-data",
+          "DATAGEN_TMS_RESP_EXP_IBM_MSG":"VND_ORD_LLP_TO_EXP_TMS_DATAGEN",
+          "DATAGEN_TMS_RESP_EXP_IBM_AUDIENCE":"COURIER-FORWARDER",
+          "DATAGEN_TMS_RESP_EXP_IBM_APP_ID":"VENDOR_ORDER_IBM_EXP",
+          "DATAGEN_TMS_RESP_EXP_IBM_SENDER":"BETA-DHL-LLP-TRF-UP",
+          "DATAGEN_TMS_RESP_EXP_IBM_PRIMARY_RECEIVER":"COURIER-FORWARDER"
         }
       }
     ]
