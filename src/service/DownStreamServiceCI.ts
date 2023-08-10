@@ -192,8 +192,9 @@ export class DownStreamServiceCI {
                             "incoterm": invoiceDetails[0].incoterm !== (null || undefined) ? invoiceDetails[0].incoterm : "", //invoiceDetails[0].incoterm
                             "currency": invoiceDetails[0].declaredvaluecurrency !== (null || undefined) ? invoiceDetails[0].declaredvaluecurrency : "" //invoiceDetails[0].declaredvaluecurrency
                         }
+                        this.logger.log("datadatadatadatadatadata",data)
                         jsonObj = await this.CommercialInvoiceMapping.getData(data,res)
-                        // this.logger.log("jsonObj------->",jsonObj)
+                        this.logger.log("jsonObj------->",jsonObj)
     
                         //Checking all madatory fields are there or not 
     
@@ -235,29 +236,36 @@ export class DownStreamServiceCI {
                             if(addressDetails.length > 0){
                                 //Send the address details to addressValidation function
                                 let address :any = await this.AddressValidation.getDataAfterValidation(addressDetails,org)
-                                if(address.status === "Success"){
-
-                                    jsonObj["customerDetails"] = address.data
-                                    this.logger.log("JSON THAT IS GOING TO EXP AFTER ADDING ADDRESS---->",jsonObj)
-
+                                this.logger.log("address---->",address)
+                                if(address){
+                                    if(address.status === "Success"){
+    
+                                        jsonObj["customerDetails"] = address.data
+                                        this.logger.log("JSON THAT IS GOING TO EXP AFTER ADDING ADDRESS---->",jsonObj)
+    
+                                        // Send the jsonObject to TMS Request
+                                        tmsResponse = await this.callTmsSystem(jsonObj,tmsListItem.customer_order_number)
+            
+                                        // this.logger.log("tmsResponse----->\n\n",tmsResponse)
+                            
+                                        // //Save expCommercialInvoiceObj in `exp_commercial_invoice_data` table along with shipper_account_number
+                                        // await this.ExpCommercialInvoiceDataRepository.updateLatest({"customer_order_number":tmsListItem.customer_order_number},tmsResponse.expCommercialInvoiceObj)
+                        
+                                        // //Update the status in Invoice table 
+            
+                                        // await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},tmsResponse.invoiceStatusObj)
+                                    
+                                    }else{
+                                        //If mandatory fields are not there and address.status is Error then persist as Error in Tables with that customer_order_number
+                                        await this.ExpCommercialInvoiceDataRepository.updateLatest({ "customer_order_number":tmsListItem.customer_order_number }, {"tms_req_message":jsonObj,"statusCode":null, "error":address.data,"tms_status": address.status,"status":"Error" });
+                                    
+                                        //Update the status in Invoice table 
+                                        await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},{"uploadstatus":process.env.INVOICE_ERR_STATUS})
+                                    }
+                                }else{
+                                    this.logger.log("JSON object that is going to callTmsSystem",jsonObj)
                                     // Send the jsonObject to TMS Request
                                     tmsResponse = await this.callTmsSystem(jsonObj,tmsListItem.customer_order_number)
-        
-                                    // this.logger.log("tmsResponse----->\n\n",tmsResponse)
-                        
-                                    // //Save expCommercialInvoiceObj in `exp_commercial_invoice_data` table along with shipper_account_number
-                                    // await this.ExpCommercialInvoiceDataRepository.updateLatest({"customer_order_number":tmsListItem.customer_order_number},tmsResponse.expCommercialInvoiceObj)
-                    
-                                    // //Update the status in Invoice table 
-        
-                                    // await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},tmsResponse.invoiceStatusObj)
-                                
-                                }else{
-                                    //If mandatory fields are not there and address.status is Error then persist as Error in Tables with that customer_order_number
-                                    await this.ExpCommercialInvoiceDataRepository.updateLatest({ "customer_order_number":tmsListItem.customer_order_number }, {"tms_req_message":jsonObj,"statusCode":null, "error":address.data,"tms_status": address.status,"status":"Error" });
-                                
-                                    //Update the status in Invoice table 
-                                    await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},{"uploadstatus":process.env.INVOICE_ERR_STATUS})
                                 }
                             }else{
 
@@ -344,7 +352,8 @@ export class DownStreamServiceCI {
             this.logger.log("Response from TMS----->",response,JSON.parse(response.body).additionalDetails)
             let expCommercialInvoiceObj:any ={}
             let invoiceStatusObj:any = {}
-
+            var today = new Date();
+            var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss") + ' UTC'+moment.utc(today).format("Z")
             if(response.statusCode === 200 || response.statusCode === 201){
                 expCommercialInvoiceObj["tms_req_message"] = jsonObj,
                 expCommercialInvoiceObj["error"] = null,
@@ -354,7 +363,9 @@ export class DownStreamServiceCI {
                 expCommercialInvoiceObj["req_file_path"]=filePath
                 expCommercialInvoiceObj["req_file_uuid"]=fileName
                 expCommercialInvoiceObj["token"] = token
+                expCommercialInvoiceObj["exp_status"] = "UNPROCESSED"
                 invoiceStatusObj["uploadstatus"] = process.env.INVOICE_CON_STATUS
+                invoiceStatusObj["responsetimestamp"] = todayUTC
                 this.logger.log("expCommercialInvoiceObj & invoiceStatus in If-Loop----->\n\n",expCommercialInvoiceObj,invoiceStatusObj)
                 // resolve({"expCommercialInvoiceObj": expCommercialInvoiceObj, "invoiceStatusObj": invoiceStatusObj});
             }else{
@@ -372,7 +383,9 @@ export class DownStreamServiceCI {
                 expCommercialInvoiceObj["req_file_path"]=filePath
                 expCommercialInvoiceObj["req_file_uuid"]=fileName
                 expCommercialInvoiceObj["token"] = token
+                expCommercialInvoiceObj["exp_status"] = "UNPROCESSED"
                 invoiceStatusObj["uploadstatus"] = process.env.INVOICE_ERR_STATUS
+                invoiceStatusObj["responsetimestamp"] = todayUTC
                 this.logger.log("expCommercialInvoiceObj & invoiceStatus in Else-Loop----->\n\n",expCommercialInvoiceObj,invoiceStatusObj)
                 // resolve({"expCommercialInvoiceObj": expCommercialInvoiceObj, "invoiceStatusObj": invoiceStatusObj});
             }
@@ -392,7 +405,7 @@ export class DownStreamServiceCI {
                 "customerordernumber":customer_order_number,
                 "shiptrackingnum":shipment_Tracking_Number,
                 "typecode":"TMS_Request",
-                "name":"TMS_Request",
+                "name":"TMS_Request_JSON",
                 "content":base64,
                 "label":"TMS_Request"
             }
@@ -418,11 +431,12 @@ export class DownStreamServiceCI {
         try{
 
             let lineItemObj:any =[]
+            let number =0
             if(req.length > 0 ){               
                 for(let lineitem of req){
     
                     let obj= {
-                        "number": lineitem.serial_number,
+                        "number": ++number,
                         "commodity_value": lineitem.commodityhscode,
                         "commodity_typeCode": lineitem.commoditytype,
                         "quantity_uom":lineitem.quantity_uom,

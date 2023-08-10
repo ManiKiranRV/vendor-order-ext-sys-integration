@@ -40,9 +40,9 @@ export class AddressValidation {
             let buyerData:any
             let returnObject:any
             if(org === process.env.ORG_NAME){
-                let sellerData = data.find((item:any) => (item.address_type).toLowercase() === process.env.SELLER)
+                sellerData = data.find((item:any) => item.address_type.toLowerCase() === process.env.SELLER)
                 this.logger.log("sellerData---->",sellerData)
-                buyerData = data.find((item:any) => (item.address_type).toLowercase() === process.env.BUYER)
+                buyerData = data.find((item:any) => item.address_type.toLowerCase() === process.env.BUYER)
                 this.logger.log("buyerData---->",buyerData)
             }else{
     
@@ -56,8 +56,9 @@ export class AddressValidation {
             //If SELLER Details exists 
             if(sellerData){
                 //Then check the mandatory fileds in postal address
-                let afterValidationDetails:any = await this.validationForPostalAddressDetails(sellerData)
+                const afterValidationDetails:any = await this.validationForPostalAddressDetails(sellerData)
                 
+                this.logger.log("afterValidationDetails for sellerData",afterValidationDetails)
                 //If status == success the construct the struct for Seller
     
                 if(afterValidationDetails.status === "Success"){
@@ -78,7 +79,9 @@ export class AddressValidation {
             //If BUYER Details exists 
             if(buyerData){
                 //Then check the mandatory fileds in postalAddress,contactInformation,registrationNumbers
-                let afterValidationDetails:any = await this.validationForPostalAddressDetails(buyerData)
+                const afterValidationDetails:any = await this.validationForPostalAddressDetails(buyerData)
+
+                this.logger.log("afterValidationDetails for buyerData",afterValidationDetails)
     
                  //If status == success the construct the struct for Buyer
                 if(afterValidationDetails.status === "Success"){
@@ -98,12 +101,29 @@ export class AddressValidation {
     
             //Mapping seller & buyer details to the Adddress Object
             const address: Address ={
-                    sellerDetails:sellerDetails,
-                    buyerDetails:buyerDetails
+                sellerDetails:sellerDetails,
+                buyerDetails:buyerDetails
             }
+
+            // if (!address || typeof address !== 'object') {
+            //     return true; // Address is not an object or is falsy
+            //   }
+            
+              // Check if both sellerDetails and buyerDetails are empty
+            //   if (
+            //     (!address.sellerDetails || Object.keys(address.sellerDetails).length === 0) &&
+            //     (!address.buyerDetails || Object.keys(address.buyerDetails).length === 0)
+            //   ) {
+            //     this.logger.log("No Data in the seller & buyrer details")
+            //   }else{
+                if (
+                        (address.sellerDetails) ||
+                        (address.buyerDetails)
+                ) { 
+                this.logger.log("address----------->",address)
+                return ({"status":"Success","data":address})
+              }
     
-            this.logger.log("address----------->",address)
-            return ({"status":"Success","data":address})
         }catch(error){
             this.logger.log("Error",error)
         }

@@ -52,9 +52,11 @@ export class CommercialInvoiceMapping {
             let lineItem:any =[]
             for (let lineDetails of data){
                 let randomStr:any
-                let commodity_typeCode:any = lineDetails.commodity_typeCode
+                let commodity_typeCode:any
                 if((lineDetails.commodity_typeCode === null) || (lineDetails.commodity_typeCode === "") || (lineDetails.commodity_typeCode === undefined)){
                     commodity_typeCode = "outbound"
+                }else{
+                    commodity_typeCode = lineDetails.commodity_typeCode.toLowerCase()
                 }
                 let unitOfMeasurement :any
                 //if org == IBM only need to change uom mapping
@@ -65,9 +67,9 @@ export class CommercialInvoiceMapping {
                     unitOfMeasurement = lineDetails.quantity_uom
                 }
                 // this.logger.log("unitOfMeasurement---------->",unitOfMeasurement)
-                randomStr = Math.floor(Math.random() * 1001)
+                // randomStr = Math.floor(Math.random() * 1001)
                 let obj={
-                        "number": randomStr,//lineDetails.number,
+                        "number": lineDetails.number,//randomStr//lineDetails.number,
                         "commodityCodes": [
                             {
                                 "value": (parseFloat(lineDetails.commodity_value)).toString(),
