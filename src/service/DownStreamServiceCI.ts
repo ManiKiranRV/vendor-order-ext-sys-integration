@@ -162,7 +162,9 @@ export class DownStreamServiceCI {
     
                 for (let tmsListItem of tmsList) {
     
-                    
+                    //timestamp 
+                    var today = new Date();
+                    var todayUTC = moment.utc(today).format("YYYY-MM-DD HH:mm:ss") + ' UTC'+moment.utc(today).format("Z")
     
                     // To fetch the data from Invoice Table based on customer_order_number
                     let invoiceDetails:any = [await this.InvoiceDetailsRepository.getLatest({"customerordernumber":tmsListItem.customer_order_number})]
@@ -246,21 +248,12 @@ export class DownStreamServiceCI {
                                         // Send the jsonObject to TMS Request
                                         tmsResponse = await this.callTmsSystem(jsonObj,tmsListItem.customer_order_number)
             
-                                        // this.logger.log("tmsResponse----->\n\n",tmsResponse)
-                            
-                                        // //Save expCommercialInvoiceObj in `exp_commercial_invoice_data` table along with shipper_account_number
-                                        // await this.ExpCommercialInvoiceDataRepository.updateLatest({"customer_order_number":tmsListItem.customer_order_number},tmsResponse.expCommercialInvoiceObj)
-                        
-                                        // //Update the status in Invoice table 
-            
-                                        // await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},tmsResponse.invoiceStatusObj)
-                                    
                                     }else{
                                         //If mandatory fields are not there and address.status is Error then persist as Error in Tables with that customer_order_number
                                         await this.ExpCommercialInvoiceDataRepository.updateLatest({ "customer_order_number":tmsListItem.customer_order_number }, {"tms_req_message":jsonObj,"statusCode":null, "error":address.data,"tms_status": address.status,"status":"Error" });
                                     
                                         //Update the status in Invoice table 
-                                        await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},{"uploadstatus":process.env.INVOICE_ERR_STATUS})
+                                        await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},{"uploadstatus":process.env.INVOICE_ERR_STATUS,"responsetimestamp":todayUTC})
                                     }
                                 }else{
                                     this.logger.log("JSON object that is going to callTmsSystem",jsonObj)
@@ -272,15 +265,6 @@ export class DownStreamServiceCI {
                                 // Send the jsonObject to TMS Request
                                 tmsResponse = await this.callTmsSystem(jsonObj,tmsListItem.customer_order_number)
     
-                                // this.logger.log("tmsResponse----->\n\n",tmsResponse.expCommercialInvoiceObj)
-                    
-                                // //Save expCommercialInvoiceObj in `exp_commercial_invoice_data` table along with shipper_account_number
-                                // await this.ExpCommercialInvoiceDataRepository.updateLatest({"customer_order_number":tmsListItem.customer_order_number},tmsResponse.expCommercialInvoiceObj)
-                
-                                // //Update the status in Invoice table 
-    
-                                // await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},tmsResponse.invoiceStatusObj)
-                                
                             }
 
                         }
@@ -289,7 +273,7 @@ export class DownStreamServiceCI {
                             await this.ExpCommercialInvoiceDataRepository.updateLatest({ "customer_order_number":tmsListItem.customer_order_number }, {"tms_req_message":jsonObj,"statusCode":null, "error":JSON.stringify(vaildationResult),"tms_status": "Error","status":"Error" });
                             
                             //Update the status in Invoice table 
-                            await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},{"uploadstatus":process.env.INVOICE_ERR_STATUS})
+                            await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},{"uploadstatus":process.env.INVOICE_ERR_STATUS,"responsetimestamp":todayUTC})
     
                         }
     
@@ -299,7 +283,7 @@ export class DownStreamServiceCI {
                         await this.ExpCommercialInvoiceDataRepository.updateLatest({ "customer_order_number":tmsListItem.customer_order_number }, {"tms_req_message":jsonObj,"statusCode":null, "error":"Mandatory Fields are missing","tms_status": "Error","status":"Error" });
                     
                         //Update the status in Invoice table 
-                        await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},{"uploadstatus":process.env.INVOICE_ERR_STATUS})
+                        await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},{"uploadstatus":process.env.INVOICE_ERR_STATUS,"responsetimestamp":todayUTC})
     
                     }
                 }
@@ -444,6 +428,7 @@ export class DownStreamServiceCI {
                         "price": lineitem.price,
                         "description": lineitem.description,
                         "weight_netValue": lineitem.net_value,
+                        "weight_grossValue":lineitem.gross_value,
                         "manufacturerCountry": lineitem.manufacturercountry
                     }
                     lineItemObj.push(obj)

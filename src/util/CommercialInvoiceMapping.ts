@@ -68,7 +68,7 @@ export class CommercialInvoiceMapping {
                 }
                 // this.logger.log("unitOfMeasurement---------->",unitOfMeasurement)
                 // randomStr = Math.floor(Math.random() * 1001)
-                let obj={
+                let obj:any ={
                         "number": lineDetails.number,//randomStr//lineDetails.number,
                         "commodityCodes": [
                             {
@@ -86,9 +86,23 @@ export class CommercialInvoiceMapping {
                             "netValue": parseFloat(lineDetails.weight_netValue)
                         },
                         "manufacturerCountry": lineDetails.manufacturerCountry
-                    }
+                }
+
+                //checking for gross value 
+
+                // this.logger.log("GROSS_VALUE-------->",lineDetails.weight_grossValue)
+                if(((lineDetails.weight_grossValue !== null) || (lineDetails.weight_grossValue !== "") || (lineDetails.weight_grossValue !== undefined)) && (lineDetails.weight_grossValue > 0)){
+                    this.logger.log("if-block grossValue----->",lineDetails.weight_grossValue)
+                    obj["weight"]["grossValue"] = parseFloat(lineDetails.weight_grossValue)
+
+
+                }
+
                 lineItem.push(obj)
+
             }
+
+            
             // this.logger.log("lineItem--->",lineItem)
             return lineItem
         }catch(error){

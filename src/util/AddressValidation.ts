@@ -12,6 +12,7 @@ import { Details } from "../types/subAddressStruct";
 import { ContactInformation } from "../types/contactInformation";
 import { RegistrationNumbers } from "../types/registrationNumbers";
 import { Address } from "../types/mainAddress";
+import { ErrorFields } from "./ErrorFields";
 
 import { OrganisationContactRepository } from "../data/repository/OrganisationContactRepository";
 import { RegistrationNumbersRepository } from "../data/repository/RegistrationNumbersRepository";
@@ -23,12 +24,14 @@ export class AddressValidation {
     private logger: Logger;
     private OrganisationContactRepository:OrganisationContactRepository;
     private RegistrationNumbersRepository:RegistrationNumbersRepository;
+    private ErrorFields:ErrorFields;
 
     constructor() {
         this.GenericUtil = DI.get(GenericUtil);
         this.logger = DI.get(Logger);
         this.OrganisationContactRepository = DI.get(OrganisationContactRepository);
-        this.RegistrationNumbersRepository = DI.get(RegistrationNumbersRepository)
+        this.RegistrationNumbersRepository = DI.get(RegistrationNumbersRepository);
+        this.ErrorFields = DI.get(ErrorFields);
     }
 
     //To construct the Main Json Structure
@@ -134,7 +137,7 @@ export class AddressValidation {
         try{
 
             this.logger.log("Postal Address",data)
-    
+            let dataObject:any = {}
             let contactInformation:any
             let registrationNumbers:any =[]
             const postalAddress : PostalAddress = {
@@ -152,11 +155,15 @@ export class AddressValidation {
             this.logger.log("postalAddress---------->",postalAddress)
             
             // To check all the mandatory fields exist or not
-            let resultForPostalAddValid:any = await this.checkMandatoryFields(postalAddress,process.env.POSTAL_ADDRESS_MANDATORY_FIELDS)
+            let resultForPostalAddValid:any = await this.checkMandatoryFields(postalAddress,process.env.POSTAL_ADDRESS_MANDATORY_FIELDS,"postalAddress")
             // this.logger.log("resultForPostalAddValid----->",resultForPostalAddValid)
     
              //If status == success the construct the struct for Postal Address
             if(resultForPostalAddValid.status === "Success"){
+
+                //Adding postalAddress to dataObject if success
+                dataObject["postalAddress"] = postalAddress
+                // this.logger.log("dataObject postalAddress",dataObject)
                
                 //If Postal Address exists & mandatory fileds are there then fetch the details from organization_contact by passing parent_id
                 const whereObj:any={}
@@ -170,25 +177,32 @@ export class AddressValidation {
                     //constructing the Contract Information Object
                     const contractDetails : ContactInformation ={
                         phone: contInfo[0].phone,
-                        // mobilePhone: ,
+                        mobilePhone: contInfo[0].mobilePhone,
                         companyName: contInfo[0].companyName,
                         fullName: contInfo[0].full_Name,
                         email: contInfo[0].email
                     }
                     
+                    this.logger.log("contractDetails---------->",contractDetails)
+
+                    
                     //If optional field is null or empty then remove
                     if((contractDetails.email === null) || (contractDetails.email === "")){
                         delete contractDetails["email"]
                     }
-                    // this.logger.log("contractDetails---------->",contractDetails)
+                    if((contractDetails.mobilePhone === null) || (contractDetails.mobilePhone === "")){
+                        delete contractDetails["mobilePhone"]
+                    }
     
                     //Checking whether all the mandatory fields are there or not
-                    let resultForConInfoValid:any = await this.checkMandatoryFields(contractDetails,process.env.CONTRACT_INFORMATION_MANDATORY_FIELDS)
+                    let resultForConInfoValid:any = await this.checkMandatoryFields(contractDetails,process.env.CONTRACT_INFORMATION_MANDATORY_FIELDS,"contactInformation")
                     // this.logger.log("resultForConInfoValid------>",resultForConInfoValid)
                     
                     //If mandatory fields exists then map the contractDetails to contractInformation
                     if(resultForConInfoValid.status === "Success"){
-                        contactInformation = contractDetails
+                        //Adding contactInformation to dataObject if success
+                        dataObject["contactInformation"] = contractDetails
+                        // this.logger.log("dataObject contactInformation",dataObject)
                         // this.logger.log("contactInformation-------->",contactInformation)
                     }else{
                         return ({"status":"Error","data":resultForConInfoValid.message})
@@ -216,7 +230,7 @@ export class AddressValidation {
                         }
     
                         //Checking whether all the mandatory fields are there or not
-                        let resultForRegNumValid:any = await this.checkMandatoryFields(regNumDetails,process.env.REGISTRATION_NUMBER_MANDATORY_FIELDS)
+                        let resultForRegNumValid:any = await this.checkMandatoryFields(regNumDetails,process.env.REGISTRATION_NUMBER_MANDATORY_FIELDS,"registrationNumbers")
                         // this.logger.log("resultForRegNumValid------->",resultForRegNumValid)
                         
                         //If mandatory fields exists then map the regNumDetails to registrationNumbers
@@ -226,9 +240,14 @@ export class AddressValidation {
                         }else{
                             return ({"status":"Error","data":resultForRegNumValid.message})
                         }
+
                     }
+                    //Adding registrationNumbers to dataObject if success
+                    dataObject["registrationNumbers"] = registrationNumbers
+                    // this.logger.log("dataObject registrationNumbers",dataObject)
                 }
-                return ({"status":"Success","data":{"postalAddress":postalAddress,"contactInformation":contactInformation,"registrationNumbers":registrationNumbers}})
+                this.logger.log("dataObject",dataObject)
+                return ({"status":"Success","data":dataObject})
             }else{
                 return ({"status":"Error","data":resultForPostalAddValid.message})
             }
@@ -240,7 +259,7 @@ export class AddressValidation {
 
     //For checking Mandatory fields exists or not
 
-    async checkMandatoryFields(mandatoryData:any,mandatoryfield:any) {
+    async checkMandatoryFields(mandatoryData:any,mandatoryfield:any,table:any) {
         const mandatoryFields:any = mandatoryfield.split(',')
         this.logger.log("mandatoryData--------->",mandatoryData)
         this.logger.log("mandatoryFields",mandatoryFields)
@@ -248,8 +267,10 @@ export class AddressValidation {
         for (let field of mandatoryFields) {
             this.logger.log("mandatoryData[field]-------->",mandatoryData[field])
             if ((!mandatoryData[field]) || (mandatoryData[field].trim() === "") || (mandatoryData[field].trim() === null)) {
-                this.logger.log(`Error : ${field} is a mandatory field and must be provided.`)
-                error.push(`${field} is a mandatory field and and its empty or null.`);
+                let fieldName:any = await this.ErrorFields.getErrorFields(table)
+                this.logger.log("filedName--------->",fieldName[field])
+                this.logger.log(`Error : ${fieldName[field]} is a mandatory field and must be provided.`)
+                error.push(`In ${table}, ${fieldName[field]} is a mandatory field and and its empty or null.`);
             }
         }
         if (error.length > 0) {
