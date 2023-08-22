@@ -253,7 +253,7 @@ export class DownStreamServiceCI {
                                         await this.ExpCommercialInvoiceDataRepository.updateLatest({ "customer_order_number":tmsListItem.customer_order_number }, {"tms_req_message":jsonObj,"statusCode":null, "error":address.data,"tms_status": address.status,"status":"Error" });
                                     
                                         //Update the status in Invoice table 
-                                        await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},{"uploadstatus":process.env.INVOICE_ERR_STATUS,"responsetimestamp":todayUTC})
+                                        await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},{"uploadstatus":process.env.INVOICE_ERR_STATUS,"responsetimestamp":todayUTC,"responseerrortitle":"Transformation_Error"})
                                     }
                                 }else{
                                     this.logger.log("JSON object that is going to callTmsSystem",jsonObj)
@@ -273,7 +273,7 @@ export class DownStreamServiceCI {
                             await this.ExpCommercialInvoiceDataRepository.updateLatest({ "customer_order_number":tmsListItem.customer_order_number }, {"tms_req_message":jsonObj,"statusCode":null, "error":JSON.stringify(vaildationResult),"tms_status": "Error","status":"Error" });
                             
                             //Update the status in Invoice table 
-                            await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},{"uploadstatus":process.env.INVOICE_ERR_STATUS,"responsetimestamp":todayUTC})
+                            await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},{"uploadstatus":process.env.INVOICE_ERR_STATUS,"responsetimestamp":todayUTC,"responseerrortitle":"Transformation_Error"})
     
                         }
     
@@ -283,7 +283,7 @@ export class DownStreamServiceCI {
                         await this.ExpCommercialInvoiceDataRepository.updateLatest({ "customer_order_number":tmsListItem.customer_order_number }, {"tms_req_message":jsonObj,"statusCode":null, "error":"Mandatory Fields are missing","tms_status": "Error","status":"Error" });
                     
                         //Update the status in Invoice table 
-                        await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},{"uploadstatus":process.env.INVOICE_ERR_STATUS,"responsetimestamp":todayUTC})
+                        await this.InvoiceDetailsRepository.updateLatest({"customerordernumber":tmsListItem.customer_order_number},{"uploadstatus":process.env.INVOICE_ERR_STATUS,"responsetimestamp":todayUTC,"responseerrortitle":"Transformation_Error"})
     
                     }
                 }
@@ -350,6 +350,7 @@ export class DownStreamServiceCI {
                 expCommercialInvoiceObj["exp_status"] = "UNPROCESSED"
                 invoiceStatusObj["uploadstatus"] = process.env.INVOICE_CON_STATUS
                 invoiceStatusObj["responsetimestamp"] = todayUTC
+                invoiceStatusObj["responseerrortitle"] = null
                 this.logger.log("expCommercialInvoiceObj & invoiceStatus in If-Loop----->\n\n",expCommercialInvoiceObj,invoiceStatusObj)
                 // resolve({"expCommercialInvoiceObj": expCommercialInvoiceObj, "invoiceStatusObj": invoiceStatusObj});
             }else{
@@ -370,10 +371,12 @@ export class DownStreamServiceCI {
                 expCommercialInvoiceObj["exp_status"] = "UNPROCESSED"
                 invoiceStatusObj["uploadstatus"] = process.env.INVOICE_ERR_STATUS
                 invoiceStatusObj["responsetimestamp"] = todayUTC
+                invoiceStatusObj["responseerrortitle"] = "TMS_Error"
                 this.logger.log("expCommercialInvoiceObj & invoiceStatus in Else-Loop----->\n\n",expCommercialInvoiceObj,invoiceStatusObj)
                 // resolve({"expCommercialInvoiceObj": expCommercialInvoiceObj, "invoiceStatusObj": invoiceStatusObj});
             }
 
+            let doc_status = invoiceStatusObj["uploadstatus"]
 
             //Save expCommercialInvoiceObj in `exp_commercial_invoice_data` table along with shipper_account_number
             await this.ExpCommercialInvoiceDataRepository.updateLatest({"customer_order_number":customer_order_number},expCommercialInvoiceObj)
@@ -391,6 +394,7 @@ export class DownStreamServiceCI {
                 "typecode":"TMS_Request",
                 "name":"TMS_Request_JSON",
                 "content":base64,
+                "upload_status":doc_status,
                 "label":"TMS_Request"
             }
 
