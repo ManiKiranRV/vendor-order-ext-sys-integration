@@ -98,6 +98,14 @@ export class CommercialInvoiceMapping {
 
                 }
 
+                //checking commodityCodes value if does not exist or less than 0 remove commodityCodes
+
+                this.logger.log("objcommodityCodes.value------>",obj["commodityCodes"][0]["value"])
+
+                if((obj["commodityCodes"][0]["value"] === null) || (obj["commodityCodes"][0]["value"] === "NaN") || (obj["commodityCodes"][0]["value"] <= 0) || (obj["commodityCodes"][0]["value"] === "") || (obj["commodityCodes"][0]["value"] === undefined)){
+                    delete obj["commodityCodes"]
+                }
+                this.logger.log("objobjobjobjobjobjobj-------->",obj)
                 lineItem.push(obj)
 
             }
