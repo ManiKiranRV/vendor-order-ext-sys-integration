@@ -6,6 +6,7 @@ export interface OrganisationContactAttributes {
   parent_id?: number;
   address_id?: string;
   phone?: string;
+  mobilePhone?: string;
   full_Name?: string;
   email?: string;
   createdAt?: Date;
@@ -16,7 +17,7 @@ export interface OrganisationContactAttributes {
 
 export type OrganisationContactPk = "id";
 export type OrganisationContactId = OrganisationContact[OrganisationContactPk];
-export type OrganisationContactOptionalAttributes = "id" | "parent_id" | "address_id" | "phone" | "full_Name" | "email" | "createdAt" | "updatedAt" | "deletedAt" | "companyName";
+export type OrganisationContactOptionalAttributes = "id" | "parent_id" | "address_id" | "phone" | "mobilePhone" | "full_Name" | "email" | "createdAt" | "updatedAt" | "deletedAt" | "companyName";
 export type OrganisationContactCreationAttributes = Optional<OrganisationContactAttributes, OrganisationContactOptionalAttributes>;
 
 export class OrganisationContact extends Model<OrganisationContactAttributes, OrganisationContactCreationAttributes> implements OrganisationContactAttributes {
@@ -24,6 +25,7 @@ export class OrganisationContact extends Model<OrganisationContactAttributes, Or
   parent_id?: number;
   address_id?: string;
   phone?: string;
+  mobilePhone?: string;
   full_Name?: string;
   email?: string;
   createdAt?: Date;
@@ -49,6 +51,10 @@ export class OrganisationContact extends Model<OrganisationContactAttributes, Or
       allowNull: true
     },
     phone: {
+      type: DataTypes.STRING(255),
+      allowNull: true
+    },
+    mobilePhone: {
       type: DataTypes.STRING(255),
       allowNull: true
     },
