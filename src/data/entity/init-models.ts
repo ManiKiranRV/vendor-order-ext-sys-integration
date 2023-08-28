@@ -7,10 +7,6 @@ import { Address as _Address } from "./Address";
 import type { AddressAttributes, AddressCreationAttributes } from "./Address";
 import { AppUsers as _AppUsers } from "./AppUsers";
 import type { AppUsersAttributes, AppUsersCreationAttributes } from "./AppUsers";
-import { BvEventsToLobster as _BvEventsToLobster } from "./BvEventsToLobster";
-import type { BvEventsToLobsterAttributes, BvEventsToLobsterCreationAttributes } from "./BvEventsToLobster";
-import { BvVendorbooking as _BvVendorbooking } from "./BvVendorbooking";
-import type { BvVendorbookingAttributes, BvVendorbookingCreationAttributes } from "./BvVendorbooking";
 import { ConfigEventsToLobster as _ConfigEventsToLobster } from "./ConfigEventsToLobster";
 import type { ConfigEventsToLobsterAttributes, ConfigEventsToLobsterCreationAttributes } from "./ConfigEventsToLobster";
 import { Documents as _Documents } from "./Documents";
@@ -33,6 +29,8 @@ import { ExpTmsData as _ExpTmsData } from "./ExpTmsData";
 import type { ExpTmsDataAttributes, ExpTmsDataCreationAttributes } from "./ExpTmsData";
 import { InvoiceDetails as _InvoiceDetails } from "./InvoiceDetails";
 import type { InvoiceDetailsAttributes, InvoiceDetailsCreationAttributes } from "./InvoiceDetails";
+import { LaneInScope as _LaneInScope } from "./LaneInScope";
+import type { LaneInScopeAttributes, LaneInScopeCreationAttributes } from "./LaneInScope";
 import { LineItems as _LineItems } from "./LineItems";
 import type { LineItemsAttributes, LineItemsCreationAttributes } from "./LineItems";
 import { OrganisationContact as _OrganisationContact } from "./OrganisationContact";
@@ -51,8 +49,6 @@ export {
   _AdditionalCharges as AdditionalCharges,
   _Address as Address,
   _AppUsers as AppUsers,
-  _BvEventsToLobster as BvEventsToLobster,
-  _BvVendorbooking as BvVendorbooking,
   _ConfigEventsToLobster as ConfigEventsToLobster,
   _Documents as Documents,
   _Events as Events,
@@ -64,6 +60,7 @@ export {
   _ExpResponseData as ExpResponseData,
   _ExpTmsData as ExpTmsData,
   _InvoiceDetails as InvoiceDetails,
+  _LaneInScope as LaneInScope,
   _LineItems as LineItems,
   _OrganisationContact as OrganisationContact,
   _Packages as Packages,
@@ -81,10 +78,6 @@ export type {
   AddressCreationAttributes,
   AppUsersAttributes,
   AppUsersCreationAttributes,
-  BvEventsToLobsterAttributes,
-  BvEventsToLobsterCreationAttributes,
-  BvVendorbookingAttributes,
-  BvVendorbookingCreationAttributes,
   ConfigEventsToLobsterAttributes,
   ConfigEventsToLobsterCreationAttributes,
   DocumentsAttributes,
@@ -107,6 +100,8 @@ export type {
   ExpTmsDataCreationAttributes,
   InvoiceDetailsAttributes,
   InvoiceDetailsCreationAttributes,
+  LaneInScopeAttributes,
+  LaneInScopeCreationAttributes,
   LineItemsAttributes,
   LineItemsCreationAttributes,
   OrganisationContactAttributes,
@@ -126,8 +121,6 @@ export function initModels(sequelize: Sequelize) {
   const AdditionalCharges = _AdditionalCharges.initModel(sequelize);
   const Address = _Address.initModel(sequelize);
   const AppUsers = _AppUsers.initModel(sequelize);
-  const BvEventsToLobster = _BvEventsToLobster.initModel(sequelize);
-  const BvVendorbooking = _BvVendorbooking.initModel(sequelize);
   const ConfigEventsToLobster = _ConfigEventsToLobster.initModel(sequelize);
   const Documents = _Documents.initModel(sequelize);
   const Events = _Events.initModel(sequelize);
@@ -139,6 +132,7 @@ export function initModels(sequelize: Sequelize) {
   const ExpResponseData = _ExpResponseData.initModel(sequelize);
   const ExpTmsData = _ExpTmsData.initModel(sequelize);
   const InvoiceDetails = _InvoiceDetails.initModel(sequelize);
+  const LaneInScope = _LaneInScope.initModel(sequelize);
   const LineItems = _LineItems.initModel(sequelize);
   const OrganisationContact = _OrganisationContact.initModel(sequelize);
   const Packages = _Packages.initModel(sequelize);
@@ -152,8 +146,6 @@ export function initModels(sequelize: Sequelize) {
     AdditionalCharges: AdditionalCharges,
     Address: Address,
     AppUsers: AppUsers,
-    BvEventsToLobster: BvEventsToLobster,
-    BvVendorbooking: BvVendorbooking,
     ConfigEventsToLobster: ConfigEventsToLobster,
     Documents: Documents,
     Events: Events,
@@ -165,6 +157,7 @@ export function initModels(sequelize: Sequelize) {
     ExpResponseData: ExpResponseData,
     ExpTmsData: ExpTmsData,
     InvoiceDetails: InvoiceDetails,
+    LaneInScope: LaneInScope,
     LineItems: LineItems,
     OrganisationContact: OrganisationContact,
     Packages: Packages,
