@@ -7,6 +7,10 @@ import { Address as _Address } from "./Address";
 import type { AddressAttributes, AddressCreationAttributes } from "./Address";
 import { AppUsers as _AppUsers } from "./AppUsers";
 import type { AppUsersAttributes, AppUsersCreationAttributes } from "./AppUsers";
+import { BvEventsToLobster as _BvEventsToLobster } from "./BvEventsToLobster";
+import type { BvEventsToLobsterAttributes, BvEventsToLobsterCreationAttributes } from "./BvEventsToLobster";
+import { BvVendorbooking as _BvVendorbooking } from "./BvVendorbooking";
+import type { BvVendorbookingAttributes, BvVendorbookingCreationAttributes } from "./BvVendorbooking";
 import { ConfigEventsToLobster as _ConfigEventsToLobster } from "./ConfigEventsToLobster";
 import type { ConfigEventsToLobsterAttributes, ConfigEventsToLobsterCreationAttributes } from "./ConfigEventsToLobster";
 import { Documents as _Documents } from "./Documents";
@@ -49,6 +53,8 @@ export {
   _AdditionalCharges as AdditionalCharges,
   _Address as Address,
   _AppUsers as AppUsers,
+  _BvEventsToLobster as BvEventsToLobster,
+  _BvVendorbooking as BvVendorbooking,
   _ConfigEventsToLobster as ConfigEventsToLobster,
   _Documents as Documents,
   _Events as Events,
@@ -78,6 +84,10 @@ export type {
   AddressCreationAttributes,
   AppUsersAttributes,
   AppUsersCreationAttributes,
+  BvEventsToLobsterAttributes,
+  BvEventsToLobsterCreationAttributes,
+  BvVendorbookingAttributes,
+  BvVendorbookingCreationAttributes,
   ConfigEventsToLobsterAttributes,
   ConfigEventsToLobsterCreationAttributes,
   DocumentsAttributes,
@@ -121,6 +131,8 @@ export function initModels(sequelize: Sequelize) {
   const AdditionalCharges = _AdditionalCharges.initModel(sequelize);
   const Address = _Address.initModel(sequelize);
   const AppUsers = _AppUsers.initModel(sequelize);
+  const BvEventsToLobster = _BvEventsToLobster.initModel(sequelize);
+  const BvVendorbooking = _BvVendorbooking.initModel(sequelize);
   const ConfigEventsToLobster = _ConfigEventsToLobster.initModel(sequelize);
   const Documents = _Documents.initModel(sequelize);
   const Events = _Events.initModel(sequelize);
@@ -146,6 +158,8 @@ export function initModels(sequelize: Sequelize) {
     AdditionalCharges: AdditionalCharges,
     Address: Address,
     AppUsers: AppUsers,
+    BvEventsToLobster: BvEventsToLobster,
+    BvVendorbooking: BvVendorbooking,
     ConfigEventsToLobster: ConfigEventsToLobster,
     Documents: Documents,
     Events: Events,
